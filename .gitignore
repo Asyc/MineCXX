@@ -1,0 +1,13 @@
+# IntelliJ
+.idea/
+*.ipr
+*.iml
+
+cmake-build-debug/
+cmake-build-release
+
+# SPRIV-Cross generated files
+*.cmake
+gitversion.h
+
+logs/
