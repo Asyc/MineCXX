@@ -9,11 +9,9 @@ class VertexBuffer {
 public:
     virtual ~VertexBuffer() = default;
 
-    virtual void write(size_t offset, void* ptr, size_t length) = 0;
+    virtual void write(size_t offset, const void* ptr, size_t length) = 0;
 protected:
     VertexBuffer() = default;
-
-
 };
 
 }   // namespace engine::render::buffer

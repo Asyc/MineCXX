@@ -1,6 +1,7 @@
 #ifndef MINECRAFTCXX_CLIENT_ENGINE_INCLUDE_ENGINE_RENDER_COMMAND_COMMAND_BUFFER_HPP_
 #define MINECRAFTCXX_CLIENT_ENGINE_INCLUDE_ENGINE_RENDER_COMMAND_COMMAND_BUFFER_HPP_
 
+#include "engine/render/buffer/index_buffer.hpp"
 #include "engine/render/buffer/vertex_buffer.hpp"
 #include "engine/render/pipeline.hpp"
 
@@ -17,8 +18,13 @@ public:
 class IDrawableCommandBuffer : public virtual ICommandBuffer {
 public:
     virtual void bindPipeline(const RenderPipeline& pipeline) = 0;
+
     virtual void bindVertexBuffer(const buffer::VertexBuffer& buffer) = 0;
+    virtual void bindIndexBuffer(const buffer::IndexBuffer& buffer) = 0;
+
     virtual void draw(uint32_t instanceCount, uint32_t vertexCount) = 0;
+    virtual void drawIndexed(uint32_t instanceCount, uint32_t indexCount) = 0;
+
 };
 
 class ISubmittableCommandBuffer : public virtual ICommandBuffer {};

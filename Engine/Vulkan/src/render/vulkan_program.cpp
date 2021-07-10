@@ -5,9 +5,7 @@
 
 #include <glslang/Include/glslang_c_interface.h>
 #include <spirv_cross.hpp>
-#include <spirv_cpp.hpp>
 #include <spirv_glsl.hpp>
-#include <vulkan/vulkan.hpp>
 
 #include "engine/log.hpp"
 

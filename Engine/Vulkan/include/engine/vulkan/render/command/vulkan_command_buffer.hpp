@@ -22,9 +22,14 @@ public:
 class VulkanDrawableCommandBuffer : public virtual IDrawableCommandBuffer, public virtual VulkanCommandBuffer {
 public:
     VulkanDrawableCommandBuffer(const render::vulkan::VulkanSwapchain* handle);
+
     void bindPipeline(const RenderPipeline& pipeline) override;
+
     void bindVertexBuffer(const buffer::VertexBuffer& buffer) override;
+    void bindIndexBuffer(const buffer::IndexBuffer& buffer) override;
+
     void draw(uint32_t instanceCount, uint32_t vertexCount) override;
+    void drawIndexed(uint32_t instanceCount, uint32_t indexCount) override;
 private:
     const render::vulkan::VulkanSwapchain* m_Handle;
 };

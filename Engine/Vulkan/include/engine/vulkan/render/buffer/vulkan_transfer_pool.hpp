@@ -20,7 +20,7 @@ public:
     VulkanTransferBuffer(VulkanTransferBuffer&& rhs) = default;
     ~VulkanTransferBuffer();
 
-    void copy(void* src, size_t length, size_t offset) const;
+    void copy(const void* src, size_t length, size_t offset) const;
     void write(vk::CommandBuffer buffer, size_t dstOffset, vk::Buffer dst, size_t length) const;
 
     [[nodiscard]] size_t getSize() const;
@@ -33,20 +33,52 @@ private:
     void* m_MappedPtr;
 };
 
+class VulkanTransferBufferUnique;
+
 class VulkanTransferPool {
 public:
-    VulkanTransferPool(vk::Device owner, size_t memoryTypeIndex);
+    VulkanTransferPool(vk::Device owner, uint32_t memoryTypeIndex);
 
     VulkanTransferBuffer* acquire(size_t minimumSize);
     void release(VulkanTransferBuffer* element);
+
+    VulkanTransferBufferUnique acquireUnique(size_t minimumSize);
 private:
     vk::Device m_Owner;
-    size_t m_MemoryTypeIndex;
+    uint32_t m_MemoryTypeIndex;
 
     std::vector<VulkanTransferBuffer> m_Buffers;
     std::deque<VulkanTransferBuffer*> m_Available;
 
     std::mutex m_Mutex;
+};
+
+class VulkanTransferBufferUnique {
+public:
+    VulkanTransferBufferUnique(VulkanTransferPool* owner, VulkanTransferBuffer* buffer);
+    VulkanTransferBufferUnique(VulkanTransferBufferUnique&& rhs) noexcept;
+    ~VulkanTransferBufferUnique();
+
+    VulkanTransferBufferUnique& operator=(VulkanTransferBufferUnique&& rhs) noexcept;
+
+    VulkanTransferBuffer& operator*() {
+        return *m_Buffer;
+    }
+
+    const VulkanTransferBuffer& operator*() const {
+        return *m_Buffer;
+    }
+
+    VulkanTransferBuffer* operator->() {
+        return m_Buffer;
+    }
+
+    const VulkanTransferBuffer* operator->() const {
+        return m_Buffer;
+    }
+private:
+    VulkanTransferPool* m_Owner;
+    VulkanTransferBuffer* m_Buffer;
 };
 
 }

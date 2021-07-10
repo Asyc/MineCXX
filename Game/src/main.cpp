@@ -25,15 +25,20 @@ int main() {
         Vertex{ 0.0f,  0.5f, 0.0f},
         Vertex{ 0.5f, -0.5f, 0.0f}
     };
+    std::array<uint32_t, 3> indices{0, 1, 2};
 
     auto vertexBuffer = context->allocateVertexBuffer(vertices.size() * sizeof(Vertex));
     vertexBuffer->write(0, vertices.data(), vertices.size() * sizeof(Vertex));
+
+    auto indexBuffer = context->allocateIndexBuffer(indices.size());
+    indexBuffer->write(0, indices.data(), indices.size());
 
     auto render = pool->allocateCommandListImmutable();
     render->begin();
     render->bindPipeline(*pipeline);
     render->bindVertexBuffer(*vertexBuffer);
-    render->draw(1, 3);
+    render->bindIndexBuffer(*indexBuffer);
+    render->drawIndexed(1, 3);
     render->end();
 
     auto buffer = pool->allocateIndirectCommandBuffer();

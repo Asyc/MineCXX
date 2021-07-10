@@ -1,5 +1,6 @@
 #include "engine/vulkan/render/command/vulkan_command_buffer.hpp"
 
+#include "engine/vulkan/render/buffer/vulkan_index_buffer.hpp"
 #include "engine/vulkan/render/buffer/vulkan_vertex_buffer.hpp"
 #include "engine/vulkan/render/vulkan_pipeline.hpp"
 
@@ -27,15 +28,25 @@ void VulkanDrawableCommandBuffer::bindPipeline(const RenderPipeline& pipeline) {
 }
 
 void VulkanDrawableCommandBuffer::bindVertexBuffer(const buffer::VertexBuffer& buffer) {
-    const auto* vkBuffer = reinterpret_cast<const buffer::vulkan::VulkanVertexBuffer*>(&buffer);
+    const auto* vkBuffer = dynamic_cast<const buffer::vulkan::VulkanVertexBuffer*>(&buffer);
 
     vk::Buffer bufferHandle = vkBuffer->getBuffer();
     size_t offset = 0;
     getCommandBufferHandle().bindVertexBuffers(0, 1, &bufferHandle, &offset);
 }
 
+void VulkanDrawableCommandBuffer::bindIndexBuffer(const buffer::IndexBuffer& buffer) {
+    const auto* vkBuffer = dynamic_cast<const buffer::vulkan::VulkanIndexBuffer*>(&buffer);
+
+    getCommandBufferHandle().bindIndexBuffer(vkBuffer->getBuffer(), 0, vk::IndexType::eUint32);
+}
+
 void VulkanDrawableCommandBuffer::draw(uint32_t instanceCount, uint32_t vertexCount) {
     getCommandBufferHandle().draw(vertexCount, instanceCount, 0, 0);
+}
+
+void VulkanDrawableCommandBuffer::drawIndexed(uint32_t instanceCount, uint32_t indexCount) {
+    getCommandBufferHandle().drawIndexed(indexCount, instanceCount, 0, 0, 0);
 }
 
 VulkanSwitchingCommandBuffer::VulkanSwitchingCommandBuffer(vk::Device device, const render::vulkan::VulkanSwapchain* swapchain, vk::CommandPool pool, vk::CommandBufferLevel level) : m_SwapchainHandle(swapchain), m_Fences(swapchain->getFrameCount()) {

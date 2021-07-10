@@ -17,10 +17,10 @@ VulkanTransferBuffer::VulkanTransferBuffer(vk::Device device, uint32_t memoryTyp
 }
 
 VulkanTransferBuffer::~VulkanTransferBuffer() {
-    m_Buffer.getOwner().unmapMemory(*m_MemoryAlloc);
+    if (m_MemoryAlloc) m_MemoryAlloc.getOwner().unmapMemory(*m_MemoryAlloc);
 }
 
-void VulkanTransferBuffer::copy(void* src, size_t length, size_t offset) const {
+void VulkanTransferBuffer::copy(const void* src, size_t length, size_t offset) const {
     memcpy(reinterpret_cast<int8_t*>(m_MappedPtr) + offset, src, length);
 }
 
@@ -37,7 +37,7 @@ vk::Buffer VulkanTransferBuffer::getBuffer() const {
     return *m_Buffer;
 }
 
-VulkanTransferPool::VulkanTransferPool(vk::Device owner, size_t memoryTypeIndex) : m_Owner(owner), m_MemoryTypeIndex(memoryTypeIndex) {
+VulkanTransferPool::VulkanTransferPool(vk::Device owner, uint32_t memoryTypeIndex) : m_Owner(owner), m_MemoryTypeIndex(memoryTypeIndex) {
 
 }
 
@@ -52,9 +52,35 @@ VulkanTransferBuffer* VulkanTransferPool::acquire(size_t minimumSize) {
     return &element;
 }
 
+
 void VulkanTransferPool::release(VulkanTransferBuffer* element) {
     std::unique_lock<std::mutex> lock(m_Mutex);
     m_Available.push_back(element);
+}
+
+VulkanTransferBufferUnique VulkanTransferPool::acquireUnique(size_t minimumSize) {
+    return {this, acquire(minimumSize)};
+}
+
+VulkanTransferBufferUnique::VulkanTransferBufferUnique(VulkanTransferPool* owner, VulkanTransferBuffer* buffer) : m_Owner(owner), m_Buffer(buffer) {}
+
+VulkanTransferBufferUnique::VulkanTransferBufferUnique(VulkanTransferBufferUnique&& rhs) noexcept : m_Owner(nullptr), m_Buffer(nullptr) {
+    operator=(std::move(rhs));
+}
+
+VulkanTransferBufferUnique::~VulkanTransferBufferUnique() {
+    if (m_Owner != nullptr && m_Buffer != nullptr) {
+        m_Owner->release(m_Buffer);
+    }
+}
+
+VulkanTransferBufferUnique& VulkanTransferBufferUnique::operator=(VulkanTransferBufferUnique&& rhs) noexcept {
+    if (this != &rhs) {
+        std::swap(m_Owner, rhs.m_Owner);
+        std::swap(m_Buffer, rhs.m_Buffer);
+    }
+
+    return *this;
 }
 
 }   // namespace engine::render::buffer::vulkan

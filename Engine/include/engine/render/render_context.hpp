@@ -5,6 +5,7 @@
 
 #include "engine/file.hpp"
 
+#include "buffer/index_buffer.hpp"
 #include "buffer/vertex_buffer.hpp"
 #include "command/command_pool.hpp"
 
@@ -18,6 +19,7 @@ public:
     virtual ~RenderContext() = default;
 
     [[nodiscard]] virtual std::unique_ptr<buffer::VertexBuffer> allocateVertexBuffer(size_t size) = 0;
+    [[nodiscard]] virtual std::unique_ptr<buffer::IndexBuffer> allocateIndexBuffer(size_t size) = 0;
 
     [[nodiscard]] virtual std::unique_ptr<RenderPipeline> createRenderPipeline(const File& file) const = 0;
 

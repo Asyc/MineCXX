@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "engine/log.hpp"
+#include "engine/vulkan/render/buffer/vulkan_index_buffer.hpp"
 #include "engine/vulkan/render/buffer/vulkan_vertex_buffer.hpp"
 #include "engine/vulkan/render/command/vulkan_command_pool.hpp"
 #include "engine/vulkan/render/swapchain/vulkan_swapchain.hpp"
@@ -134,6 +135,10 @@ command::CommandPool& VulkanRenderContext::getThreadCommandPool() const {
 
 std::unique_ptr<buffer::VertexBuffer> VulkanRenderContext::allocateVertexBuffer(size_t size) {
     return std::make_unique<buffer::vulkan::VulkanVertexBuffer>(*m_Device, m_LocalMemoryTypeIndex, size, this, m_TransferPool.get());
+}
+
+std::unique_ptr<buffer::IndexBuffer> VulkanRenderContext::allocateIndexBuffer(size_t size) {
+    return std::make_unique<buffer::vulkan::VulkanIndexBuffer>(*m_Device, m_LocalMemoryTypeIndex, size, this, m_TransferPool.get());
 }
 
 std::unique_ptr<RenderPipeline> VulkanRenderContext::createRenderPipeline(const File& file) const {

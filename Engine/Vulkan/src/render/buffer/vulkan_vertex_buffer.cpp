@@ -1,7 +1,6 @@
 #include "engine/vulkan/render/buffer/vulkan_vertex_buffer.hpp"
 
 #include "engine/vulkan/vulkan_context.hpp"
-#include "engine/vulkan/render/swapchain/vulkan_swapchain.hpp"
 
 namespace engine::render::buffer::vulkan {
 
@@ -22,12 +21,12 @@ VulkanVertexBuffer::VulkanVertexBuffer(vk::Device device, uint32_t memoryTypeInd
     device.bindBufferMemory(*m_Buffer, *m_Allocation, 0);
 }
 
-void VulkanVertexBuffer::write(size_t offset, void* ptr, size_t length) {
-    VulkanTransferBuffer* transferBuffer = m_TransferPool->acquire(length);
+void VulkanVertexBuffer::write(size_t offset, const void* ptr, size_t length) {
+    auto transferBuffer = m_TransferPool->acquireUnique(length);
     transferBuffer->copy(ptr, length, 0);
 
     vk::BufferCopy copy(0, offset, length);
-    m_Context->getSwapchainVulkan().addTransfer(transferBuffer->getBuffer(), *m_Buffer, copy);
+    m_Context->getSwapchainVulkan().addTransfer(std::move(transferBuffer), *m_Buffer, copy);
 }
 
 vk::Buffer VulkanVertexBuffer::getBuffer() const {

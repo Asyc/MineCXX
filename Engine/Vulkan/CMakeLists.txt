@@ -17,7 +17,7 @@ add_library(libvk
         include/engine/vulkan/render/swapchain/vulkan_image.hpp
         include/engine/vulkan/render/swapchain/vulkan_swapchain.hpp
         src/render/swapchain/vulkan_swapchain.cpp
-        src/render/buffer/vulkan_transfer_pool.cpp src/render/buffer/vulkan_vertex_buffer.cpp include/engine/vulkan/vulkan_resource.hpp src/vulkan_resource.cpp)
+        src/render/buffer/vulkan_transfer_pool.cpp src/render/buffer/vulkan_vertex_buffer.cpp include/engine/vulkan/vulkan_resource.hpp src/vulkan_resource.cpp include/engine/vulkan/render/buffer/vulkan_index_buffer.hpp src/render/buffer/vulkan_index_buffer.cpp)
 
 target_include_directories(libvk PUBLIC include)
 target_include_directories(libvk PRIVATE src)
@@ -34,3 +34,5 @@ add_executable(libvk_test ${TEST_SOURCES} include/engine/vulkan/render/swapchain
 add_test(NAME libvk_test COMMAND libvk_test)
 
 target_link_libraries(libvk_test PUBLIC gtest_main libvk)
+
+add_compile_definitions(VULKAN_HPP_NO_NODISCARD_WARNINGS)

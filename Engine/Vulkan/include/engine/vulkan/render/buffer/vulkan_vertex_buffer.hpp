@@ -17,7 +17,7 @@ class VulkanVertexBuffer : public VertexBuffer {
 public:
     VulkanVertexBuffer(vk::Device device, uint32_t memoryTypeIndex, size_t size, engine::render::vulkan::VulkanRenderContext* context, VulkanTransferPool* transferPool);
 
-    void write(size_t offset, void* ptr, size_t length) override;
+    void write(size_t offset, const void* ptr, size_t length) override;
 
     [[nodiscard]] vk::Buffer getBuffer() const;
 private:

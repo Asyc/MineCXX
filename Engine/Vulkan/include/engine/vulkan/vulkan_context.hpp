@@ -21,6 +21,7 @@ public:
     VulkanRenderContext(const Window& window, Swapchain::SwapchainMode modeHint);
 
     [[nodiscard]] std::unique_ptr<buffer::VertexBuffer> allocateVertexBuffer(size_t size) override;
+    [[nodiscard]] std::unique_ptr<buffer::IndexBuffer> allocateIndexBuffer(size_t size) override;
 
     [[nodiscard]] std::unique_ptr<RenderPipeline> createRenderPipeline(const File& file) const override;
 

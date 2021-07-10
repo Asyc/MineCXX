@@ -11,6 +11,7 @@ inline vk::PresentModeKHR mapSwapchainMode(Swapchain::SwapchainMode mode) {
         case Swapchain::SwapchainMode::TRIPLE_BUFFER:return vk::PresentModeKHR::eImmediate;
         case Swapchain::SwapchainMode::DOUBLE_BUFFER_VSYNC:
         case Swapchain::SwapchainMode::TRIPLE_BUFFER_VSYNC:return vk::PresentModeKHR::eFifo;
+        default: throw std::runtime_error("invalid swapchain mode");
     }
 }
 
@@ -139,8 +140,10 @@ void VulkanSwapchain::submitCommandBuffer(const command::IndirectCommandBuffer& 
 
 void VulkanSwapchain::onResize(uint32_t width, uint32_t height) {
     m_Owner.waitIdle();
+
     m_SwapchainExtent.width = width;
     m_SwapchainExtent.height = height;
+
     createSwapchain();
 
     m_CurrentFlight = 0;
@@ -157,16 +160,18 @@ void VulkanSwapchain::onResize(uint32_t width, uint32_t height) {
     }
 }
 
-void VulkanSwapchain::addTransfer(vk::Buffer src, vk::Buffer dst, vk::BufferCopy copy) {
+void VulkanSwapchain::addTransfer(render::buffer::vulkan::VulkanTransferBufferUnique src, vk::Buffer dst, vk::BufferCopy copy) {
     auto& transferFlight = m_TransferFlights[m_CurrentFlight];
     m_Owner.waitForFences(1, &*transferFlight.fence, VK_FALSE, UINT64_MAX);
+    transferFlight.releaseQueue.clear();
 
     if (transferFlight.empty) {
         transferFlight.commandBuffer->begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
         transferFlight.empty = false;
     }
 
-    transferFlight.commandBuffer->copyBuffer(src, dst, 1, &copy);
+    transferFlight.commandBuffer->copyBuffer(src->getBuffer(), dst, 1, &copy);
+    transferFlight.releaseQueue.emplace_back(std::move(src));
 }
 
 void VulkanSwapchain::processTransferCommandBuffer() {
@@ -175,6 +180,7 @@ void VulkanSwapchain::processTransferCommandBuffer() {
 
     m_Owner.waitForFences(1, &*transferFlight.fence, VK_FALSE, UINT64_MAX);
     m_Owner.resetFences(1, &*transferFlight.fence);
+    transferFlight.releaseQueue.clear();
 
     transferFlight.empty = true;
     transferFlight.commandBuffer->end();

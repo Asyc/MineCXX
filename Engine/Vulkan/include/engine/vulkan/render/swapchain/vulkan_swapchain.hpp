@@ -6,6 +6,7 @@
 #include <atomic>
 #include <vector>
 
+#include "engine/vulkan/render/buffer/vulkan_transfer_pool.hpp"
 #include "engine/vulkan/vulkan_queue.hpp"
 #include "vulkan_image.hpp"
 
@@ -23,7 +24,7 @@ public:
 
     void onResize(uint32_t width, uint32_t height) override;
 
-    void addTransfer(vk::Buffer src, vk::Buffer dst, vk::BufferCopy copy);
+    void addTransfer(render::buffer::vulkan::VulkanTransferBufferUnique src, vk::Buffer dst, vk::BufferCopy copy);
     void processTransferCommandBuffer();
 
     [[nodiscard]] SwapchainMode getSwapchainMode() const override;
@@ -69,11 +70,8 @@ private:
 
         vk::UniqueFence fence;
         vk::UniqueCommandBuffer commandBuffer;
-    };
 
-    struct FullBufferCopy {
-        vk::Buffer src, dst;
-        vk::BufferCopy region;
+        std::vector<render::buffer::vulkan::VulkanTransferBufferUnique> releaseQueue;
     };
 
     vk::UniqueCommandPool m_TransferCommandPool;
