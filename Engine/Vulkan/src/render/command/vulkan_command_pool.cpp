@@ -7,8 +7,9 @@
 
 namespace engine::render::command::vulkan {
 
-VulkanCommandPool::VulkanCommandPool(vk::Device device, uint32_t queueFamilyIndex, const render::vulkan::VulkanSwapchain* swapchain) : m_SwapchainHandle(swapchain) {
+VulkanCommandPool::VulkanCommandPool(vk::Device device, uint32_t queueFamilyIndex, bool transient, const render::vulkan::VulkanSwapchain* swapchain) : m_SwapchainHandle(swapchain) {
     vk::CommandPoolCreateInfo createInfo(vk::CommandPoolCreateFlagBits::eResetCommandBuffer, queueFamilyIndex);
+    if (transient) createInfo.flags |= vk::CommandPoolCreateFlagBits::eTransient;
     m_CommandPool = device.createCommandPoolUnique(createInfo);
 }
 
@@ -23,6 +24,10 @@ std::unique_ptr<CommandList> vulkan::VulkanCommandPool::allocateCommandList() {
 }
 std::unique_ptr<ImmutableCommandList> vulkan::VulkanCommandPool::allocateCommandListImmutable() {
     return std::make_unique<VulkanImmutableCommandList>(m_CommandPool.getOwner(), m_SwapchainHandle, *m_CommandPool);
+}
+
+vk::CommandPool VulkanCommandPool::getCommandPool() const {
+    return *m_CommandPool;
 }
 
 VulkanImmutableCommandPool::VulkanImmutableCommandPool(vk::Device device, uint32_t queueFamilyIndex, const render::vulkan::VulkanSwapchain* swapchain) : m_SwapchainHandle(swapchain) {

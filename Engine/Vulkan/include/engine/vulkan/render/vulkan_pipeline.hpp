@@ -17,7 +17,6 @@ class VulkanProgram : public Program {
 public:
     VulkanProgram(vk::Device device, const std::string_view& program);
 
-
     [[nodiscard]] const std::vector<vk::PipelineShaderStageCreateInfo>& getStages() const;
     [[nodiscard]] vk::PipelineLayout getPipelineLayout() const;
 
@@ -35,11 +34,14 @@ private:
 
 class VulkanRenderPipeline : public RenderPipeline {
 public:
-    VulkanRenderPipeline(vk::Device device, std::shared_ptr<VulkanProgram> program);
+    VulkanRenderPipeline(vk::Device device, vk::RenderPass renderPass, std::shared_ptr<VulkanProgram> program);
 
     [[nodiscard]] vk::Pipeline getPipeline() const;
 private:
+
     std::shared_ptr<VulkanProgram> m_Program;
+
+    vk::UniquePipeline m_Pipeline;
 };
 
 }

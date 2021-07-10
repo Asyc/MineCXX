@@ -48,7 +48,7 @@ struct Image {
 
 struct ImageFlight {
     explicit ImageFlight(vk::Device device);
-    void submitCommandBuffer(vk::Device device, vk::Queue queue, vk::CommandBuffer buffer) const;
+    void submitCommandBuffer(vk::Device device, vk::Queue queue, vk::CommandBuffer buffer, vk::Fence fence) const;
 
     Image* boundImage;
     vk::UniqueSemaphore imageReadySemaphore;

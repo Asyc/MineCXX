@@ -12,10 +12,12 @@ namespace engine::render {
 class Program {
 public:
     virtual ~Program() = default;
-protected:
+
     struct ProgramConfig {
         struct VulkanConfig{
             struct InputConfig {
+                std::string topology;
+
                 struct Buffer {
                     uint32_t binding;
                     uint32_t stride;
@@ -33,7 +35,6 @@ protected:
             } input;
 
             std::string vertexPath;
-            std::string topology;
 
             std::string fragmentPath;
         } vulkan;

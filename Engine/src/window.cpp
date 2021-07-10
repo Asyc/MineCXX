@@ -9,7 +9,7 @@ namespace engine {
 
 Window::Window(int32_t width, int32_t height, const std::string_view& title) {
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
     auto* window = glfwCreateWindow(width, height, title.data(), nullptr, nullptr);
     m_Window = WindowHandle(window, [](GLFWwindow* handle) { glfwDestroyWindow(handle); });
@@ -30,6 +30,12 @@ std::unique_ptr<render::RenderContext> Window::createRenderContext(render::Swapc
     } else {
         MCE_LOG_INFO("Selected display mode: [{}]", engine::render::Swapchain::toString(currentMode));
     }
+
+    glfwSetWindowUserPointer(m_Window.get(), ptr.get());
+    glfwSetWindowSizeCallback(m_Window.get(), [](GLFWwindow* handle, int width, int height){
+        auto* ref = reinterpret_cast<render::vulkan::VulkanRenderContext*>(glfwGetWindowUserPointer(handle));
+        ref->getSwapchain().onResize(width, height);
+    });
 
     return std::move(ptr);
 }

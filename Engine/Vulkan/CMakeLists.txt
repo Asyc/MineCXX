@@ -17,21 +17,19 @@ add_library(libvk
         include/engine/vulkan/render/swapchain/vulkan_image.hpp
         include/engine/vulkan/render/swapchain/vulkan_swapchain.hpp
         src/render/swapchain/vulkan_swapchain.cpp
-        )
+        src/render/buffer/vulkan_transfer_pool.cpp src/render/buffer/vulkan_vertex_buffer.cpp include/engine/vulkan/vulkan_resource.hpp src/vulkan_resource.cpp)
 
 target_include_directories(libvk PUBLIC include)
 target_include_directories(libvk PRIVATE src)
 
 target_link_libraries(libvk PUBLIC Vulkan::Vulkan libengine)
 
-add_subdirectory(${PROJECT_SOURCE_DIR}/vendors/spirv-cross ${PROJECT_SOURCE_DIR}/cmake-build-debug/vendors/spirv-cross)
-
-target_link_libraries(libvk PUBLIC spirv-cross-cpp)
+target_link_libraries(libvk PUBLIC SPIRV glslang spirv-cross-cpp)
 
 ## -- Testing -- ##
-set(TEST_SOURCES tests/program_test.cpp)
+set(TEST_SOURCES tests/program_test.cpp include/engine/vulkan/render/buffer/vulkan_vertex_buffer.hpp)
 
-add_executable(libvk_test ${TEST_SOURCES} include/engine/vulkan/render/swapchain/vulkan_swapchain.hpp)
+add_executable(libvk_test ${TEST_SOURCES} include/engine/vulkan/render/swapchain/vulkan_swapchain.hpp include/engine/vulkan/render/buffer/vulkan_transfer_pool.hpp)
 
 add_test(NAME libvk_test COMMAND libvk_test)
 

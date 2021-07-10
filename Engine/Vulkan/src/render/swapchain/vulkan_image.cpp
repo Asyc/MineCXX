@@ -82,10 +82,6 @@ Image::Image(vk::Device device,
 }
 
 Image::~Image() {
-    if (imageCompleteFence) {
-        wait();
-    }
-
     for (const auto& semaphore : semaphores)
         owner.destroy(semaphore);
 }
@@ -133,12 +129,12 @@ ImageFlight::ImageFlight(vk::Device device) : boundImage(nullptr), imageReadySem
 
 }
 
-void ImageFlight::submitCommandBuffer(vk::Device device, vk::Queue queue, vk::CommandBuffer buffer) const {
+void ImageFlight::submitCommandBuffer(vk::Device device, vk::Queue queue, vk::CommandBuffer buffer, vk::Fence fence) const {
     vk::Semaphore semaphore = boundImage->getSemaphore();
     vk::SubmitInfo submitInfo(0, nullptr, nullptr, 1, &buffer, 1, &semaphore);
 
     device.waitForFences(1, &*boundImage->clearScreenFence, VK_FALSE, UINT64_MAX);
-    queue.submit(1, &submitInfo, {});
+    queue.submit(1, &submitInfo, fence);
 }
 
 }   // namespace engine::render::vulkan

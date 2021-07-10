@@ -3,6 +3,7 @@
 
 #include "engine/render/swapchain.hpp"
 
+#include <atomic>
 #include <vector>
 
 #include "engine/vulkan/vulkan_queue.hpp"
@@ -20,6 +21,11 @@ public:
     void submitCommandBuffer(const command::DirectCommandBuffer& buffer) override;
     void submitCommandBuffer(const command::IndirectCommandBuffer& buffer) override;
 
+    void onResize(uint32_t width, uint32_t height) override;
+
+    void addTransfer(vk::Buffer src, vk::Buffer dst, vk::BufferCopy copy);
+    void processTransferCommandBuffer();
+
     [[nodiscard]] SwapchainMode getSwapchainMode() const override;
     [[nodiscard]] const std::set<SwapchainMode>& getSupportedSwapchainModes() const override;
 
@@ -30,6 +36,9 @@ public:
 
     [[nodiscard]] vk::RenderPass getRenderPass() const;
     [[nodiscard]] vk::Framebuffer getCurrentFrame() const;
+
+    [[nodiscard]] vk::Extent2D getExtent() const;
+
 private:
     void createSwapchain();
     void setupImage();
@@ -54,6 +63,22 @@ private:
     std::vector<Image> m_SwapchainImages;
     std::vector<ImageFlight> m_RenderFlights;
     size_t m_CurrentFlight;
+
+    struct TransferFlight {
+        std::atomic_bool empty{true};
+
+        vk::UniqueFence fence;
+        vk::UniqueCommandBuffer commandBuffer;
+    };
+
+    struct FullBufferCopy {
+        vk::Buffer src, dst;
+        vk::BufferCopy region;
+    };
+
+    vk::UniqueCommandPool m_TransferCommandPool;
+    std::vector<TransferFlight> m_TransferFlights;
+
 };
 
 }   // namespace engine::render::vulkan

@@ -27,12 +27,13 @@ Program::Program(const File& pipelineConfiguration) {
     document.Parse(json.c_str(), json.size());
 
     auto vulkan = document["vulkan"].GetObject();
-    programConfig.vulkan.topology = getString(vulkan, "topology");
     programConfig.vulkan.vertexPath = pipelineConfiguration.getParentPath() + '/' + getStringOptional(vulkan, "vertexPath", "vertex_shader.spv");
     programConfig.vulkan.fragmentPath = pipelineConfiguration.getParentPath() + '/' + getStringOptional(vulkan, "fragmentPath", "fragment_shader.spv");
 
     auto vulkanInput = vulkan["input"].GetObject();
     auto vulkanInputBuffers = vulkanInput["buffers"].GetArray();
+
+    programConfig.vulkan.input.topology = getString(vulkanInput, "topology");
 
     for (const auto& inputBuffer : vulkanInputBuffers) {
         auto object = inputBuffer.GetObject();

@@ -25,6 +25,8 @@ public:
     virtual void submitCommandBuffer(const command::DirectCommandBuffer& buffer) = 0;
     virtual void submitCommandBuffer(const command::IndirectCommandBuffer& buffer) = 0;
 
+    virtual void onResize(uint32_t width, uint32_t height) = 0;
+
     [[nodiscard]] virtual SwapchainMode getSwapchainMode() const = 0;
     [[nodiscard]] virtual const std::set<SwapchainMode>& getSupportedSwapchainModes() const = 0;
 

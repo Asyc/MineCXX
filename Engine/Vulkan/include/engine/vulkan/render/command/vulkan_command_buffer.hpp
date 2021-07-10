@@ -3,13 +3,16 @@
 
 #include "engine/render/command/command_buffer.hpp"
 #include "engine/render/pipeline.hpp"
+#include "engine/vulkan/vulkan_resource.hpp"
 #include "engine/vulkan/render/swapchain/vulkan_swapchain.hpp"
 
 #include <vulkan/vulkan.hpp>
 
 namespace engine::render::command::vulkan {
 
-class VulkanCommandBuffer : public virtual ICommandBuffer {
+using VulkanResource = engine::vulkan::VulkanResource;
+
+class VulkanCommandBuffer : public virtual ICommandBuffer, public virtual VulkanResource {
 public:
     void end() override;
 
@@ -18,19 +21,32 @@ public:
 
 class VulkanDrawableCommandBuffer : public virtual IDrawableCommandBuffer, public virtual VulkanCommandBuffer {
 public:
+    VulkanDrawableCommandBuffer(const render::vulkan::VulkanSwapchain* handle);
     void bindPipeline(const RenderPipeline& pipeline) override;
+    void bindVertexBuffer(const buffer::VertexBuffer& buffer) override;
+    void draw(uint32_t instanceCount, uint32_t vertexCount) override;
+private:
+    const render::vulkan::VulkanSwapchain* m_Handle;
 };
 
-class VulkanSwitchingCommandBuffer : public virtual VulkanCommandBuffer {
+class IVulkanSubmittableCommandBuffer : public virtual ISubmittableCommandBuffer {
 public:
+    [[nodiscard]] virtual vk::Fence getFence() const = 0;
+};
 
+class VulkanSwitchingCommandBuffer : public virtual VulkanCommandBuffer, public virtual IVulkanSubmittableCommandBuffer {
+public:
     VulkanSwitchingCommandBuffer(vk::Device device, const render::vulkan::VulkanSwapchain* swapchain, vk::CommandPool pool, vk::CommandBufferLevel level);
+    ~VulkanSwitchingCommandBuffer() override;
 
     [[nodiscard]] vk::CommandBuffer getCommandBufferHandle() const override;
+
+    [[nodiscard]] vk::Fence getFence() const override;
 protected:
     const render::vulkan::VulkanSwapchain* m_SwapchainHandle;
-    std::vector<vk::UniqueCommandBuffer> m_Buffers;
 
+    std::vector<vk::UniqueCommandBuffer> m_Buffers;
+    std::vector<vk::UniqueFence> m_Fences;
 };
 
 class VulkanCommandList : public virtual CommandList, public virtual VulkanDrawableCommandBuffer, public virtual VulkanSwitchingCommandBuffer {
@@ -52,6 +68,7 @@ private:
     vk::UniqueCommandBuffer m_CommandBuffer;
 };
 
+
 class VulkanDirectCommandBuffer : public virtual DirectCommandBuffer, public virtual VulkanDrawableCommandBuffer, public virtual VulkanSwitchingCommandBuffer {
 public:
     VulkanDirectCommandBuffer(vk::Device device, const render::vulkan::VulkanSwapchain* swapchain, vk::CommandPool pool);
@@ -64,6 +81,9 @@ public:
     VulkanIndirectCommandBuffer(vk::Device device, const render::vulkan::VulkanSwapchain* swapchain, vk::CommandPool pool);
     void begin() override;
     void end() override;
+
+    void accept(const CommandList& commandList) override;
+    void accept(const ImmutableCommandList& commandList) override;
 };
 
 }   //namespace engine::render::command::vulkan

@@ -5,6 +5,7 @@
 
 #include "engine/file.hpp"
 
+#include "buffer/vertex_buffer.hpp"
 #include "command/command_pool.hpp"
 
 #include "pipeline.hpp"
@@ -15,6 +16,8 @@ namespace engine::render {
 class RenderContext {
 public:
     virtual ~RenderContext() = default;
+
+    [[nodiscard]] virtual std::unique_ptr<buffer::VertexBuffer> allocateVertexBuffer(size_t size) = 0;
 
     [[nodiscard]] virtual std::unique_ptr<RenderPipeline> createRenderPipeline(const File& file) const = 0;
 

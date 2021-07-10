@@ -12,7 +12,7 @@ set(SOURCES
         src/window.cpp
         src/log.cpp
         src/log_internal.hpp
-        include/engine/render/swapchain.hpp include/engine/render/pipeline.hpp src/pipeline.cpp include/engine/file.hpp src/file.cpp include/engine/render/command/command_pool.hpp include/engine/render/command/command_buffer.hpp)
+        include/engine/render/swapchain.hpp include/engine/render/pipeline.hpp src/pipeline.cpp include/engine/file.hpp src/file.cpp include/engine/render/command/command_pool.hpp include/engine/render/command/command_buffer.hpp include/engine/render/buffer/vertex_buffer.hpp)
 
 add_library(libengine STATIC ${HEADERS} ${SOURCES})
 

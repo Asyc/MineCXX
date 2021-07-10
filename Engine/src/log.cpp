@@ -52,6 +52,7 @@ void terminateLogging() {
     g_LogFile.reset();
 
     spdlog::drop_all();
+    spdlog::shutdown();
 }
 
 }   // namespace engine::logging

@@ -1,13 +1,13 @@
 #include "engine/vulkan/render/vulkan_pipeline.hpp"
 
+#include <map>
+#include <optional>
+
+#include <glslang/Include/glslang_c_interface.h>
 #include <spirv_cross.hpp>
 #include <spirv_cpp.hpp>
 #include <spirv_glsl.hpp>
-
 #include <vulkan/vulkan.hpp>
-
-#include <map>
-#include <optional>
 
 #include "engine/log.hpp"
 
@@ -97,7 +97,67 @@ inline void parseShader(const std::vector<char>& shaderBuffer,
         }
     }
 
-    pushConstantRangesOut.emplace_back(flag, lowestAccessed, highestAccessed);
+    if (lowestAccessed != -1 && highestAccessed != -1) {
+        pushConstantRangesOut.emplace_back(flag, lowestAccessed, highestAccessed);
+    }
+}
+
+template<glslang_stage_t STAGE>
+std::vector<char> createSPIRV(std::string src) {
+    const glslang_input_t input{
+        GLSLANG_SOURCE_GLSL,
+        STAGE,
+        GLSLANG_CLIENT_VULKAN,
+        GLSLANG_TARGET_VULKAN_1_2,
+        GLSLANG_TARGET_SPV,
+        GLSLANG_TARGET_SPV_1_5,
+        src.data(),
+        100,
+        GLSLANG_CORE_PROFILE,
+        false,
+        false,
+        GLSLANG_MSG_DEFAULT_BIT,
+        (glslang_resource_s*)calloc(1, sizeof(glslang_resource_s))
+    };
+
+
+    auto status = glslang_initialize_process();
+    auto* shader = glslang_shader_create(&input);
+
+    if (!glslang_shader_preprocess(shader, &input)) {
+        LOG_ERROR("{}\n\n{}", glslang_shader_get_info_log(shader), glslang_shader_get_info_debug_log(shader));
+        return {};
+    }
+
+    if (!glslang_shader_parse(shader, &input)) {
+        LOG_ERROR("{}\n\n{}", glslang_shader_get_info_log(shader), glslang_shader_get_info_debug_log(shader));
+        return {};
+    }
+
+    glslang_program_t* program = glslang_program_create();
+    glslang_program_add_shader(program, shader);
+
+    if (!glslang_program_link(program, GLSLANG_MSG_SPV_RULES_BIT | GLSLANG_MSG_VULKAN_RULES_BIT)) {
+        LOG_ERROR("{}\n\n{}", glslang_shader_get_info_log(shader), glslang_shader_get_info_debug_log(shader));
+        return {};
+    }
+
+    glslang_program_SPIRV_generate(program, input.stage);
+
+    if (glslang_program_SPIRV_get_messages(program)) {
+        printf("%s", glslang_program_SPIRV_get_messages(program));
+    }
+
+    glslang_shader_delete(shader);
+
+    auto* ptr = glslang_program_SPIRV_get_ptr(program);
+    size_t size = glslang_program_SPIRV_get_size(program);
+
+    std::vector<char> buffer(size * sizeof(unsigned int));
+    memcpy(buffer.data(), ptr, buffer.size());
+
+    glslang_program_delete(program);
+    return std::move(buffer);
 }
 
 VulkanProgram::VulkanProgram(vk::Device device, const std::string_view& program) : Program(File(std::string(program) + "/config.json")) {
@@ -109,8 +169,18 @@ VulkanProgram::VulkanProgram(vk::Device device, const std::string_view& program)
         m_InputAttributes.emplace_back(inputAttribute.location, inputAttribute.binding, mapType(inputAttribute.type), inputAttribute.offset);
     }
 
+    File vertexFile(programConfig.vulkan.vertexPath);
+    File fragmentFile(programConfig.vulkan.vertexPath);
+#ifdef MCE_DBG
+    File vertexLive(programConfig.vulkan.vertexPath.substr(0, programConfig.vulkan.vertexPath.size() - 4));
+    File fragmentLive(programConfig.vulkan.fragmentPath.substr(0, programConfig.vulkan.fragmentPath.size() - 4));
+
+    auto vertexSPV = vertexLive.exists() ? createSPIRV<GLSLANG_STAGE_VERTEX>(vertexLive.readFileText()) : vertexFile.readFileBinary();
+    auto fragmentSPV = fragmentLive.exists() ? createSPIRV<GLSLANG_STAGE_FRAGMENT>(fragmentLive.readFileText()) : fragmentFile.readFileBinary();
+#else
     auto vertexSPV = File(programConfig.vulkan.vertexPath).readFileBinary();
     auto fragmentSPV = File(programConfig.vulkan.fragmentPath).readFileBinary();
+#endif
 
     vk::ShaderModuleCreateInfo vertexModuleCreateInfo({}, vertexSPV.size(), reinterpret_cast<const uint32_t*>(vertexSPV.data()));
     m_Vertex = device.createShaderModuleUnique(vertexModuleCreateInfo);

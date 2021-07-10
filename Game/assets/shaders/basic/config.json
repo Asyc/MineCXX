@@ -1,0 +1,11 @@
+{
+  "vulkan": {
+    "vertexPath": "shader.vert.spv",
+    "fragmentPath": "shader.frag.spv",
+    "input": {
+      "topology": "ePointList",
+      "buffers": [{"binding": 0,"stride": 12}],
+      "attributes": [{"binding": 0,"location": 0,"type": "float3","offset": 0}]
+    }
+  }
+}

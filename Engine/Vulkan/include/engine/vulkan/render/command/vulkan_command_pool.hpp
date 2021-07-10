@@ -11,13 +11,15 @@ namespace engine::render::command::vulkan {
 
 class VulkanCommandPool : public CommandPool {
 public:
-    VulkanCommandPool(vk::Device device, uint32_t queueFamilyIndex, const render::vulkan::VulkanSwapchain* swapchain);
+    VulkanCommandPool(vk::Device device, uint32_t queueFamilyIndex, bool transient, const render::vulkan::VulkanSwapchain* swapchain);
 
     std::unique_ptr<DirectCommandBuffer> allocateDirectCommandBuffer() override;
     std::unique_ptr<IndirectCommandBuffer> allocateIndirectCommandBuffer() override;
 
     std::unique_ptr<CommandList> allocateCommandList() override;
     std::unique_ptr<ImmutableCommandList> allocateCommandListImmutable() override;
+
+    [[nodiscard]] vk::CommandPool getCommandPool() const;
 private:
     vk::UniqueCommandPool m_CommandPool;
 
