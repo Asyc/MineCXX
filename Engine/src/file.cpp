@@ -7,6 +7,11 @@ namespace engine {
 
 File::File(std::string path) : m_Path(std::move(path)) {}
 
+void File::deleteFile() {
+    if (!std::filesystem::remove(m_Path))
+        throw std::runtime_error("failed to delete file");
+}
+
 std::vector<char> File::readFileBinary() const {
     std::ifstream in(m_Path, std::ios_base::binary | std::ios_base::ate);
     auto pos = in.tellg();

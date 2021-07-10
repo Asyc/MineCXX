@@ -12,6 +12,8 @@ class File {
 public:
     File(std::string path);
 
+    void deleteFile();
+
     [[nodiscard]] std::vector<char> readFileBinary() const;
     [[nodiscard]] std::string readFileText() const;
 

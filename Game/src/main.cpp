@@ -2,8 +2,6 @@
 #include "engine/file.hpp"
 #include "engine/window.hpp"
 
-#include <chrono>
-
 using engine::Window;
 using engine::render::Swapchain;
 
@@ -20,12 +18,13 @@ int main() {
     auto pipeline = context->createRenderPipeline(engine::File("assets/shaders/basic"));
     auto pool = context->createCommandPool();
 
-    std::array<Vertex, 3> vertices{
+    std::array<Vertex, 4> vertices{
+        Vertex{-0.5f, 0.5f, 0.0f},
         Vertex{-0.5f, -0.5f, 0.0f},
-        Vertex{ 0.0f,  0.5f, 0.0f},
-        Vertex{ 0.5f, -0.5f, 0.0f}
+        Vertex{ 0.5f, -0.5f, 0.0f},
+        Vertex{0.5f, 0.5f, 0.0f}
     };
-    std::array<uint32_t, 3> indices{0, 1, 2};
+    std::array<uint32_t, 6> indices{0, 1, 2, 0, 3, 2};
 
     auto vertexBuffer = context->allocateVertexBuffer(vertices.size() * sizeof(Vertex));
     vertexBuffer->write(0, vertices.data(), vertices.size() * sizeof(Vertex));
@@ -38,7 +37,7 @@ int main() {
     render->bindPipeline(*pipeline);
     render->bindVertexBuffer(*vertexBuffer);
     render->bindIndexBuffer(*indexBuffer);
-    render->drawIndexed(1, 3);
+    render->drawIndexed(1, indices.size());
     render->end();
 
     auto buffer = pool->allocateIndirectCommandBuffer();

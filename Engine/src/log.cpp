@@ -8,6 +8,7 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
+#include "engine/file.hpp"
 #include "log_internal.hpp"
 
 namespace engine::logging {
@@ -37,10 +38,14 @@ std::shared_ptr<spdlog::logger> createLogger(const std::string_view& name) {
 }
 
 void setupLogging() {
+    File file("logs/latest.log");
+    if (file.exists()) file.deleteFile();
+
     spdlog::init_thread_pool(8192, 2);
     spdlog::flush_every(std::chrono::seconds(1));
 
     g_Stdout = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+
     g_LogFile = std::make_shared<spdlog::sinks::basic_file_sink_mt>("logs/latest.log");
 
     g_EngineLogger = createLogger("Engine");

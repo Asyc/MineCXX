@@ -17,13 +17,13 @@ vk::CommandBuffer VulkanImmutableCommandList::getCommandBufferHandle() const {
 }
 
 void VulkanDrawableCommandBuffer::bindPipeline(const RenderPipeline& pipeline) {
-    const auto* vkPipeline = reinterpret_cast<const render::vulkan::VulkanRenderPipeline*>(&pipeline);
+    const auto* vkPipeline = dynamic_cast<const render::vulkan::VulkanRenderPipeline*>(&pipeline);
     getCommandBufferHandle().bindPipeline(vk::PipelineBindPoint::eGraphics, vkPipeline->getPipeline());
 
     vk::Rect2D scissor({}, m_Handle->getExtent());
     getCommandBufferHandle().setScissor(0, 1, &scissor);
 
-    vk::Viewport viewport(0.0f, 0.0f, static_cast<float>(scissor.extent.width), static_cast<float>(scissor.extent.height), 0.0f, 1.0f);
+    vk::Viewport viewport(0.0f, static_cast<float>(scissor.extent.height), static_cast<float>(scissor.extent.width), static_cast<float>(scissor.extent.height) * -1.0f, 0.0f, 1.0f);
     getCommandBufferHandle().setViewport(0, 1, &viewport);
 }
 

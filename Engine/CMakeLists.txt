@@ -2,9 +2,16 @@ find_package(Vulkan)
 
 set(HEADERS
         include/engine/engine.hpp
+        include/engine/file.hpp
         include/engine/window.hpp
         include/engine/log.hpp
         include/engine/render/render_context.hpp
+        include/engine/render/swapchain.hpp
+        include/engine/render/pipeline.hpp
+        include/engine/render/command/command_pool.hpp
+        include/engine/render/command/command_buffer.hpp
+        include/engine/render/buffer/vertex_buffer.hpp
+        include/engine/render/buffer/index_buffer.hpp
         )
 
 set(SOURCES
@@ -12,7 +19,9 @@ set(SOURCES
         src/window.cpp
         src/log.cpp
         src/log_internal.hpp
-        include/engine/render/swapchain.hpp include/engine/render/pipeline.hpp src/pipeline.cpp include/engine/file.hpp src/file.cpp include/engine/render/command/command_pool.hpp include/engine/render/command/command_buffer.hpp include/engine/render/buffer/vertex_buffer.hpp include/engine/render/buffer/index_buffer.hpp)
+        src/pipeline.cpp
+        src/file.cpp
+        )
 
 add_library(libengine STATIC ${HEADERS} ${SOURCES})
 
