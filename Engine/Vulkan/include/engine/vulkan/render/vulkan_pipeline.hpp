@@ -44,6 +44,6 @@ private:
     vk::UniquePipeline m_Pipeline;
 };
 
-}
+}   // namespace engine::render::vulkan
 
 #endif //MINECRAFTCXX_CLIENT_ENGINE_VULKAN_INCLUDE_ENGINE_VULKAN_RENDER_VULKAN_PIPELINE_HPP_

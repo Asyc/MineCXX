@@ -1,7 +1,6 @@
 #include "engine/file.hpp"
 
 #include <fstream>
-
 #include <filesystem>
 
 namespace engine {
@@ -52,4 +51,4 @@ const std::string& File::getParentPath() const {
     return *m_ParentPath;
 }
 
-}
+}   // namespace engine

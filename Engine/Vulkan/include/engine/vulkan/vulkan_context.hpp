@@ -28,18 +28,11 @@ public:
     [[nodiscard]] std::unique_ptr<command::CommandPool> createCommandPool() const override;
 
     [[nodiscard]] command::CommandPool& getThreadCommandPool() const;
-    [[nodiscard]] command::vulkan::VulkanCommandPool& getThreadCommandPoolVulkan() const;
-
-    [[nodiscard]] vk::CommandBuffer getThreadTransferBuffer();
 
     [[nodiscard]] Swapchain& getSwapchain() override;
     [[nodiscard]] const Swapchain& getSwapchain() const override;
 
     [[nodiscard]] VulkanSwapchain& getSwapchainVulkan();
-
-    vk::Instance getInstance() const;
-    vk::PhysicalDevice getPhysicalDevice() const;
-    vk::Device getDevice() const;
 private:
     vk::UniqueInstance m_Instance;
     vk::UniqueSurfaceKHR m_Surface;
@@ -54,12 +47,9 @@ private:
 
     std::unique_ptr<buffer::vulkan::VulkanTransferPool> m_TransferPool;
 
-
-
-
     static thread_local std::unordered_map<const VulkanRenderContext*, std::unique_ptr<command::vulkan::VulkanCommandPool>> s_ThreadCommandPoolMap;
 };
 
-}
+}   // namespace engine::render::vulkan
 
 #endif //MINECRAFTCXX_CLIENT_ENGINE_VULKAN_INCLUDE_ENGINE_VULKAN_VULKAN_CONTEXT_HPP_

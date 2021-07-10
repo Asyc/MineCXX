@@ -28,4 +28,4 @@ void VulkanResource::clearConsumers() {
     m_Consumers.clear();
 }
 
-}
+}   // namespace engine::vulkan

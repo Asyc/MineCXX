@@ -50,6 +50,6 @@ protected:
     RenderPipeline() = default;
 };
 
-}
+}   // namespace engine::render
 
 #endif //MINECRAFTCXX_CLIENT_ENGINE_INCLUDE_ENGINE_RENDER_PIPELINE_HPP_

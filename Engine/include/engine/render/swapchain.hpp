@@ -58,6 +58,6 @@ protected:
     Swapchain() = default;
 };
 
-}
+}   // namespace engine::render
 
 #endif //MINECRAFTCXX_CLIENT_ENGINE_INCLUDE_ENGINE_RENDER_SWAPCHAIN_HPP_

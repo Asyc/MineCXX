@@ -22,6 +22,6 @@ struct QueueFamilyTable {
     std::optional<QueueFamilyEntry> presentFamily;
 };
 
-}
+}   // namespace engine::render::vulkan::queue
 
 #endif //MINECRAFTCXX_CLIENT_ENGINE_VULKAN_INCLUDE_ENGINE_VULKAN_VULKAN_QUEUE_HPP_

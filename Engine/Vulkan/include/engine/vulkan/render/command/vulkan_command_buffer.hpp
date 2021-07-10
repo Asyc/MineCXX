@@ -21,7 +21,7 @@ public:
 
 class VulkanDrawableCommandBuffer : public virtual IDrawableCommandBuffer, public virtual VulkanCommandBuffer {
 public:
-    VulkanDrawableCommandBuffer(const render::vulkan::VulkanSwapchain* handle);
+    explicit VulkanDrawableCommandBuffer(const render::vulkan::VulkanSwapchain* handle);
 
     void bindPipeline(const RenderPipeline& pipeline) override;
 

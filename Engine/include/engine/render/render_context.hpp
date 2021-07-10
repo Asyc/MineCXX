@@ -31,6 +31,6 @@ protected:
     RenderContext() = default;
 };
 
-}
+}   // namespace engine::render
 
 #endif //MINECRAFTCXX_CLIENT_ENGINE_INCLUDE_ENGINE_RENDER_RENDER_CONTEXT_HPP_

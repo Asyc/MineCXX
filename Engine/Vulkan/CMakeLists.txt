@@ -3,7 +3,6 @@ find_package(Vulkan REQUIRED)
 set(BINARY libvk)
 
 add_library(libvk
-        src/vkr.cpp
         include/engine/vulkan/vulkan_context.hpp
         src/vulkan_context.cpp
         include/engine/vulkan/vulkan_queue.hpp

@@ -9,7 +9,7 @@
 
 namespace engine::render::vulkan {
 class VulkanRenderContext;
-}
+}   // namespace engine::render::vulkan
 
 namespace engine::render::buffer::vulkan {
 

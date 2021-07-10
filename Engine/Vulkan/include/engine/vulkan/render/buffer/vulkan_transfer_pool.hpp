@@ -81,6 +81,6 @@ private:
     VulkanTransferBuffer* m_Buffer;
 };
 
-}
+}   // namespace engine::render::buffer::vulkan
 
 #endif //MINECRAFTCXX_CLIENT_ENGINE_VULKAN_INCLUDE_ENGINE_VULKAN_RENDER_BUFFER_VULKAN_TRANSFER_POOL_HPP_

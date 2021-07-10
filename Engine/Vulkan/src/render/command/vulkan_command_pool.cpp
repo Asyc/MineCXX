@@ -1,8 +1,5 @@
 #include "engine/vulkan/render/command/vulkan_command_pool.hpp"
 
-#include <vulkan/vulkan.hpp>
-
-#include "engine/render/pipeline.hpp"
 #include "engine/vulkan/render/command/vulkan_command_buffer.hpp"
 
 namespace engine::render::command::vulkan {

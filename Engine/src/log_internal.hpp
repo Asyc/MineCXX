@@ -11,6 +11,6 @@ extern spdlog::sink_ptr g_LogFile;
 
 void setupLogging();
 void terminateLogging();
-}
+}   // namespace engine::logging
 
 #endif //MINECRAFTCXX_CLIENT_ENGINE_SRC_LOG_INTERNAL_HPP_
