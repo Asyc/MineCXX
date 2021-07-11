@@ -47,7 +47,7 @@ private:
     vk::Device m_Owner;
     uint32_t m_MemoryTypeIndex;
 
-    std::vector<VulkanTransferBuffer> m_Buffers;
+    std::list<VulkanTransferBuffer> m_Buffers;
     std::deque<VulkanTransferBuffer*> m_Available;
 
     std::mutex m_Mutex;
@@ -77,8 +77,8 @@ public:
         return m_Buffer;
     }
 private:
-    VulkanTransferPool* m_Owner;
-    VulkanTransferBuffer* m_Buffer;
+    VulkanTransferPool* m_Owner{};
+    VulkanTransferBuffer* m_Buffer{};
 };
 
 }   // namespace engine::render::buffer::vulkan

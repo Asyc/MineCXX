@@ -7,6 +7,7 @@
 #include <string_view>
 #include <tuple>
 
+
 #include "render/render_context.hpp"
 #include "render/swapchain.hpp"
 
@@ -37,6 +38,8 @@ public:
     static void pollEvents();
 private:
     WindowHandle m_Window;
+
+
 };
 
 }   // namespace window

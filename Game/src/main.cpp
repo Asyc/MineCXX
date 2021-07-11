@@ -42,6 +42,8 @@ int main() {
 
     auto buffer = pool->allocateIndirectCommandBuffer();
 
+    auto texture = context->createImage(engine::File(R"(C:\Users\Asyc\Documents\backup\pic.jpg)"));
+
     while (!window.shouldClose()) {
         Window::pollEvents();
 

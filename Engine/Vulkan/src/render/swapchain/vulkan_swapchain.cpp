@@ -171,6 +171,39 @@ void VulkanSwapchain::addTransfer(render::buffer::vulkan::VulkanTransferBufferUn
     }
 
     transferFlight.commandBuffer->copyBuffer(src->getBuffer(), dst, 1, &copy);
+    transferFlight.releaseQueue.push_back(std::move(src));
+}
+
+void VulkanSwapchain::addTransferImage(render::buffer::vulkan::VulkanTransferBufferUnique src, vk::Image dst, vk::BufferImageCopy copy) {
+    auto& transferFlight = m_TransferFlights[m_CurrentFlight];
+    m_Owner.waitForFences(1, &*transferFlight.fence, VK_FALSE, UINT64_MAX);
+    transferFlight.releaseQueue.clear();
+
+    if (transferFlight.empty) {
+        transferFlight.commandBuffer->begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
+        transferFlight.empty = false;
+    }
+
+    vk::ImageMemoryBarrier barrier(
+        {},
+        vk::AccessFlagBits::eTransferWrite,
+        vk::ImageLayout::eUndefined,
+        vk::ImageLayout::eTransferDstOptimal,
+        {},
+        {},
+        dst,
+        vk::ImageSubresourceRange{vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}
+    );
+
+    transferFlight.commandBuffer->pipelineBarrier(vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eTransfer, {}, {}, {}, {}, {}, 1, &barrier);
+    transferFlight.commandBuffer->copyBufferToImage(src->getBuffer(), dst, vk::ImageLayout::eTransferDstOptimal, 1, &copy);
+
+    barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+    barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+    barrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
+    barrier.newLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+    transferFlight.commandBuffer->pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, {}, {}, {}, {}, {}, 1, &barrier);
+
     transferFlight.releaseQueue.emplace_back(std::move(src));
 }
 

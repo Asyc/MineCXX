@@ -44,12 +44,20 @@ VulkanTransferPool::VulkanTransferPool(vk::Device owner, uint32_t memoryTypeInde
 VulkanTransferBuffer* VulkanTransferPool::acquire(size_t minimumSize) {
     std::unique_lock<std::mutex> lock(m_Mutex);
 
-    for (VulkanTransferBuffer* element : m_Available) {
-        if (element->getSize() >= minimumSize) return element;
+    auto it = m_Available.begin();
+    while (it != m_Available.end()) {
+        VulkanTransferBuffer* element = it.operator*();
+
+        if (element->getSize() >= minimumSize) {
+            m_Available.erase(it);
+            return element;
+        }
+
+        it++;
     }
 
-    auto& element = m_Buffers.emplace_back(m_Owner, m_MemoryTypeIndex, minimumSize);
-    return &element;
+    auto& ref = m_Buffers.emplace_back(m_Owner, m_MemoryTypeIndex, minimumSize);
+    return &ref;
 }
 
 
@@ -59,13 +67,17 @@ void VulkanTransferPool::release(VulkanTransferBuffer* element) {
 }
 
 VulkanTransferBufferUnique VulkanTransferPool::acquireUnique(size_t minimumSize) {
-    return {this, acquire(minimumSize)};
+    auto* acquired = acquire(minimumSize);
+    return {this, acquired};
 }
 
-VulkanTransferBufferUnique::VulkanTransferBufferUnique(VulkanTransferPool* owner, VulkanTransferBuffer* buffer) : m_Owner(owner), m_Buffer(buffer) {}
+VulkanTransferBufferUnique::VulkanTransferBufferUnique(VulkanTransferPool* owner, VulkanTransferBuffer* buffer) : m_Owner(owner), m_Buffer(buffer) {
+
+}
 
 VulkanTransferBufferUnique::VulkanTransferBufferUnique(VulkanTransferBufferUnique&& rhs) noexcept : m_Owner(nullptr), m_Buffer(nullptr) {
-    operator=(std::move(rhs));
+    std::swap(m_Owner, rhs.m_Owner);
+    std::swap(m_Buffer, rhs.m_Buffer);
 }
 
 VulkanTransferBufferUnique::~VulkanTransferBufferUnique() {

@@ -21,11 +21,11 @@ add_library(libvk
         src/render/buffer/vulkan_vertex_buffer.cpp include/engine/vulkan/vulkan_resource.hpp
         src/vulkan_resource.cpp include/engine/vulkan/render/buffer/vulkan_index_buffer.hpp
         src/render/buffer/vulkan_index_buffer.cpp
-        )
+        include/engine/vulkan/render/buffer/vulkan_image.hpp src/render/buffer/vulkan_image.cpp)
 
 target_include_directories(libvk PUBLIC include)
 target_include_directories(libvk PRIVATE src)
 
-target_link_libraries(libvk PUBLIC Vulkan::Vulkan SPIRV glslang spirv-cross-cpp libengine)
+target_link_libraries(libvk PUBLIC Vulkan::Vulkan SPIRV glslang spirv-cross-cpp stb libengine)
 
 add_compile_definitions(VULKAN_HPP_NO_NODISCARD_WARNINGS)

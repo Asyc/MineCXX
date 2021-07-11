@@ -20,6 +20,8 @@ class VulkanRenderContext : public render::RenderContext {
 public:
     VulkanRenderContext(const Window& window, Swapchain::SwapchainMode modeHint);
 
+    std::unique_ptr<buffer::Image> createImage(const File& path) override;
+
     [[nodiscard]] std::unique_ptr<buffer::VertexBuffer> allocateVertexBuffer(size_t size) override;
     [[nodiscard]] std::unique_ptr<buffer::IndexBuffer> allocateIndexBuffer(size_t size) override;
 
@@ -31,6 +33,8 @@ public:
 
     [[nodiscard]] Swapchain& getSwapchain() override;
     [[nodiscard]] const Swapchain& getSwapchain() const override;
+
+    void mouseButtonCallback(gui::input::MouseButton button, gui::input::MouseButtonAction action, double x, double y) override;
 
     [[nodiscard]] VulkanSwapchain& getSwapchainVulkan();
 private:

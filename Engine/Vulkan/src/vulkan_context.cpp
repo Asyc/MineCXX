@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "engine/log.hpp"
+#include "engine/vulkan/render/buffer/vulkan_image.hpp"
 #include "engine/vulkan/render/buffer/vulkan_index_buffer.hpp"
 #include "engine/vulkan/render/buffer/vulkan_vertex_buffer.hpp"
 #include "engine/vulkan/render/command/vulkan_command_pool.hpp"
@@ -121,6 +122,10 @@ VulkanRenderContext::VulkanRenderContext(const Window& window, Swapchain::Swapch
 
 }
 
+std::unique_ptr<buffer::Image> VulkanRenderContext::createImage(const File& path) {
+    return std::make_unique<buffer::vulkan::VulkanImage>(*m_Device, m_LocalMemoryTypeIndex, this, m_TransferPool.get(), path);
+}
+
 std::unique_ptr<command::CommandPool> VulkanRenderContext::createCommandPool() const {
     return std::make_unique<render::command::vulkan::VulkanCommandPool>(*m_Device, m_QueueTable.graphicsFamily->index, false, m_Swapchain.get());
 }
@@ -150,6 +155,10 @@ Swapchain& VulkanRenderContext::getSwapchain() {
 }
 const Swapchain& VulkanRenderContext::getSwapchain() const {
     return *m_Swapchain;
+}
+
+void VulkanRenderContext::mouseButtonCallback(gui::input::MouseButton button, gui::input::MouseButtonAction action, double x, double y) {
+    LOG_INFO("Button: {}, Action: {}, [{},{}]", button, action, x, y);
 }
 
 VulkanSwapchain& VulkanRenderContext::getSwapchainVulkan() {

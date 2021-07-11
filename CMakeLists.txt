@@ -10,6 +10,9 @@ add_subdirectory(vendors/glslang)
 add_library(rapidjson INTERFACE)
 target_include_directories(rapidjson INTERFACE vendors/rapidjson/include)
 
+add_library(stb INTERFACE)
+target_include_directories(stb INTERFACE vendors/stb)
+
 add_subdirectory(vendors/googletest)
 
 add_subdirectory(Engine)

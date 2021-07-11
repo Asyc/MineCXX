@@ -6,6 +6,7 @@
 #include <atomic>
 #include <vector>
 
+#include "engine/vulkan/render/buffer/vulkan_image.hpp"
 #include "engine/vulkan/render/buffer/vulkan_transfer_pool.hpp"
 #include "engine/vulkan/vulkan_queue.hpp"
 #include "vulkan_image.hpp"
@@ -25,6 +26,7 @@ public:
     void onResize(uint32_t width, uint32_t height) override;
 
     void addTransfer(render::buffer::vulkan::VulkanTransferBufferUnique src, vk::Buffer dst, vk::BufferCopy copy);
+    void addTransferImage(render::buffer::vulkan::VulkanTransferBufferUnique src, vk::Image dst, vk::BufferImageCopy copy);
     void processTransferCommandBuffer();
 
     [[nodiscard]] SwapchainMode getSwapchainMode() const override;

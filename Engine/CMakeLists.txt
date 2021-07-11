@@ -12,7 +12,7 @@ set(HEADERS
         include/engine/render/command/command_buffer.hpp
         include/engine/render/buffer/vertex_buffer.hpp
         include/engine/render/buffer/index_buffer.hpp
-        )
+        include/engine/gui/gui.hpp include/engine/gui/element/element.hpp include/engine/gui/input.hpp include/engine/render/buffer/image.hpp)
 
 set(SOURCES
         src/engine.cpp
@@ -21,7 +21,7 @@ set(SOURCES
         src/log_internal.hpp
         src/pipeline.cpp
         src/file.cpp
-        )
+        src/gui/gui.cpp)
 
 add_library(libengine STATIC ${HEADERS} ${SOURCES})
 
