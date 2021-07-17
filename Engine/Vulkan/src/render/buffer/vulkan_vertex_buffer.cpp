@@ -1,36 +1,37 @@
 #include "engine/vulkan/render/buffer/vulkan_vertex_buffer.hpp"
 
+#include <vulkan/vulkan.h>
+#include <vk_mem_alloc.h>
+
 #include "engine/vulkan/vulkan_context.hpp"
 
-namespace engine::render::buffer::vulkan {
+namespace engine::vulkan::render::buffer {
 
-VulkanVertexBuffer::VulkanVertexBuffer(vk::Device device, uint32_t memoryTypeIndex, size_t size, engine::render::vulkan::VulkanRenderContext* context, VulkanTransferPool* transferPool) : m_Context(context), m_TransferPool(transferPool) {
-    vk::BufferCreateInfo bufferCreateInfo(
+VulkanVertexBuffer::VulkanVertexBuffer(VulkanTransferManager* transferManager, VmaAllocator allocator, size_t size) : m_TransferManager(transferManager) {
+    VkBufferCreateInfo bufferCreateInfo = vk::BufferCreateInfo(
         {},
         size,
         vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst,
         vk::SharingMode::eExclusive
     );
-    m_Buffer = device.createBufferUnique(bufferCreateInfo);
 
-    vk::MemoryRequirements requirements = device.getBufferMemoryRequirements(*m_Buffer);
+    VmaAllocationCreateInfo allocationCreateInfo{};
+    allocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
-    vk::MemoryAllocateInfo allocateInfo(requirements.size, memoryTypeIndex);
-    m_Allocation = device.allocateMemoryUnique(allocateInfo);
+    VmaAllocation allocation;
+    VkBuffer buffer;
+    VmaAllocationInfo allocationInfo;
+    vmaCreateBuffer(allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, &allocationInfo);
 
-    device.bindBufferMemory(*m_Buffer, *m_Allocation, 0);
+    m_Buffer = buffer;
+    m_Allocation = {allocation, [allocator, buffer](VmaAllocation allocation) {
+        vmaDestroyBuffer(allocator, buffer, allocation);
+    }};
 }
 
 void VulkanVertexBuffer::write(size_t offset, const void* ptr, size_t length) {
-    auto transferBuffer = m_TransferPool->acquireUnique(length);
+    auto transferBuffer = m_TransferManager->getTransferPool().acquireUnique(length);
     transferBuffer->copy(ptr, length, 0);
-
-    vk::BufferCopy copy(0, offset, length);
-    m_Context->getSwapchainVulkan().addTransfer(std::move(transferBuffer), *m_Buffer, copy);
+    m_TransferManager->addTask(std::move(transferBuffer), m_Buffer, 0, 0, length);
 }
-
-vk::Buffer VulkanVertexBuffer::getBuffer() const {
-    return *m_Buffer;
-}
-
-}   // namespace engine::render::buffer::vulkan
+}   // namespace engine::vulkan::render::buffer

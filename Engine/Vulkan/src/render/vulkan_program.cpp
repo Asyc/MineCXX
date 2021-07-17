@@ -27,7 +27,7 @@ do {                                                                            
     }                                                                                   \
 } while (false)
 
-namespace engine::render::vulkan {
+namespace engine::vulkan::render {
 
 inline vk::Format mapType(const std::string_view& type) {
     CREATE_TYPE_MAPPING(type, byte, int, 8);
@@ -78,8 +78,21 @@ inline void parseShader(const std::vector<char>& shaderBuffer,
         descriptorSetLayouts[set].emplace_back(binding, vk::DescriptorType::eUniformBuffer, array, flag, nullptr);
     }
 
-    uint32_t lowestAccessed = -1, highestAccessed = -1;
+    for (const auto& it : resources.sampled_images) {
+        const auto& type = compiler.get_type(it.base_type_id);
 
+        uint32_t set = compiler.get_decoration(it.id, spv::DecorationDescriptorSet);
+        uint32_t binding = compiler.get_decoration(it.id, spv::DecorationBinding);
+        uint32_t array = type.array.empty() ? 1 : type.array[0];
+
+        if (descriptorSetLayouts.size() <= binding) {
+            descriptorSetLayouts.resize(binding + 1);
+        }
+
+        descriptorSetLayouts[set].emplace_back(binding, vk::DescriptorType::eSampler, array, flag, nullptr);
+    }
+
+    uint32_t lowestAccessed = -1, highestAccessed = -1;
 
     //Spec states only 1 push constant buffer per stage
     for (const auto& it : resources.push_constant_buffers) {
@@ -102,6 +115,9 @@ inline void parseShader(const std::vector<char>& shaderBuffer,
 
 template<glslang_stage_t STAGE>
 std::vector<char> createSPIRV(std::string src) {
+    glslang_resource_s resource{};
+    resource.max_draw_buffers = true;
+
     const glslang_input_t input{
         GLSLANG_SOURCE_GLSL,
         STAGE,
@@ -115,11 +131,10 @@ std::vector<char> createSPIRV(std::string src) {
         false,
         false,
         GLSLANG_MSG_DEFAULT_BIT,
-        (glslang_resource_s*)calloc(1, sizeof(glslang_resource_s))
+        &resource
     };
 
-
-    auto status = glslang_initialize_process();
+    glslang_initialize_process();
     auto* shader = glslang_shader_create(&input);
 
     if (!glslang_shader_preprocess(shader, &input)) {
@@ -225,4 +240,4 @@ const std::vector<vk::VertexInputAttributeDescription>& VulkanProgram::getInputA
     return m_InputAttributes;
 }
 
-}   // namespace engine::render::vulkan
+}   // namespace engine::vulkan::render

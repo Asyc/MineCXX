@@ -3,6 +3,10 @@
 #include <chrono>
 #include <vector>
 
+#define VMA_IMPLEMENTATION
+#include <vulkan/vulkan.h>
+#include <vk_mem_alloc.h>
+
 #include "engine/log.hpp"
 #include "engine/vulkan/render/buffer/vulkan_image.hpp"
 #include "engine/vulkan/render/buffer/vulkan_index_buffer.hpp"
@@ -11,12 +15,9 @@
 #include "engine/vulkan/render/swapchain/vulkan_swapchain.hpp"
 #include "engine/vulkan/render/vulkan_pipeline.hpp"
 
-namespace engine::render::vulkan {
+namespace engine::vulkan::render {
 
-thread_local decltype(VulkanRenderContext::s_ThreadCommandPoolMap) VulkanRenderContext::s_ThreadCommandPoolMap;
-
-VulkanRenderContext::VulkanRenderContext(const Window& window, Swapchain::SwapchainMode modeHint) {
-
+vk::UniqueInstance createInstance() {
     vk::ApplicationInfo applicationInfo(
         "Minecraft",
         VK_MAKE_VERSION(1, 0, 0),
@@ -35,134 +36,65 @@ VulkanRenderContext::VulkanRenderContext(const Window& window, Swapchain::Swapch
     MCE_LOG_DEBUG("Validation Layer: {}", validationLayer);
 #endif
 
-    m_Instance = vk::createInstanceUnique(instanceCreateInfo);
-    m_Surface = window.createSurface(*m_Instance);
-    // Now we chose a target device to do rendering on
-    std::vector<vk::PhysicalDevice> devices = m_Instance->enumeratePhysicalDevices();
+    return vk::createInstanceUnique(instanceCreateInfo);
+}
+
+vk::PhysicalDevice findPhysicalDevice(const std::vector<vk::PhysicalDevice>& devices) {
+    vk::PhysicalDevice physicalDevice;
     for (const auto& device : devices) {
         vk::PhysicalDeviceProperties properties = device.getProperties();
         MCE_LOG_INFO("Render Device: {}", properties.deviceName);
-        m_PhysicalDevice = device;
+        physicalDevice = device;
         break;
     }
 
-    std::vector<vk::QueueFamilyProperties> queueFamilies = m_PhysicalDevice.getQueueFamilyProperties();
-    uint32_t index = 0;
-    for (const auto& queueFamily : queueFamilies) {
-        if (!m_QueueTable.graphicsFamily.has_value() && queueFamily.queueFlags & vk::QueueFlagBits::eGraphics) {
-            m_QueueTable.graphicsFamily = queue::QueueFamilyEntry{index, {}, queueFamily.queueCount};
-        }
+    return physicalDevice;
+}
 
-        if (!m_QueueTable.presentFamily.has_value() && m_PhysicalDevice.getSurfaceSupportKHR(index, *m_Surface)) {
-            m_QueueTable.presentFamily = queue::QueueFamilyEntry{index, {}, queueFamily.queueCount};
+inline VmaAllocator createAllocator(vk::Instance instance, vk::PhysicalDevice physicalDevice, vk::Device device) {
+    VmaAllocatorCreateInfo allocatorCreateInfo{};
+    allocatorCreateInfo.physicalDevice = physicalDevice;
+    allocatorCreateInfo.device = device;
+    allocatorCreateInfo.instance = instance;
+    allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_2;
 
-        }
+    VmaAllocator allocator;
+    vmaCreateAllocator(&allocatorCreateInfo, &allocator);
+    return allocator;
+}
 
-        index++;
-    }
-
-    MCE_LOG_DEBUG("Graphics Queue: {}, Queue Count: {}", m_QueueTable.graphicsFamily->index, m_QueueTable.graphicsFamily->maxQueues);
-
-    float priority = 1.0f;
-    std::array<vk::DeviceQueueCreateInfo, 2> queues = {
-        vk::DeviceQueueCreateInfo({}, m_QueueTable.graphicsFamily->index, 1, &priority),
-        vk::DeviceQueueCreateInfo({}, m_QueueTable.presentFamily->index, 1, &priority)
-    };
-
-    const char* swapchainExtension = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
-    vk::PhysicalDeviceFeatures features;
-    vk::DeviceCreateInfo deviceCreateInfo({}, 1, queues.data(), 0, nullptr, 1, &swapchainExtension, &features);
-
-    // Check if the graphics and present queue families are different, if so, create a queue in both
-    if (m_QueueTable.graphicsFamily->index != m_QueueTable.presentFamily->index) {
-        deviceCreateInfo.queueCreateInfoCount = 2;
-    }
-
-    m_Device = m_PhysicalDevice.createDeviceUnique(deviceCreateInfo);
-    m_QueueTable.graphicsFamily->handle = m_Device->getQueue(m_QueueTable.graphicsFamily->index, 0);
-    m_QueueTable.presentFamily->handle = m_Device->getQueue(m_QueueTable.graphicsFamily->index, 0);
-
-    m_Swapchain = std::make_unique<VulkanSwapchain>(modeHint, *m_Surface, m_PhysicalDevice, *m_Device, m_QueueTable);
-
-    struct MemoryType {
-        uint32_t index;
-        size_t heapSize;
-    };
-
-    auto memoryProperties = m_PhysicalDevice.getMemoryProperties();
-
-    std::optional<MemoryType> transferType, localType;
-    uint32_t memoryTypeIndex = 0;
-
-    // Loop through all memory types and assign "transferType" & "localType" based on heap sizes
-    for (const auto& memoryType : memoryProperties.memoryTypes) {
-        if (memoryTypeIndex + 1 == memoryProperties.memoryTypeCount) break;
-
-        size_t heapSize = memoryProperties.memoryHeaps[memoryType.heapIndex].size;
-
-        if (memoryType.propertyFlags & vk::MemoryPropertyFlagBits::eHostCoherent && memoryType.propertyFlags & vk::MemoryPropertyFlagBits::eHostVisible) {
-            if ((transferType.has_value() && heapSize > transferType->heapSize) || !transferType.has_value()) {
-                transferType = {memoryTypeIndex, heapSize};
-            }
-        }
-
-        if (memoryType.propertyFlags & vk::MemoryPropertyFlagBits::eDeviceLocal) {
-            if ((localType.has_value() && heapSize > localType->heapSize) || !localType.has_value()) {
-                localType = {memoryTypeIndex, heapSize};
-            }
-        }
-
-        memoryTypeIndex++;
-    }
-
-    m_TransferMemoryTypeIndex = transferType->index;
-    m_LocalMemoryTypeIndex = localType->index;
-
-    m_TransferPool = std::make_unique<buffer::vulkan::VulkanTransferPool>(*m_Device, m_TransferMemoryTypeIndex);
-
+VulkanRenderContext::VulkanRenderContext(const Window& window, Swapchain::SwapchainMode modeHint)
+    : m_Instance(createInstance()),
+      m_Surface(window.createSurface(*m_Instance)),
+      m_PhysicalDevice(findPhysicalDevice(m_Instance->enumeratePhysicalDevices())),
+      m_Device(this, *m_Instance, m_PhysicalDevice, *m_Surface),
+      m_MemoryAllocator(createAllocator(*m_Instance, m_PhysicalDevice, m_Device.getDevice()), [](VmaAllocator allocator) { vmaDestroyAllocator(allocator); }),
+      m_Swapchain(modeHint, *m_Surface, m_PhysicalDevice, &m_Device, m_Device.getQueueManager()),
+      m_TransferManager(*m_Instance, m_PhysicalDevice, &m_Device, m_Device.getQueueManager().getGraphicsQueueFamily().index) {
 }
 
 std::unique_ptr<buffer::Image> VulkanRenderContext::createImage(const File& path) {
-    return std::make_unique<buffer::vulkan::VulkanImage>(*m_Device, m_LocalMemoryTypeIndex, this, m_TransferPool.get(), path);
+    return std::make_unique<buffer::VulkanImage>(&m_TransferManager, m_MemoryAllocator.get(), path);
 }
 
 std::unique_ptr<command::CommandPool> VulkanRenderContext::createCommandPool() const {
-    return std::make_unique<render::command::vulkan::VulkanCommandPool>(*m_Device, m_QueueTable.graphicsFamily->index, false, m_Swapchain.get());
-}
-
-command::CommandPool& VulkanRenderContext::getThreadCommandPool() const {
-    const auto& it = s_ThreadCommandPoolMap.find(this);
-    if (it != s_ThreadCommandPoolMap.end()) return *it->second;
-
-    const auto& it2 = s_ThreadCommandPoolMap.emplace(this, std::make_unique<render::command::vulkan::VulkanCommandPool>(*m_Device, m_QueueTable.graphicsFamily->index, false, m_Swapchain.get()));
-    return *it2.first->second;
+    return std::make_unique<render::command::VulkanCommandPool>(m_Device.getDevice(), m_Device.getQueueManager().getGraphicsQueueFamily().index, false, &m_Swapchain);
 }
 
 std::unique_ptr<buffer::VertexBuffer> VulkanRenderContext::allocateVertexBuffer(size_t size) {
-    return std::make_unique<buffer::vulkan::VulkanVertexBuffer>(*m_Device, m_LocalMemoryTypeIndex, size, this, m_TransferPool.get());
+    return std::make_unique<buffer::VulkanVertexBuffer>(&m_TransferManager, m_MemoryAllocator.get(), size);
 }
 
 std::unique_ptr<buffer::IndexBuffer> VulkanRenderContext::allocateIndexBuffer(size_t size) {
-    return std::make_unique<buffer::vulkan::VulkanIndexBuffer>(*m_Device, m_LocalMemoryTypeIndex, size, this, m_TransferPool.get());
+    return std::make_unique<buffer::VulkanIndexBuffer>(&m_TransferManager, m_MemoryAllocator.get(), size);
 }
 
 std::unique_ptr<RenderPipeline> VulkanRenderContext::createRenderPipeline(const File& file) const {
-    return std::make_unique<VulkanRenderPipeline>(*m_Device, m_Swapchain->getRenderPass(), std::make_shared<VulkanProgram>(*m_Device, file.getPath()));
-}
-
-Swapchain& VulkanRenderContext::getSwapchain() {
-    return *m_Swapchain;
-}
-const Swapchain& VulkanRenderContext::getSwapchain() const {
-    return *m_Swapchain;
+    return std::make_unique<VulkanRenderPipeline>(m_Device.getDevice(), m_Swapchain.getRenderPass(), std::make_shared<VulkanProgram>(m_Device.getDevice(), file.getPath()));
 }
 
 void VulkanRenderContext::mouseButtonCallback(gui::input::MouseButton button, gui::input::MouseButtonAction action, double x, double y) {
     LOG_INFO("Button: {}, Action: {}, [{},{}]", button, action, x, y);
-}
-
-VulkanSwapchain& VulkanRenderContext::getSwapchainVulkan() {
-    return *m_Swapchain;
 }
 
 }   //namespace engine::render::vulkan

@@ -3,7 +3,7 @@
 #include <map>
 #include <optional>
 
-namespace engine::render::vulkan {
+namespace engine::vulkan::render {
 
 VulkanRenderPipeline::VulkanRenderPipeline(vk::Device device, vk::RenderPass renderPass, std::shared_ptr<VulkanProgram> program) : m_Program(std::move(program)) {
     vk::PipelineVertexInputStateCreateInfo vertexInputStateCreateInfo(
@@ -82,4 +82,4 @@ vk::Pipeline VulkanRenderPipeline::getPipeline() const {
     return *m_Pipeline;
 }
 
-}   // namespace engine::render::vulkan
+}   // namespace engine::vulkan::render

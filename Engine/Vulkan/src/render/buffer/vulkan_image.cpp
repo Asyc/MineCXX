@@ -1,13 +1,15 @@
 #include "engine/vulkan/render/buffer/vulkan_image.hpp"
 
-#define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+
+#include <vulkan/vulkan.h>
+#include <vk_mem_alloc.h>
 
 #include "engine/vulkan/vulkan_context.hpp"
 
-namespace engine::render::buffer::vulkan {
+namespace engine::vulkan::render::buffer {
 
-VulkanImage::VulkanImage(vk::Device device, uint32_t memoryTypeIndex, engine::render::vulkan::VulkanRenderContext* context, VulkanTransferPool* transferPool, const File& path) {
+VulkanImage::VulkanImage(VulkanTransferManager* transferManager, VmaAllocator allocator, const File& path) : m_TransferManager(transferManager) {
     int width, height, channels;
     auto* buffer = stbi_load(path.getFullPath().c_str(), &width, &height, &channels, STBI_rgb_alpha);
     size_t length = width * height * 4;
@@ -16,7 +18,7 @@ VulkanImage::VulkanImage(vk::Device device, uint32_t memoryTypeIndex, engine::re
         throw std::runtime_error("failed to load image");
     }
 
-    vk::ImageCreateInfo imageCreateInfo(
+    VkImageCreateInfo imageCreateInfo = vk::ImageCreateInfo(
         {},
         vk::ImageType::e2D,
         vk::Format::eR8G8B8A8Srgb,
@@ -30,17 +32,23 @@ VulkanImage::VulkanImage(vk::Device device, uint32_t memoryTypeIndex, engine::re
         {},
         vk::ImageLayout::eUndefined
     );
-    m_Image = device.createImageUnique(imageCreateInfo);
 
-    vk::MemoryRequirements memoryRequirements = device.getImageMemoryRequirements(*m_Image);
+    VmaAllocationCreateInfo allocationCreateInfo{};
+    allocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
-    vk::MemoryAllocateInfo allocateInfo(memoryRequirements.size, memoryTypeIndex);
-    m_Allocation = device.allocateMemoryUnique(allocateInfo);
+    VkImage image;
+    VmaAllocation allocation;
+    VmaAllocationInfo allocationInfo;
+    vmaCreateImage(allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, &allocationInfo);
 
-    device.bindImageMemory(*m_Image, *m_Allocation, 0);
+    m_Image = image;
+    m_Allocation = {allocation, [allocator, image](VmaAllocation allocation){
+        vmaDestroyImage(allocator, image, allocation);
+    }};
 
-    auto transferBuffer = transferPool->acquireUnique(length);
+    auto transferBuffer = transferManager->getTransferPool().acquireUnique(length);
     transferBuffer->copy(buffer, length, 0);
+    stbi_image_free(buffer);
 
     vk::BufferImageCopy copy(
         0,
@@ -51,12 +59,22 @@ VulkanImage::VulkanImage(vk::Device device, uint32_t memoryTypeIndex, engine::re
         imageCreateInfo.extent
     );
 
-    context->getSwapchainVulkan().addTransferImage(std::move(transferBuffer), *m_Image, copy);
+    m_TransferManager->addTaskImage(std::move(transferBuffer), m_Image, copy);
 
-    stbi_image_free(buffer);
-
-    vk::ImageViewCreateInfo imageViewCreateInfo({}, *m_Image, vk::ImageViewType::e2D, imageCreateInfo.format, {}, vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1));
+    /*vk::ImageViewCreateInfo imageViewCreateInfo({}, m_Image, vk::ImageViewType::e2D, imageCreateInfo.format, {}, vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1));
     m_ImageView = device.createImageViewUnique(imageViewCreateInfo);
+
+    vk::SamplerCreateInfo samplerCreateInfo(
+        {},
+        vk::Filter::eNearest,
+        vk::Filter::eNearest,
+        vk::SamplerMipmapMode::eNearest,
+        vk::SamplerAddressMode::eRepeat,
+        vk::SamplerAddressMode::eRepeat,
+        vk::SamplerAddressMode::eRepeat
+    );
+
+    m_ImageSampler = device.createSamplerUnique(samplerCreateInfo);*/
 }
 
-}   // namespace namespace engine::render::buffer::vulkan
+}   // namespace engine::vulkan::render::buffer

@@ -8,20 +8,19 @@
 #include "engine/file.hpp"
 #include "engine/vulkan/render/buffer/vulkan_transfer_pool.hpp"
 
-namespace engine::render::vulkan {
-class VulkanRenderContext;
-}   // namespace engine::render::vulkan
+namespace engine::vulkan::render::buffer {
 
-namespace engine::render::buffer::vulkan {
+using namespace ::engine::render::buffer;
 
 class VulkanImage : public Image {
 public:
-    VulkanImage(vk::Device device, uint32_t memoryTypeIndex, engine::render::vulkan::VulkanRenderContext* context, VulkanTransferPool* transferPool, const File& path);
+    VulkanImage(VulkanTransferManager* transferManager, VmaAllocator allocator, const File& path);
 private:
-    vk::UniqueImage m_Image;
-    vk::UniqueDeviceMemory m_Allocation;
+    vk::Image m_Image;
+    std::unique_ptr<VmaAllocation_T, std::function<void(VmaAllocation)>> m_Allocation;
 
-    vk::UniqueImageView m_ImageView;
+    VulkanTransferManager* m_TransferManager;
+
 };
 
 }   // namespace engine::render::vulkan

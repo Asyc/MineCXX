@@ -11,12 +11,15 @@
 #include "engine/vulkan/render/buffer/vulkan_vertex_buffer.hpp"
 #include "engine/vulkan/render/command/vulkan_command_pool.hpp"
 #include "engine/vulkan/render/swapchain/vulkan_swapchain.hpp"
+#include "engine/vulkan/device/vulkan_queue.hpp"
+#include "engine/vulkan/device/vulkan_device.hpp"
 #include "engine/window.hpp"
-#include "vulkan_queue.hpp"
 
-namespace engine::render::vulkan {
+namespace engine::vulkan::render {
 
-class VulkanRenderContext : public render::RenderContext {
+using namespace ::engine::render;
+
+class VulkanRenderContext : public RenderContext {
 public:
     VulkanRenderContext(const Window& window, Swapchain::SwapchainMode modeHint);
 
@@ -26,32 +29,27 @@ public:
     [[nodiscard]] std::unique_ptr<buffer::IndexBuffer> allocateIndexBuffer(size_t size) override;
 
     [[nodiscard]] std::unique_ptr<RenderPipeline> createRenderPipeline(const File& file) const override;
-
     [[nodiscard]] std::unique_ptr<command::CommandPool> createCommandPool() const override;
 
-    [[nodiscard]] command::CommandPool& getThreadCommandPool() const;
-
-    [[nodiscard]] Swapchain& getSwapchain() override;
-    [[nodiscard]] const Swapchain& getSwapchain() const override;
+    [[nodiscard]] Swapchain& getSwapchain() override { return m_Swapchain; }
+    [[nodiscard]] const Swapchain& getSwapchain() const override { return m_Swapchain; }
 
     void mouseButtonCallback(gui::input::MouseButton button, gui::input::MouseButtonAction action, double x, double y) override;
 
-    [[nodiscard]] VulkanSwapchain& getSwapchainVulkan();
+    [[nodiscard]] VulkanSwapchain& getSwapchainVulkan() { return m_Swapchain; }
+    [[nodiscard]] device::VulkanDevice& getDevice() { return m_Device; }
+
+    [[nodiscard]] buffer::VulkanTransferManager& getTransferManager() {return m_TransferManager; }
 private:
     vk::UniqueInstance m_Instance;
     vk::UniqueSurfaceKHR m_Surface;
     vk::PhysicalDevice m_PhysicalDevice;
-    vk::UniqueDevice m_Device;
 
-    queue::QueueFamilyTable m_QueueTable;
+    device::VulkanDevice m_Device;
+    std::unique_ptr<VmaAllocator_T, std::function<void(VmaAllocator)>> m_MemoryAllocator;
 
-    std::unique_ptr<VulkanSwapchain> m_Swapchain;
-
-    uint32_t m_TransferMemoryTypeIndex, m_LocalMemoryTypeIndex;
-
-    std::unique_ptr<buffer::vulkan::VulkanTransferPool> m_TransferPool;
-
-    static thread_local std::unordered_map<const VulkanRenderContext*, std::unique_ptr<command::vulkan::VulkanCommandPool>> s_ThreadCommandPoolMap;
+    render::VulkanSwapchain m_Swapchain;
+    buffer::VulkanTransferManager m_TransferManager;
 };
 
 }   // namespace engine::render::vulkan

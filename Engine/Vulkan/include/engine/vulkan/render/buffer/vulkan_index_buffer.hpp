@@ -4,32 +4,32 @@
 #include "engine/render/buffer/index_buffer.hpp"
 
 #include <vulkan/vulkan.hpp>
+#include <vk_mem_alloc.h>
 
 #include "engine/vulkan/render/buffer/vulkan_transfer_pool.hpp"
 
-namespace engine::render::vulkan {
-class VulkanRenderContext;
-}   // namespace engine::render::vulkan
+#include "engine/vulkan/device/vulkan_device.hpp"
 
-namespace engine::render::buffer::vulkan {
+namespace engine::vulkan::render::buffer {
+
+using namespace ::engine::render::buffer;
 
 class VulkanIndexBuffer : public IndexBuffer {
 public:
-    VulkanIndexBuffer(vk::Device device, uint32_t memoryTypeIndex, size_t size, engine::render::vulkan::VulkanRenderContext* context, VulkanTransferPool* transferPool);
+    VulkanIndexBuffer(VulkanTransferManager* transferManager, VmaAllocator allocator, size_t size);
 
     void write(size_t offset, const uint32_t* ptr, size_t length) override;
 
     [[nodiscard]] vk::Buffer getBuffer() const;
 private:
-    engine::render::vulkan::VulkanRenderContext* m_Context;
+    vk::Buffer m_Buffer;
+    std::unique_ptr<VmaAllocation_T, std::function<void(VmaAllocation)>> m_Allocation;
+    VmaAllocationInfo m_AllocationInfo;
 
-    vk::UniqueBuffer m_Buffer;
-    vk::UniqueDeviceMemory m_Allocation;
-
-    VulkanTransferPool* m_TransferPool;
+    VulkanTransferManager* m_TransferManager;
 };
 
-}   // namespace engine::render::buffer::vulkan
+}   // namespace engine::vulkan::render::buffer
 
 
 

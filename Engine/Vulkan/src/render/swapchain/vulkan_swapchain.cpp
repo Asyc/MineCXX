@@ -3,7 +3,7 @@
 #include "engine/log.hpp"
 #include "engine/vulkan/render/command/vulkan_command_buffer.hpp"
 
-namespace engine::render::vulkan {
+namespace engine::vulkan::render {
 
 inline vk::PresentModeKHR mapSwapchainMode(Swapchain::SwapchainMode mode) {
     switch (mode) {
@@ -17,7 +17,7 @@ inline vk::PresentModeKHR mapSwapchainMode(Swapchain::SwapchainMode mode) {
 
 void threadEntry(VulkanSwapchain*);
 
-VulkanSwapchain::VulkanSwapchain(Swapchain::SwapchainMode modeHint, vk::SurfaceKHR surface, vk::PhysicalDevice physicalDevice, vk::Device device, const queue::QueueFamilyTable& queueFamilies) {
+VulkanSwapchain::VulkanSwapchain(Swapchain::SwapchainMode modeHint, vk::SurfaceKHR surface, vk::PhysicalDevice physicalDevice, device::VulkanDevice* device, const device::VulkanQueueManager& queueManager) : m_Owner(device) {
     vk::SurfaceCapabilitiesKHR capabilities = physicalDevice.getSurfaceCapabilitiesKHR(surface);
 
     bool tripleBuffer = false;
@@ -46,7 +46,7 @@ VulkanSwapchain::VulkanSwapchain(Swapchain::SwapchainMode modeHint, vk::SurfaceK
 
     m_Owner = device;
     m_Surface = surface;
-    m_GraphicsQueue = queueFamilies.graphicsFamily->handle;
+    m_GraphicsQueue = queueManager.getGraphicsQueue();
 
     m_PresentMode = mapSwapchainMode(m_Mode);
     m_SwapchainFormat = selectedFormat;
@@ -87,10 +87,10 @@ VulkanSwapchain::VulkanSwapchain(Swapchain::SwapchainMode modeHint, vk::SurfaceK
     );
 
     vk::RenderPassCreateInfo renderPassCreateInfo({}, 1, &attachmentDescription, 1, &subpassDescription, 1, &subpassDependency);
-    m_RenderPass = device.createRenderPassUnique(renderPassCreateInfo);
+    m_RenderPass = device->getDevice().createRenderPassUnique(renderPassCreateInfo);
 
-    vk::CommandPoolCreateInfo commandPoolCreateInfo(vk::CommandPoolCreateFlagBits::eResetCommandBuffer, queueFamilies.graphicsFamily->index);
-    m_CommandPool = device.createCommandPoolUnique(commandPoolCreateInfo);
+    vk::CommandPoolCreateInfo commandPoolCreateInfo(vk::CommandPoolCreateFlagBits::eResetCommandBuffer, queueManager.getGraphicsQueueFamily().index);
+    m_CommandPool = device->getDevice().createCommandPoolUnique(commandPoolCreateInfo);
 
     // After finally initializing all relevant class members, we can construct the swapchain
     createSwapchain();
@@ -98,21 +98,10 @@ VulkanSwapchain::VulkanSwapchain(Swapchain::SwapchainMode modeHint, vk::SurfaceK
     // Set our first render flight and initialize the image
     m_CurrentFlight = 0;
     setupImage();
-
-    m_TransferFlights = std::vector<TransferFlight>(m_RenderFlights.size());
-    m_TransferCommandPool = m_Owner.createCommandPoolUnique(vk::CommandPoolCreateInfo(vk::CommandPoolCreateFlagBits::eTransient | vk::CommandPoolCreateFlagBits::eResetCommandBuffer));
-
-    auto buffers = m_Owner.allocateCommandBuffersUnique(vk::CommandBufferAllocateInfo(*m_TransferCommandPool, vk::CommandBufferLevel::ePrimary, m_RenderFlights.size()));
-
-    for (size_t i = 0; i < m_TransferFlights.size(); i++) {
-        m_TransferFlights[i].fence = device.createFenceUnique({vk::FenceCreateFlagBits::eSignaled});
-        m_TransferFlights[i].commandBuffer = std::move(buffers[i]);
-    }
-
 }
 
 VulkanSwapchain::~VulkanSwapchain() {
-    m_Owner.waitIdle();
+    m_Owner->getDevice().waitIdle();
 }
 
 void VulkanSwapchain::nextImage() {
@@ -124,22 +113,19 @@ void VulkanSwapchain::nextImage() {
     setupImage();
 }
 
-void VulkanSwapchain::submitCommandBuffer(const command::DirectCommandBuffer& buffer) {
-    processTransferCommandBuffer();
-    auto* vulkanPtr = dynamic_cast<const command::vulkan::VulkanDirectCommandBuffer*>(&buffer);
+void VulkanSwapchain::submitCommandBuffer(const DirectCommandBuffer& buffer) {
+    auto* vulkanPtr = dynamic_cast<const command::VulkanDirectCommandBuffer*>(&buffer);
 
-    m_RenderFlights[m_CurrentFlight].submitCommandBuffer(m_Swapchain.getOwner(), m_GraphicsQueue, vulkanPtr->getCommandBufferHandle(), vulkanPtr->getFence());
+    m_RenderFlights[m_CurrentFlight].submitCommandBuffer(m_Swapchain.getOwner(), vulkanPtr->getCommandBufferHandle(), vulkanPtr->getFence());
 }
 
-void VulkanSwapchain::submitCommandBuffer(const command::IndirectCommandBuffer& buffer) {
-    processTransferCommandBuffer();
-
-    auto* vulkanPtr = dynamic_cast<const command::vulkan::VulkanIndirectCommandBuffer*>(&buffer);
-    m_RenderFlights[m_CurrentFlight].submitCommandBuffer(m_Swapchain.getOwner(), m_GraphicsQueue, vulkanPtr->getCommandBufferHandle(), vulkanPtr->getFence());
+void VulkanSwapchain::submitCommandBuffer(const IndirectCommandBuffer& buffer) {
+    auto* vulkanPtr = dynamic_cast<const command::VulkanIndirectCommandBuffer*>(&buffer);
+    m_RenderFlights[m_CurrentFlight].submitCommandBuffer(m_Swapchain.getOwner(), vulkanPtr->getCommandBufferHandle(), vulkanPtr->getFence());
 }
 
 void VulkanSwapchain::onResize(uint32_t width, uint32_t height) {
-    m_Owner.waitIdle();
+    m_Owner->getDevice().waitIdle();
 
     m_SwapchainExtent.width = width;
     m_SwapchainExtent.height = height;
@@ -148,78 +134,6 @@ void VulkanSwapchain::onResize(uint32_t width, uint32_t height) {
 
     m_CurrentFlight = 0;
     setupImage();
-
-    m_TransferFlights = std::vector<TransferFlight>(m_RenderFlights.size());
-    m_TransferCommandPool = m_Owner.createCommandPoolUnique(vk::CommandPoolCreateInfo(vk::CommandPoolCreateFlagBits::eTransient | vk::CommandPoolCreateFlagBits::eResetCommandBuffer));
-
-    auto buffers = m_Owner.allocateCommandBuffersUnique(vk::CommandBufferAllocateInfo(*m_TransferCommandPool, vk::CommandBufferLevel::ePrimary, m_RenderFlights.size()));
-
-    for (size_t i = 0; i < m_TransferFlights.size(); i++) {
-        m_TransferFlights[i].fence = m_Owner.createFenceUnique({vk::FenceCreateFlagBits::eSignaled});
-        m_TransferFlights[i].commandBuffer = std::move(buffers[i]);
-    }
-}
-
-void VulkanSwapchain::addTransfer(render::buffer::vulkan::VulkanTransferBufferUnique src, vk::Buffer dst, vk::BufferCopy copy) {
-    auto& transferFlight = m_TransferFlights[m_CurrentFlight];
-    m_Owner.waitForFences(1, &*transferFlight.fence, VK_FALSE, UINT64_MAX);
-    transferFlight.releaseQueue.clear();
-
-    if (transferFlight.empty) {
-        transferFlight.commandBuffer->begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
-        transferFlight.empty = false;
-    }
-
-    transferFlight.commandBuffer->copyBuffer(src->getBuffer(), dst, 1, &copy);
-    transferFlight.releaseQueue.push_back(std::move(src));
-}
-
-void VulkanSwapchain::addTransferImage(render::buffer::vulkan::VulkanTransferBufferUnique src, vk::Image dst, vk::BufferImageCopy copy) {
-    auto& transferFlight = m_TransferFlights[m_CurrentFlight];
-    m_Owner.waitForFences(1, &*transferFlight.fence, VK_FALSE, UINT64_MAX);
-    transferFlight.releaseQueue.clear();
-
-    if (transferFlight.empty) {
-        transferFlight.commandBuffer->begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
-        transferFlight.empty = false;
-    }
-
-    vk::ImageMemoryBarrier barrier(
-        {},
-        vk::AccessFlagBits::eTransferWrite,
-        vk::ImageLayout::eUndefined,
-        vk::ImageLayout::eTransferDstOptimal,
-        {},
-        {},
-        dst,
-        vk::ImageSubresourceRange{vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}
-    );
-
-    transferFlight.commandBuffer->pipelineBarrier(vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eTransfer, {}, {}, {}, {}, {}, 1, &barrier);
-    transferFlight.commandBuffer->copyBufferToImage(src->getBuffer(), dst, vk::ImageLayout::eTransferDstOptimal, 1, &copy);
-
-    barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
-    barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
-    barrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
-    barrier.newLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
-    transferFlight.commandBuffer->pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, {}, {}, {}, {}, {}, 1, &barrier);
-
-    transferFlight.releaseQueue.emplace_back(std::move(src));
-}
-
-void VulkanSwapchain::processTransferCommandBuffer() {
-    auto& transferFlight = m_TransferFlights[m_CurrentFlight];
-    if (transferFlight.empty) return;
-
-    m_Owner.waitForFences(1, &*transferFlight.fence, VK_FALSE, UINT64_MAX);
-    m_Owner.resetFences(1, &*transferFlight.fence);
-    transferFlight.releaseQueue.clear();
-
-    transferFlight.empty = true;
-    transferFlight.commandBuffer->end();
-
-    vk::SubmitInfo submitInfo(0, nullptr, nullptr, 1, &*transferFlight.commandBuffer, 0, nullptr);
-    m_GraphicsQueue.submit(1, &submitInfo, *transferFlight.fence);
 }
 
 Swapchain::SwapchainMode VulkanSwapchain::getSwapchainMode() const {
@@ -266,9 +180,9 @@ void VulkanSwapchain::createSwapchain() {
         *m_Swapchain
     );
 
-    m_Swapchain = m_Owner.createSwapchainKHRUnique(createInfo);
+    m_Swapchain = m_Owner->getDevice().createSwapchainKHRUnique(createInfo);
 
-    auto images = m_Owner.getSwapchainImagesKHR(*m_Swapchain);
+    auto images = m_Owner->getDevice().getSwapchainImagesKHR(*m_Swapchain);
 
     m_SwapchainImages.clear();
 
@@ -290,7 +204,7 @@ void VulkanSwapchain::createSwapchain() {
 
     m_RenderFlights.clear();
     for (uint32_t i = 0; i < flightCount; i++) {
-        m_RenderFlights.emplace_back(m_Owner);
+        m_RenderFlights.emplace_back(m_Owner->getDevice());
     }
 }
 
@@ -298,7 +212,7 @@ void VulkanSwapchain::setupImage() {
     auto& currentFlight = m_RenderFlights[m_CurrentFlight];
     if (currentFlight.boundImage != nullptr) currentFlight.boundImage->wait();
 
-    uint32_t index = m_Owner.acquireNextImageKHR(*m_Swapchain, UINT64_MAX, *currentFlight.imageReadySemaphore).value;
+    uint32_t index = m_Owner->getDevice().acquireNextImageKHR(*m_Swapchain, UINT64_MAX, *currentFlight.imageReadySemaphore).value;
     currentFlight.boundImage = &m_SwapchainImages[index];
 
     currentFlight.boundImage->setup(m_GraphicsQueue, *currentFlight.imageReadySemaphore);
@@ -311,4 +225,4 @@ vk::Framebuffer VulkanSwapchain::getCurrentFrame() const {
 vk::Extent2D VulkanSwapchain::getExtent() const {
     return m_SwapchainExtent;
 }
-}   // namespace engine::render::vulkan
+}   // namespace engine::vulkan::render

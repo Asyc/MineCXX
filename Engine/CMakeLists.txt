@@ -12,7 +12,7 @@ set(HEADERS
         include/engine/render/command/command_buffer.hpp
         include/engine/render/buffer/vertex_buffer.hpp
         include/engine/render/buffer/index_buffer.hpp
-        include/engine/gui/gui.hpp include/engine/gui/element/element.hpp include/engine/gui/input.hpp include/engine/render/buffer/image.hpp)
+        include/engine/gui/gui.hpp include/engine/gui/element/element.hpp include/engine/gui/input.hpp include/engine/render/buffer/image.hpp include/engine/render/buffer/uniform_buffer.hpp)
 
 set(SOURCES
         src/engine.cpp

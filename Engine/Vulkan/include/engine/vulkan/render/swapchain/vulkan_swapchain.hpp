@@ -7,27 +7,26 @@
 #include <vector>
 
 #include "engine/vulkan/render/buffer/vulkan_image.hpp"
-#include "engine/vulkan/render/buffer/vulkan_transfer_pool.hpp"
-#include "engine/vulkan/vulkan_queue.hpp"
+#include "engine/vulkan/device/vulkan_device.hpp"
+#include "engine/vulkan/device/vulkan_queue.hpp"
 #include "vulkan_image.hpp"
 
-namespace engine::render::vulkan {
+namespace engine::vulkan::render {
+
+using namespace ::engine::render;
+using namespace ::engine::render::command;
 
 class VulkanSwapchain : public Swapchain {
 public:
-    VulkanSwapchain(SwapchainMode modeHint, vk::SurfaceKHR surface, vk::PhysicalDevice, vk::Device device, const queue::QueueFamilyTable& queueFamilies);
+    VulkanSwapchain(SwapchainMode modeHint, vk::SurfaceKHR surface, vk::PhysicalDevice, device::VulkanDevice* device, const device::VulkanQueueManager& queueManager);
     ~VulkanSwapchain() override;
 
     void nextImage() override;
 
-    void submitCommandBuffer(const command::DirectCommandBuffer& buffer) override;
-    void submitCommandBuffer(const command::IndirectCommandBuffer& buffer) override;
+    void submitCommandBuffer(const DirectCommandBuffer& buffer) override;
+    void submitCommandBuffer(const IndirectCommandBuffer& buffer) override;
 
     void onResize(uint32_t width, uint32_t height) override;
-
-    void addTransfer(render::buffer::vulkan::VulkanTransferBufferUnique src, vk::Buffer dst, vk::BufferCopy copy);
-    void addTransferImage(render::buffer::vulkan::VulkanTransferBufferUnique src, vk::Image dst, vk::BufferImageCopy copy);
-    void processTransferCommandBuffer();
 
     [[nodiscard]] SwapchainMode getSwapchainMode() const override;
     [[nodiscard]] const std::set<SwapchainMode>& getSupportedSwapchainModes() const override;
@@ -49,7 +48,7 @@ private:
     SwapchainMode m_Mode;
     std::set<SwapchainMode> m_SupportedModes;
 
-    vk::Device m_Owner;
+    device::VulkanDevice* m_Owner;
     vk::SurfaceKHR m_Surface;
     vk::Queue m_GraphicsQueue;
 
@@ -66,22 +65,9 @@ private:
     std::vector<Image> m_SwapchainImages;
     std::vector<ImageFlight> m_RenderFlights;
     size_t m_CurrentFlight;
-
-    struct TransferFlight {
-        std::atomic_bool empty{true};
-
-        vk::UniqueFence fence;
-        vk::UniqueCommandBuffer commandBuffer;
-
-        std::vector<render::buffer::vulkan::VulkanTransferBufferUnique> releaseQueue;
-    };
-
-    vk::UniqueCommandPool m_TransferCommandPool;
-    std::vector<TransferFlight> m_TransferFlights;
-
 };
 
-}   // namespace engine::render::vulkan
+}   // namespace engine::vulkan::render
 
 
 #endif //MINECRAFTCXX_CLIENT_ENGINE_VULKAN_INCLUDE_ENGINE_VULKAN_RENDER_SWAPCHAIN_VULKAN_SWAPCHAIN_HPP_

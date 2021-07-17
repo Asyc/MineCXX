@@ -4,20 +4,20 @@
 #include "engine/vulkan/render/buffer/vulkan_vertex_buffer.hpp"
 #include "engine/vulkan/render/vulkan_pipeline.hpp"
 
-namespace engine::render::command::vulkan {
+namespace engine::vulkan::render::command {
 
 void VulkanCommandBuffer::end() {
     getCommandBufferHandle().end();
 }
 
-VulkanDrawableCommandBuffer::VulkanDrawableCommandBuffer(const render::vulkan::VulkanSwapchain* handle) : m_Handle(handle) {}
+VulkanDrawableCommandBuffer::VulkanDrawableCommandBuffer(const VulkanSwapchain* handle) : m_Handle(handle) {}
 
 vk::CommandBuffer VulkanImmutableCommandList::getCommandBufferHandle() const {
     return *m_CommandBuffer;
 }
 
 void VulkanDrawableCommandBuffer::bindPipeline(const RenderPipeline& pipeline) {
-    const auto* vkPipeline = dynamic_cast<const render::vulkan::VulkanRenderPipeline*>(&pipeline);
+    const auto* vkPipeline = dynamic_cast<const VulkanRenderPipeline*>(&pipeline);
     getCommandBufferHandle().bindPipeline(vk::PipelineBindPoint::eGraphics, vkPipeline->getPipeline());
 
     vk::Rect2D scissor({}, m_Handle->getExtent());
@@ -28,7 +28,7 @@ void VulkanDrawableCommandBuffer::bindPipeline(const RenderPipeline& pipeline) {
 }
 
 void VulkanDrawableCommandBuffer::bindVertexBuffer(const buffer::VertexBuffer& buffer) {
-    const auto* vkBuffer = dynamic_cast<const buffer::vulkan::VulkanVertexBuffer*>(&buffer);
+    const auto* vkBuffer = dynamic_cast<const buffer::VulkanVertexBuffer*>(&buffer);
 
     vk::Buffer bufferHandle = vkBuffer->getBuffer();
     size_t offset = 0;
@@ -36,7 +36,7 @@ void VulkanDrawableCommandBuffer::bindVertexBuffer(const buffer::VertexBuffer& b
 }
 
 void VulkanDrawableCommandBuffer::bindIndexBuffer(const buffer::IndexBuffer& buffer) {
-    const auto* vkBuffer = dynamic_cast<const buffer::vulkan::VulkanIndexBuffer*>(&buffer);
+    const auto* vkBuffer = dynamic_cast<const buffer::VulkanIndexBuffer*>(&buffer);
 
     getCommandBufferHandle().bindIndexBuffer(vkBuffer->getBuffer(), 0, vk::IndexType::eUint32);
 }
@@ -49,7 +49,7 @@ void VulkanDrawableCommandBuffer::drawIndexed(uint32_t instanceCount, uint32_t i
     getCommandBufferHandle().drawIndexed(indexCount, instanceCount, 0, 0, 0);
 }
 
-VulkanSwitchingCommandBuffer::VulkanSwitchingCommandBuffer(vk::Device device, const render::vulkan::VulkanSwapchain* swapchain, vk::CommandPool pool, vk::CommandBufferLevel level) : m_SwapchainHandle(swapchain), m_Fences(swapchain->getFrameCount()) {
+VulkanSwitchingCommandBuffer::VulkanSwitchingCommandBuffer(vk::Device device, const VulkanSwapchain* swapchain, vk::CommandPool pool, vk::CommandBufferLevel level) : m_SwapchainHandle(swapchain), m_Fences(swapchain->getFrameCount()) {
     vk::CommandBufferAllocateInfo allocateInfo(pool, level, m_SwapchainHandle->getFrameCount());
     m_Buffers = device.allocateCommandBuffersUnique(allocateInfo);
 
@@ -80,7 +80,7 @@ void VulkanCommandList::begin() {
     getCommandBufferHandle().begin(beginInfo);
 }
 
-VulkanImmutableCommandList::VulkanImmutableCommandList(vk::Device device, const render::vulkan::VulkanSwapchain* swapchain, vk::CommandPool pool) : VulkanDrawableCommandBuffer(swapchain), m_SwapchainHandle(swapchain) {
+VulkanImmutableCommandList::VulkanImmutableCommandList(vk::Device device, const VulkanSwapchain* swapchain, vk::CommandPool pool) : VulkanDrawableCommandBuffer(swapchain), m_SwapchainHandle(swapchain) {
     vk::CommandBufferAllocateInfo allocateInfo(pool, vk::CommandBufferLevel::eSecondary, 1);
 
     m_CommandBuffer = std::move(device.allocateCommandBuffersUnique(allocateInfo)[0]);
@@ -92,11 +92,11 @@ void VulkanImmutableCommandList::begin() {
     getCommandBufferHandle().begin(beginInfo);
 }
 
-VulkanCommandList::VulkanCommandList(vk::Device device, const render::vulkan::VulkanSwapchain* swapchain, vk::CommandPool pool) : VulkanDrawableCommandBuffer(swapchain), VulkanSwitchingCommandBuffer(device, swapchain, pool, vk::CommandBufferLevel::eSecondary) {
+VulkanCommandList::VulkanCommandList(vk::Device device, const VulkanSwapchain* swapchain, vk::CommandPool pool) : VulkanDrawableCommandBuffer(swapchain), VulkanSwitchingCommandBuffer(device, swapchain, pool, vk::CommandBufferLevel::eSecondary) {
 
 }
 
-VulkanDirectCommandBuffer::VulkanDirectCommandBuffer(vk::Device device, const render::vulkan::VulkanSwapchain* swapchain, vk::CommandPool pool) : VulkanDrawableCommandBuffer(swapchain), VulkanSwitchingCommandBuffer(device, swapchain, pool, vk::CommandBufferLevel::ePrimary) {
+VulkanDirectCommandBuffer::VulkanDirectCommandBuffer(vk::Device device, const VulkanSwapchain* swapchain, vk::CommandPool pool) : VulkanDrawableCommandBuffer(swapchain), VulkanSwitchingCommandBuffer(device, swapchain, pool, vk::CommandBufferLevel::ePrimary) {
 
 }
 
@@ -128,7 +128,7 @@ void VulkanIndirectCommandBuffer::end() {
     VulkanCommandBuffer::end();
 }
 
-VulkanIndirectCommandBuffer::VulkanIndirectCommandBuffer(vk::Device device, const render::vulkan::VulkanSwapchain* swapchain, vk::CommandPool pool) : VulkanSwitchingCommandBuffer(device, swapchain, pool, vk::CommandBufferLevel::ePrimary) {
+VulkanIndirectCommandBuffer::VulkanIndirectCommandBuffer(vk::Device device, const VulkanSwapchain* swapchain, vk::CommandPool pool) : VulkanSwitchingCommandBuffer(device, swapchain, pool, vk::CommandBufferLevel::ePrimary) {
 
 }
 
@@ -146,4 +146,4 @@ void VulkanIndirectCommandBuffer::accept(const ImmutableCommandList& commandList
     getCommandBufferHandle().executeCommands(1, &handle);
 }
 
-}   //namespace engine::render::command::vulkan
+}   //namespace engine::vulkan::render::command

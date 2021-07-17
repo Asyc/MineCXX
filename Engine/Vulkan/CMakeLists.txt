@@ -5,7 +5,7 @@ set(BINARY libvk)
 add_library(libvk
         include/engine/vulkan/vulkan_context.hpp
         src/vulkan_context.cpp
-        include/engine/vulkan/vulkan_queue.hpp
+        include/engine/vulkan/device/vulkan_queue.hpp
         include/engine/vulkan/render/vulkan_pipeline.hpp
         src/render/vulkan_pipeline.cpp
         src/render/vulkan_program.cpp
@@ -18,14 +18,14 @@ add_library(libvk
         src/render/swapchain/vulkan_swapchain.cpp
         src/render/buffer/vulkan_transfer_pool.cpp
         include/engine/vulkan/render/buffer/vulkan_vertex_buffer.hpp
-        src/render/buffer/vulkan_vertex_buffer.cpp include/engine/vulkan/vulkan_resource.hpp
-        src/vulkan_resource.cpp include/engine/vulkan/render/buffer/vulkan_index_buffer.hpp
+        src/render/buffer/vulkan_vertex_buffer.cpp
+        include/engine/vulkan/render/buffer/vulkan_index_buffer.hpp
         src/render/buffer/vulkan_index_buffer.cpp
-        include/engine/vulkan/render/buffer/vulkan_image.hpp src/render/buffer/vulkan_image.cpp)
+        include/engine/vulkan/render/buffer/vulkan_image.hpp src/render/buffer/vulkan_image.cpp include/engine/vulkan/render/buffer/vulkan_uniform_buffer.hpp src/render/buffer/vulkan_uniform_buffer.cpp include/engine/vulkan/device/vulkan_device.hpp src/device/vulkan_device.cpp src/device/vulkan_queue.cpp)
 
 target_include_directories(libvk PUBLIC include)
 target_include_directories(libvk PRIVATE src)
 
-target_link_libraries(libvk PUBLIC Vulkan::Vulkan SPIRV glslang spirv-cross-cpp stb libengine)
+target_link_libraries(libvk PUBLIC Vulkan::Vulkan SPIRV glslang spirv-cross-cpp stb VulkanMemoryAllocator libengine)
 
 add_compile_definitions(VULKAN_HPP_NO_NODISCARD_WARNINGS)

@@ -17,7 +17,7 @@ Window::Window(int32_t width, int32_t height, const std::string_view& title) {
 }
 
 std::unique_ptr<render::RenderContext> Window::createRenderContext(render::Swapchain::SwapchainMode modeHint) {
-    auto ptr = std::make_unique<render::vulkan::VulkanRenderContext>(*this, modeHint);
+    auto ptr = std::make_unique<vulkan::render::VulkanRenderContext>(*this, modeHint);
 
     auto currentMode = ptr->getSwapchain().getSwapchainMode();
     const auto& supportedModes = ptr->getSwapchain().getSupportedSwapchainModes();
@@ -34,12 +34,12 @@ std::unique_ptr<render::RenderContext> Window::createRenderContext(render::Swapc
 
     glfwSetWindowUserPointer(m_Window.get(), ptr.get());
     glfwSetWindowSizeCallback(m_Window.get(), [](GLFWwindow* handle, int width, int height){
-        auto* ref = reinterpret_cast<render::vulkan::VulkanRenderContext*>(glfwGetWindowUserPointer(handle));
+        auto* ref = reinterpret_cast<vulkan::render::VulkanRenderContext*>(glfwGetWindowUserPointer(handle));
         ref->getSwapchain().onResize(width, height);
     });
 
     glfwSetMouseButtonCallback(m_Window.get(), [](GLFWwindow* handle, int button, int action, int modifier){
-        auto* ref = reinterpret_cast<render::vulkan::VulkanRenderContext*>(glfwGetWindowUserPointer(handle));
+        auto* ref = reinterpret_cast<vulkan::render::VulkanRenderContext*>(glfwGetWindowUserPointer(handle));
 
         engine::gui::input::MouseButton buttonFlag;
         switch (button) {

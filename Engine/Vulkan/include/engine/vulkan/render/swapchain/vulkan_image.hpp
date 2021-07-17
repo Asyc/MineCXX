@@ -6,10 +6,12 @@
 
 #include <vulkan/vulkan.hpp>
 
-namespace engine::render::vulkan {
+#include "engine/vulkan/device/vulkan_device.hpp"
+
+namespace engine::vulkan::render {
 
 struct Image {
-    Image(vk::Device device,
+    Image(device::VulkanDevice* device,
           vk::Image image,
           uint32_t imageIndex,
           vk::Format format,
@@ -25,7 +27,7 @@ struct Image {
 
     vk::Semaphore getSemaphore();
 
-    vk::Device owner;
+    device::VulkanDevice* owner;
 
     uint32_t imageIndex;
 
@@ -48,12 +50,12 @@ struct Image {
 
 struct ImageFlight {
     explicit ImageFlight(vk::Device device);
-    void submitCommandBuffer(vk::Device device, vk::Queue queue, vk::CommandBuffer buffer, vk::Fence fence) const;
+    void submitCommandBuffer(vk::Device device, vk::CommandBuffer buffer, vk::Fence fence) const;
 
     Image* boundImage;
     vk::UniqueSemaphore imageReadySemaphore;
 };
 
-}   // namespace engine::render::vulkan
+}   // namespace engine::vulkan::render
 
 #endif //MINECRAFTCXX_CLIENT_ENGINE_VULKAN_INCLUDE_ENGINE_VULKAN_RENDER_VULKAN_SWAPCHAIN2_HPP_

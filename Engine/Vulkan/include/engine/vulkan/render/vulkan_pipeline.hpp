@@ -11,7 +11,9 @@
 
 #include "engine/file.hpp"
 
-namespace engine::render::vulkan {
+namespace engine::vulkan::render {
+
+using namespace ::engine::render;
 
 class VulkanProgram : public Program {
 public:
@@ -38,12 +40,11 @@ public:
 
     [[nodiscard]] vk::Pipeline getPipeline() const;
 private:
-
     std::shared_ptr<VulkanProgram> m_Program;
 
     vk::UniquePipeline m_Pipeline;
 };
 
-}   // namespace engine::render::vulkan
+}   // namespace engine::vulkan::render
 
 #endif //MINECRAFTCXX_CLIENT_ENGINE_VULKAN_INCLUDE_ENGINE_VULKAN_RENDER_VULKAN_PIPELINE_HPP_

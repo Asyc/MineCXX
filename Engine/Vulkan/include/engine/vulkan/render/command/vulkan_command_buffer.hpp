@@ -2,17 +2,18 @@
 #define MINECRAFTCXX_CLIENT_ENGINE_VULKAN_INCLUDE_ENGINE_VULKAN_RENDER_COMMAND_VULKAN_COMMAND_BUFFER_HPP_
 
 #include "engine/render/command/command_buffer.hpp"
-#include "engine/render/pipeline.hpp"
-#include "engine/vulkan/vulkan_resource.hpp"
-#include "engine/vulkan/render/swapchain/vulkan_swapchain.hpp"
 
 #include <vulkan/vulkan.hpp>
 
-namespace engine::render::command::vulkan {
+#include "engine/render/pipeline.hpp"
+#include "engine/vulkan/render/swapchain/vulkan_swapchain.hpp"
 
-using VulkanResource = engine::vulkan::VulkanResource;
+namespace engine::vulkan::render::command {
 
-class VulkanCommandBuffer : public virtual ICommandBuffer, public virtual VulkanResource {
+using namespace ::engine::render;
+using namespace ::engine::render::command;
+
+class VulkanCommandBuffer : public virtual ICommandBuffer {
 public:
     void end() override;
 
@@ -21,7 +22,7 @@ public:
 
 class VulkanDrawableCommandBuffer : public virtual IDrawableCommandBuffer, public virtual VulkanCommandBuffer {
 public:
-    explicit VulkanDrawableCommandBuffer(const render::vulkan::VulkanSwapchain* handle);
+    explicit VulkanDrawableCommandBuffer(const VulkanSwapchain* handle);
 
     void bindPipeline(const RenderPipeline& pipeline) override;
 
@@ -31,7 +32,7 @@ public:
     void draw(uint32_t instanceCount, uint32_t vertexCount) override;
     void drawIndexed(uint32_t instanceCount, uint32_t indexCount) override;
 private:
-    const render::vulkan::VulkanSwapchain* m_Handle;
+    const VulkanSwapchain* m_Handle;
 };
 
 class IVulkanSubmittableCommandBuffer : public virtual ISubmittableCommandBuffer {
@@ -41,14 +42,14 @@ public:
 
 class VulkanSwitchingCommandBuffer : public virtual VulkanCommandBuffer, public virtual IVulkanSubmittableCommandBuffer {
 public:
-    VulkanSwitchingCommandBuffer(vk::Device device, const render::vulkan::VulkanSwapchain* swapchain, vk::CommandPool pool, vk::CommandBufferLevel level);
+    VulkanSwitchingCommandBuffer(vk::Device device, const VulkanSwapchain* swapchain, vk::CommandPool pool, vk::CommandBufferLevel level);
     ~VulkanSwitchingCommandBuffer() override;
 
     [[nodiscard]] vk::CommandBuffer getCommandBufferHandle() const override;
 
     [[nodiscard]] vk::Fence getFence() const override;
 protected:
-    const render::vulkan::VulkanSwapchain* m_SwapchainHandle;
+    const VulkanSwapchain* m_SwapchainHandle;
 
     std::vector<vk::UniqueCommandBuffer> m_Buffers;
     std::vector<vk::UniqueFence> m_Fences;
@@ -56,19 +57,19 @@ protected:
 
 class VulkanCommandList : public virtual CommandList, public virtual VulkanDrawableCommandBuffer, public virtual VulkanSwitchingCommandBuffer {
 public:
-    VulkanCommandList(vk::Device device, const render::vulkan::VulkanSwapchain* swapchain, vk::CommandPool pool);
+    VulkanCommandList(vk::Device device, const VulkanSwapchain* swapchain, vk::CommandPool pool);
     void begin() override;
 };
 
 class VulkanImmutableCommandList : public virtual ImmutableCommandList, public virtual VulkanDrawableCommandBuffer {
 public:
-    VulkanImmutableCommandList(vk::Device device, const render::vulkan::VulkanSwapchain* swapchain, vk::CommandPool pool);
+    VulkanImmutableCommandList(vk::Device device, const VulkanSwapchain* swapchain, vk::CommandPool pool);
 
     void begin() override;
 
     [[nodiscard]] vk::CommandBuffer getCommandBufferHandle() const override;
 private:
-    const render::vulkan::VulkanSwapchain* m_SwapchainHandle;
+    const VulkanSwapchain* m_SwapchainHandle;
 
     vk::UniqueCommandBuffer m_CommandBuffer;
 };
@@ -76,14 +77,14 @@ private:
 
 class VulkanDirectCommandBuffer : public virtual DirectCommandBuffer, public virtual VulkanDrawableCommandBuffer, public virtual VulkanSwitchingCommandBuffer {
 public:
-    VulkanDirectCommandBuffer(vk::Device device, const render::vulkan::VulkanSwapchain* swapchain, vk::CommandPool pool);
+    VulkanDirectCommandBuffer(vk::Device device, const VulkanSwapchain* swapchain, vk::CommandPool pool);
     void begin() override;
     void end() override;
 };
 
 class VulkanIndirectCommandBuffer : public virtual IndirectCommandBuffer, public virtual VulkanSwitchingCommandBuffer {
 public:
-    VulkanIndirectCommandBuffer(vk::Device device, const render::vulkan::VulkanSwapchain* swapchain, vk::CommandPool pool);
+    VulkanIndirectCommandBuffer(vk::Device device, const VulkanSwapchain* swapchain, vk::CommandPool pool);
     void begin() override;
     void end() override;
 
@@ -91,6 +92,6 @@ public:
     void accept(const ImmutableCommandList& commandList) override;
 };
 
-}   //namespace engine::render::command::vulkan
+}   //namespace engine::vulkan::render::command
 
 #endif //MINECRAFTCXX_CLIENT_ENGINE_VULKAN_INCLUDE_ENGINE_VULKAN_RENDER_COMMAND_VULKAN_COMMAND_BUFFER_HPP_

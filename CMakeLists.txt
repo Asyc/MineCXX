@@ -13,6 +13,10 @@ target_include_directories(rapidjson INTERFACE vendors/rapidjson/include)
 add_library(stb INTERFACE)
 target_include_directories(stb INTERFACE vendors/stb)
 
+option(VMA_STATIC_VULKAN_FUNCTIONS "Link statically with Vulkan API" OFF)
+option(VMA_DYNAMIC_VULKAN_FUNCTIONS "Fetch pointers to Vulkan functions internally (no static linking)" OFF)
+add_subdirectory(vendors/vma)
+
 add_subdirectory(vendors/googletest)
 
 add_subdirectory(Engine)
