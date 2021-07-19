@@ -2,6 +2,7 @@
 #define MINECRAFTCXX_CLIENT_ENGINE_INCLUDE_ENGINE_RENDER_COMMAND_COMMAND_BUFFER_HPP_
 
 #include "engine/render/buffer/index_buffer.hpp"
+#include "engine/render/buffer/uniform_buffer.hpp"
 #include "engine/render/buffer/vertex_buffer.hpp"
 #include "engine/render/pipeline.hpp"
 
@@ -21,6 +22,7 @@ public:
 
     virtual void bindVertexBuffer(const buffer::VertexBuffer& buffer) = 0;
     virtual void bindIndexBuffer(const buffer::IndexBuffer& buffer) = 0;
+    virtual void bindUniformBuffer(const buffer::UniformBuffer& buffer, uint32_t set) = 0;
 
     virtual void draw(uint32_t instanceCount, uint32_t vertexCount) = 0;
     virtual void drawIndexed(uint32_t instanceCount, uint32_t indexCount) = 0;

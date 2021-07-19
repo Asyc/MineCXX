@@ -25,7 +25,6 @@ std::unique_ptr<render::RenderContext> Window::createRenderContext(render::Swapc
     for (auto mode : supportedModes) {
         MCE_LOG_INFO("Supported Display Mode: {}", engine::render::Swapchain::toString(mode));
     }
-
     if (supportedModes.find(modeHint) == supportedModes.end()) {
         MCE_LOG_ERROR("Requested display mode [{}] not found, default to [{}]", engine::render::Swapchain::toString(modeHint), engine::render::Swapchain::toString(currentMode));
     } else {

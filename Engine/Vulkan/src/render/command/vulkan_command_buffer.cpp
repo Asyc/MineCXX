@@ -1,6 +1,7 @@
 #include "engine/vulkan/render/command/vulkan_command_buffer.hpp"
 
 #include "engine/vulkan/render/buffer/vulkan_index_buffer.hpp"
+#include "engine/vulkan/render/buffer/vulkan_uniform_buffer.hpp"
 #include "engine/vulkan/render/buffer/vulkan_vertex_buffer.hpp"
 #include "engine/vulkan/render/vulkan_pipeline.hpp"
 
@@ -18,6 +19,8 @@ vk::CommandBuffer VulkanImmutableCommandList::getCommandBufferHandle() const {
 
 void VulkanDrawableCommandBuffer::bindPipeline(const RenderPipeline& pipeline) {
     const auto* vkPipeline = dynamic_cast<const VulkanRenderPipeline*>(&pipeline);
+    m_CurrentLayout = vkPipeline->getPipelineLayout();
+
     getCommandBufferHandle().bindPipeline(vk::PipelineBindPoint::eGraphics, vkPipeline->getPipeline());
 
     vk::Rect2D scissor({}, m_Handle->getExtent());
@@ -39,6 +42,14 @@ void VulkanDrawableCommandBuffer::bindIndexBuffer(const buffer::IndexBuffer& buf
     const auto* vkBuffer = dynamic_cast<const buffer::VulkanIndexBuffer*>(&buffer);
 
     getCommandBufferHandle().bindIndexBuffer(vkBuffer->getBuffer(), 0, vk::IndexType::eUint32);
+}
+
+void VulkanDrawableCommandBuffer::bindUniformBuffer(const buffer::UniformBuffer& buffer, uint32_t set) {
+    auto* vkBuffer = dynamic_cast<const buffer::IVulkanUniformBuffer*>(&buffer);
+
+    vk::DescriptorSet descriptorSet = vkBuffer->getDescriptorSet();
+
+    getCommandBufferHandle().bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_CurrentLayout, set, 1, &descriptorSet, 0, nullptr);
 }
 
 void VulkanDrawableCommandBuffer::draw(uint32_t instanceCount, uint32_t vertexCount) {

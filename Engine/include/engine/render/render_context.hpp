@@ -5,6 +5,7 @@
 
 #include "buffer/image.hpp"
 #include "buffer/index_buffer.hpp"
+#include "buffer/uniform_buffer.hpp"
 #include "buffer/vertex_buffer.hpp"
 #include "command/command_pool.hpp"
 #include "engine/file.hpp"
@@ -24,6 +25,7 @@ public:
 
     [[nodiscard]] virtual std::unique_ptr<buffer::VertexBuffer> allocateVertexBuffer(size_t size) = 0;
     [[nodiscard]] virtual std::unique_ptr<buffer::IndexBuffer> allocateIndexBuffer(size_t size) = 0;
+    [[nodiscard]] virtual std::unique_ptr<buffer::UniformBuffer> allocateUniformBuffer(const RenderPipeline& pipeline, size_t size) = 0;
 
     [[nodiscard]] virtual std::unique_ptr<RenderPipeline> createRenderPipeline(const File& file) const = 0;
 

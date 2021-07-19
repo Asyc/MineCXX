@@ -5,13 +5,6 @@
 
 namespace engine::render::buffer {
 
-class IUniformBuffer {
-public:
-    virtual ~IUniformBuffer() = default;
-protected:
-    IUniformBuffer() = default;
-};
-
 class UniformBuffer {
 public:
     virtual ~UniformBuffer() = default;
@@ -19,15 +12,6 @@ public:
     virtual void write(size_t offset, const void* ptr, size_t length) = 0;
 protected:
     UniformBuffer() = default;
-};
-
-class DirectUniformBuffer {
-public:
-    virtual ~DirectUniformBuffer() = default;
-
-    virtual void write(size_t offset, const void* ptr, size_t length) = 0;
-protected:
-    DirectUniformBuffer() = default;
 };
 
 }

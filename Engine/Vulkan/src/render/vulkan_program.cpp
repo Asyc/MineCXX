@@ -92,6 +92,8 @@ inline void parseShader(const std::vector<char>& shaderBuffer,
         descriptorSetLayouts[set].emplace_back(binding, vk::DescriptorType::eSampler, array, flag, nullptr);
     }
 
+
+
     uint32_t lowestAccessed = -1, highestAccessed = -1;
 
     //Spec states only 1 push constant buffer per stage
@@ -212,17 +214,21 @@ VulkanProgram::VulkanProgram(vk::Device device, const std::string_view& program)
     parseShader(vertexSPV, setBindingTable, pushConstantRanges);
     parseShader(fragmentSPV, setBindingTable, pushConstantRanges);
 
-    std::vector<vk::DescriptorSetLayout> descriptorSets(setBindingTable.size());
+    std::vector<vk::UniqueDescriptorSetLayout> descriptorSets(setBindingTable.size());
     uint32_t index = 0;
     for (const auto& bindings : setBindingTable) {
         vk::DescriptorSetLayoutCreateInfo createInfo({}, bindings.size(), bindings.data());
-        descriptorSets[index++] = device.createDescriptorSetLayout(createInfo);
+        descriptorSets[index++] = device.createDescriptorSetLayoutUnique(createInfo);
     }
 
-    vk::PipelineLayoutCreateInfo layoutCreateInfo({}, descriptorSets.size(), descriptorSets.data(), pushConstantRanges.size(), pushConstantRanges.data());
-    m_PipelineLayout = device.createPipelineLayoutUnique(layoutCreateInfo);
+    auto* buffer = (vk::DescriptorSetLayout*) alloca(sizeof(vk::DescriptorSet) * descriptorSets.size());
+    for (size_t i = 0; i < descriptorSets.size(); i++) buffer[i] = *descriptorSets[i];
 
-    std::for_each(descriptorSets.begin(), descriptorSets.end(), [device](vk::DescriptorSetLayout layout) { device.destroyDescriptorSetLayout(layout); });
+    vk::PipelineLayoutCreateInfo layoutCreateInfo({}, descriptorSets.size(), buffer, pushConstantRanges.size(), pushConstantRanges.data());
+    m_PipelineLayout = device.createPipelineLayoutUnique(layoutCreateInfo);
+    m_DescriptorSetLayoutTable = std::move(descriptorSets);
+
+
 }
 
 const std::vector<vk::PipelineShaderStageCreateInfo>& VulkanProgram::getStages() const {

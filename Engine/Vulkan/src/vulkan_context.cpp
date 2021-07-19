@@ -71,6 +71,11 @@ VulkanRenderContext::VulkanRenderContext(const Window& window, Swapchain::Swapch
       m_MemoryAllocator(createAllocator(*m_Instance, m_PhysicalDevice, m_Device.getDevice()), [](VmaAllocator allocator) { vmaDestroyAllocator(allocator); }),
       m_Swapchain(modeHint, *m_Surface, m_PhysicalDevice, &m_Device, m_Device.getQueueManager()),
       m_TransferManager(*m_Instance, m_PhysicalDevice, &m_Device, m_Device.getQueueManager().getGraphicsQueueFamily().index) {
+
+    std::array<vk::DescriptorPoolSize, 1> poolSizes = {
+        vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, 1)
+    };
+    m_DescriptorPool = m_Device.getDevice().createDescriptorPoolUnique(vk::DescriptorPoolCreateInfo({}, 4, poolSizes.size(), poolSizes.data()));
 }
 
 std::unique_ptr<buffer::Image> VulkanRenderContext::createImage(const File& path) {
@@ -89,8 +94,13 @@ std::unique_ptr<buffer::IndexBuffer> VulkanRenderContext::allocateIndexBuffer(si
     return std::make_unique<buffer::VulkanIndexBuffer>(&m_TransferManager, m_MemoryAllocator.get(), size);
 }
 
+std::unique_ptr<buffer::UniformBuffer> VulkanRenderContext::allocateUniformBuffer(const RenderPipeline& pipeline, size_t size) {
+    auto* vkPipeline = dynamic_cast<const VulkanRenderPipeline*>(&pipeline);
+    return std::make_unique<buffer::VulkanUniformBuffer>(&m_TransferManager, m_MemoryAllocator.get(), vkPipeline, *m_DescriptorPool, size, 0, 0);
+}
+
 std::unique_ptr<RenderPipeline> VulkanRenderContext::createRenderPipeline(const File& file) const {
-    return std::make_unique<VulkanRenderPipeline>(m_Device.getDevice(), m_Swapchain.getRenderPass(), std::make_shared<VulkanProgram>(m_Device.getDevice(), file.getPath()));
+    return std::make_unique<VulkanRenderPipeline>(m_Device.getDevice(), m_Swapchain.getRenderPass(), VulkanProgram(m_Device.getDevice(), file.getPath()));
 }
 
 void VulkanRenderContext::mouseButtonCallback(gui::input::MouseButton button, gui::input::MouseButtonAction action, double x, double y) {

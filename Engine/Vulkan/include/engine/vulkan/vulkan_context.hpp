@@ -8,6 +8,7 @@
 #include <vulkan/vulkan.hpp>
 
 #include "engine/vulkan/render/buffer/vulkan_transfer_pool.hpp"
+#include "engine/vulkan/render/buffer/vulkan_uniform_buffer.hpp"
 #include "engine/vulkan/render/buffer/vulkan_vertex_buffer.hpp"
 #include "engine/vulkan/render/command/vulkan_command_pool.hpp"
 #include "engine/vulkan/render/swapchain/vulkan_swapchain.hpp"
@@ -27,6 +28,7 @@ public:
 
     [[nodiscard]] std::unique_ptr<buffer::VertexBuffer> allocateVertexBuffer(size_t size) override;
     [[nodiscard]] std::unique_ptr<buffer::IndexBuffer> allocateIndexBuffer(size_t size) override;
+    [[nodiscard]] std::unique_ptr<buffer::UniformBuffer> allocateUniformBuffer(const RenderPipeline& pipeline, size_t size) override;
 
     [[nodiscard]] std::unique_ptr<RenderPipeline> createRenderPipeline(const File& file) const override;
     [[nodiscard]] std::unique_ptr<command::CommandPool> createCommandPool() const override;
@@ -50,6 +52,8 @@ private:
 
     render::VulkanSwapchain m_Swapchain;
     buffer::VulkanTransferManager m_TransferManager;
+
+    vk::UniqueDescriptorPool m_DescriptorPool;
 };
 
 }   // namespace engine::render::vulkan

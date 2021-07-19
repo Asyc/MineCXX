@@ -5,17 +5,17 @@
 
 namespace engine::vulkan::render {
 
-VulkanRenderPipeline::VulkanRenderPipeline(vk::Device device, vk::RenderPass renderPass, std::shared_ptr<VulkanProgram> program) : m_Program(std::move(program)) {
+VulkanRenderPipeline::VulkanRenderPipeline(vk::Device device, vk::RenderPass renderPass, VulkanProgram&& program) {
     vk::PipelineVertexInputStateCreateInfo vertexInputStateCreateInfo(
         {},
-        m_Program->getInputBindings().size(),
-        m_Program->getInputBindings().data(),
-        m_Program->getInputAttributes().size(),
-        m_Program->getInputAttributes().data()
+        program.getInputBindings().size(),
+        program.getInputBindings().data(),
+        program.getInputAttributes().size(),
+        program.getInputAttributes().data()
     );
 
     vk::PrimitiveTopology topology;
-    if (m_Program->programConfig.vulkan.input.topology == "ePointList") {
+    if (program.programConfig.vulkan.input.topology == "ePointList") {
         topology = vk::PrimitiveTopology::ePointList;
     }
 
@@ -60,8 +60,8 @@ VulkanRenderPipeline::VulkanRenderPipeline(vk::Device device, vk::RenderPass ren
 
     vk::GraphicsPipelineCreateInfo pipelineCreateInfo(
         {},
-        m_Program->getStages().size(),
-        m_Program->getStages().data(),
+        program.getStages().size(),
+        program.getStages().data(),
         &vertexInputStateCreateInfo,
         &inputAssemblyStateCreateInfo,
         nullptr,
@@ -71,11 +71,23 @@ VulkanRenderPipeline::VulkanRenderPipeline(vk::Device device, vk::RenderPass ren
         nullptr,
         &colorBlendStateCreateInfo,
         &dynamicStateCreateInfo,
-        m_Program->getPipelineLayout(),
+        program.getPipelineLayout(),
         renderPass
     );
 
+    m_PipelineLayout = std::move(program.m_PipelineLayout);
     m_Pipeline = device.createGraphicsPipelineUnique({}, pipelineCreateInfo).value;
+
+    m_DescriptorSetLayouts = std::move(program.m_DescriptorSetLayoutTable);
+    m_DescriptorSetLayouts.shrink_to_fit();
+
+    m_PoolSizes.emplace_back(vk::DescriptorType::eUniformBuffer, static_cast<uint32_t>(m_DescriptorSetLayouts.size()));
+    m_DescriptorPools.push_back(device.createDescriptorPoolUnique(vk::DescriptorPoolCreateInfo(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, 3, m_PoolSizes.size(), m_PoolSizes.data())));
+}
+
+vk::UniqueDescriptorSet VulkanRenderPipeline::allocateDescriptorSet(uint32_t binding) const {
+    vk::DescriptorSetAllocateInfo allocateInfo(*m_DescriptorPools[0], 1, &*m_DescriptorSetLayouts[binding]);
+    return std::move(m_Pipeline.getOwner().allocateDescriptorSetsUnique(allocateInfo)[0]);
 }
 
 vk::Pipeline VulkanRenderPipeline::getPipeline() const {
