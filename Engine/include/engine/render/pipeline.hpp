@@ -34,8 +34,8 @@ public:
                 std::vector<Attribute> inputAttributes;
             } input;
 
+            std::string geometryPath;
             std::string vertexPath;
-
             std::string fragmentPath;
         } vulkan;
     } programConfig;

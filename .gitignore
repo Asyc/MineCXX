@@ -4,10 +4,16 @@
 *.iml
 
 cmake-build-debug/
-cmake-build-release
+cmake-build-release/
 
 # SPRIV-Cross generated files
 *.cmake
 gitversion.h
 
 logs/
+
+# SPRV Shaders
+*.spv
+
+# MC Assets
+Game/assets/minecraft/

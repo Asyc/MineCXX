@@ -31,7 +31,7 @@ public:
 private:
     friend class VulkanRenderPipeline;
 
-    vk::UniqueShaderModule m_Vertex, m_Fragment;
+    vk::UniqueShaderModule m_Vertex, m_Fragment, m_Geometry;
     std::vector<vk::PipelineShaderStageCreateInfo> m_Stages;
     vk::UniquePipelineLayout m_PipelineLayout;
 

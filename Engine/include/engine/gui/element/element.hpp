@@ -11,6 +11,7 @@ public:
 
     virtual void draw(engine::render::command::IDrawableCommandBuffer& buffer) = 0;
 
+    [[nodiscard]] virtual int getX() const = 0;
 };
 
 }

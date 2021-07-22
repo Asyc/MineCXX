@@ -12,10 +12,12 @@ struct Vertex {
     float tx, ty;
 };
 
-template <typename T>
+template<typename T>
 constexpr size_t size_of(size_t val) {
     return sizeof(T) * val;
 }
+
+#include <bitset>
 
 void app_main() {
     engine::init();
@@ -29,12 +31,12 @@ void app_main() {
     std::array<Vertex, 4> vertices{
         Vertex{-0.5f, 0.5f, 0.0f, 0.0f, 1.0f},
         Vertex{-0.5f, -0.5f, 0.0f, 0.0f, 0.0f},
-        Vertex{ 0.5f, -0.5f, 0.0f, 1.0f, 0.0f},
+        Vertex{0.5f, -0.5f, 0.0f, 1.0f, 0.0f},
         Vertex{0.5f, 0.5f, 0.0f, 1.0f, 1.0f}
     };
     std::array<uint32_t, 6> indices{0, 1, 2, 0, 3, 2};
 
-    std::array<float, 4> color{0.0f, 0.0f, 1.0f, 1.0f};
+    std::array<float, 4> color{1.0f, 1.0f, 1.0f, 1.0f};
     std::array<uint32_t, 1> sampler{0};
 
     auto vertexBuffer = context->allocateVertexBuffer(size_of<Vertex>(vertices.size()));

@@ -15,12 +15,18 @@ using namespace ::engine::render::buffer;
 class VulkanImage : public Image {
 public:
     VulkanImage(VulkanTransferManager* transferManager, VmaAllocator allocator, const File& path);
+
+    [[nodiscard]] size_t getWidth() const override { return m_Width; }
+    [[nodiscard]] size_t getHeight() const override { return m_Height; }
+
 private:
     vk::Image m_Image;
     std::unique_ptr<VmaAllocation_T, std::function<void(VmaAllocation)>> m_Allocation;
+    vk::UniqueDescriptorSet m_DescriptorSet;
 
     VulkanTransferManager* m_TransferManager;
 
+    size_t m_Width, m_Height;
 };
 
 }   // namespace engine::render::vulkan

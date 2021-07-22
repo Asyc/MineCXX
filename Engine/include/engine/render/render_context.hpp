@@ -9,11 +9,13 @@
 #include "buffer/vertex_buffer.hpp"
 #include "command/command_pool.hpp"
 #include "engine/file.hpp"
+#include "engine/gui/font/font_renderer.hpp"
 #include "engine/gui/gui.hpp"
 #include "engine/gui/input.hpp"
 
 #include "pipeline.hpp"
 #include "swapchain.hpp"
+
 
 namespace engine::render {
 
@@ -24,6 +26,7 @@ public:
     [[nodiscard]] virtual std::unique_ptr<buffer::Image> createImage(const File& path) = 0;
 
     [[nodiscard]] virtual std::unique_ptr<buffer::VertexBuffer> allocateVertexBuffer(size_t size) = 0;
+
     [[nodiscard]] virtual std::unique_ptr<buffer::IndexBuffer> allocateIndexBuffer(size_t size) = 0;
     [[nodiscard]] virtual std::unique_ptr<buffer::UniformBuffer> allocateUniformBuffer(const RenderPipeline& pipeline, size_t size) = 0;
 
@@ -33,6 +36,8 @@ public:
 
     [[nodiscard]] virtual Swapchain& getSwapchain() = 0;
     [[nodiscard]] virtual const Swapchain& getSwapchain() const = 0;
+
+    [[nodiscard]] virtual gui::font::FontRenderer& getFontRenderer() = 0;
 
     // Callback functions
     virtual void mouseButtonCallback(gui::input::MouseButton button, gui::input::MouseButtonAction action, double x, double y) = 0;

@@ -186,15 +186,24 @@ VulkanProgram::VulkanProgram(vk::Device device, const std::string_view& program)
 
     File vertexFile(programConfig.vulkan.vertexPath);
     File fragmentFile(programConfig.vulkan.vertexPath);
+
+    bool hasGeometry = !programConfig.vulkan.geometryPath.empty();
+    File geometryFile(programConfig.vulkan.geometryPath);
 #ifdef MCE_DBG
     File vertexLive(programConfig.vulkan.vertexPath.substr(0, programConfig.vulkan.vertexPath.size() - 4));
     File fragmentLive(programConfig.vulkan.fragmentPath.substr(0, programConfig.vulkan.fragmentPath.size() - 4));
+    File geometryLive(programConfig.vulkan.geometryPath.substr(0, programConfig.vulkan.fragmentPath.size() - 4));
 
     auto vertexSPV = vertexLive.exists() ? createSPIRV<GLSLANG_STAGE_VERTEX>(vertexLive.readFileText()) : vertexFile.readFileBinary();
     auto fragmentSPV = fragmentLive.exists() ? createSPIRV<GLSLANG_STAGE_FRAGMENT>(fragmentLive.readFileText()) : fragmentFile.readFileBinary();
+
+    std::vector<char> geometrySPV;
+    if (hasGeometry) geometrySPV = geometryLive.exists() ? createSPIRV<GLSLANG_STAGE_GEOMETRY>(geometryLive.readFileText()) : geometryFile.readFileBinary();
 #else
-    auto vertexSPV = File(programConfig.vulkan.vertexPath).readFileBinary();
-    auto fragmentSPV = File(programConfig.vulkan.fragmentPath).readFileBinary();
+    auto vertexSPV = vertexFile.readFileBinary();
+    auto fragmentSPV = fragmentFile.readFileBinary();
+    std::vector<char> geometrySPV;
+    if (hasGeometry) geometrySPV = geometryFile.readFileBinary();
 #endif
 
     vk::ShaderModuleCreateInfo vertexModuleCreateInfo({}, vertexSPV.size(), reinterpret_cast<const uint32_t*>(vertexSPV.data()));
@@ -203,8 +212,12 @@ VulkanProgram::VulkanProgram(vk::Device device, const std::string_view& program)
     vk::ShaderModuleCreateInfo fragmentModuleCreateInfo({}, fragmentSPV.size(), reinterpret_cast<const uint32_t*>(fragmentSPV.data()));
     m_Fragment = device.createShaderModuleUnique(fragmentModuleCreateInfo);
 
+    vk::ShaderModuleCreateInfo geometryModuleCrateInfo({}, geometrySPV.size(), reinterpret_cast<const uint32_t*>(geometrySPV.data()));
+    if (hasGeometry) m_Geometry = device.createShaderModuleUnique(geometryModuleCrateInfo);
+
     m_Stages.emplace_back(vk::PipelineShaderStageCreateFlagBits{}, vk::ShaderStageFlagBits::eVertex, *m_Vertex, "main");
     m_Stages.emplace_back(vk::PipelineShaderStageCreateFlagBits{}, vk::ShaderStageFlagBits::eFragment, *m_Fragment, "main");
+    if (hasGeometry) m_Stages.emplace_back(vk::PipelineShaderStageCreateFlagBits{}, vk::ShaderStageFlagBits::eGeometry, *m_Geometry, "main");
 
     spirv_cross::Compiler vertexShader(reinterpret_cast<const uint32_t*>(vertexSPV.data()), vertexSPV.size() / sizeof(uint32_t));
     auto vertexShaderData = vertexShader.get_shader_resources();
@@ -213,6 +226,7 @@ VulkanProgram::VulkanProgram(vk::Device device, const std::string_view& program)
     std::vector<vk::PushConstantRange> pushConstantRanges;
     parseShader(vertexSPV, setBindingTable, pushConstantRanges);
     parseShader(fragmentSPV, setBindingTable, pushConstantRanges);
+    if (hasGeometry) parseShader(geometrySPV, setBindingTable, pushConstantRanges);
 
     std::vector<vk::UniqueDescriptorSetLayout> descriptorSets(setBindingTable.size());
     uint32_t index = 0;

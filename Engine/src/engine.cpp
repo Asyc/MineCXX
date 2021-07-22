@@ -7,12 +7,18 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+#include "engine/gui/font/ascii_font.hpp"
+
+#include "engine/log.hpp"
+
+
 namespace engine {
 
 void init() {
+    logging::setupLogging();
+
     glfwInit();
 
-    logging::setupLogging();
 }
 
 void terminate() {

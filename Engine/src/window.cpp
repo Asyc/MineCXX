@@ -17,7 +17,7 @@ Window::Window(int32_t width, int32_t height, const std::string_view& title) {
 }
 
 std::unique_ptr<render::RenderContext> Window::createRenderContext(render::Swapchain::SwapchainMode modeHint) {
-    auto ptr = std::make_unique<vulkan::render::VulkanRenderContext>(*this, modeHint);
+    auto ptr = std::make_unique<vulkan::render::VulkanRenderContext>(*this, Directory("assets/minecraft"), modeHint);
 
     auto currentMode = ptr->getSwapchain().getSwapchainMode();
     const auto& supportedModes = ptr->getSwapchain().getSupportedSwapchainModes();

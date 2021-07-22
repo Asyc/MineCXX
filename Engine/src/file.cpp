@@ -32,14 +32,6 @@ std::string File::readFileText() const {
     return std::move(buffer);
 }
 
-bool File::exists() const {
-    return std::filesystem::exists(m_Path);
-}
-
-const std::string& File::getPath() const {
-    return m_Path;
-}
-
 const std::string& File::getFullPath() const {
     if (!m_FullPath.has_value()) {
         m_FullPath = std::filesystem::absolute(m_Path).string();
@@ -49,6 +41,21 @@ const std::string& File::getFullPath() const {
 }
 
 const std::string& File::getParentPath() const {
+    if (!m_ParentPath.has_value()) {
+        m_ParentPath = std::filesystem::absolute(m_Path).parent_path().string();
+    }
+
+    return *m_ParentPath;
+}
+
+const std::string& Directory::getFullPath() const {
+    if (!m_FullPath.has_value()) {
+        m_FullPath = std::filesystem::absolute(m_Path).string();
+    }
+
+    return *m_FullPath;
+}
+const std::string& Directory::getParentPath() const {
     if (!m_ParentPath.has_value()) {
         m_ParentPath = std::filesystem::absolute(m_Path).parent_path().string();
     }

@@ -12,7 +12,7 @@ set(HEADERS
         include/engine/render/command/command_buffer.hpp
         include/engine/render/buffer/vertex_buffer.hpp
         include/engine/render/buffer/index_buffer.hpp
-        include/engine/gui/gui.hpp include/engine/gui/element/element.hpp include/engine/gui/input.hpp include/engine/render/buffer/image.hpp include/engine/render/buffer/uniform_buffer.hpp include/engine/nbt/nbt_parser.hpp include/engine/nbt/nbt_writer.hpp)
+        include/engine/gui/gui.hpp include/engine/gui/element/element.hpp include/engine/gui/input.hpp include/engine/render/buffer/image.hpp include/engine/render/buffer/uniform_buffer.hpp include/engine/nbt/nbt_parser.hpp include/engine/nbt/nbt_writer.hpp include/engine/gui/font/ascii_font.hpp)
 
 set(SOURCES
         src/engine.cpp
@@ -21,7 +21,7 @@ set(SOURCES
         src/log_internal.hpp
         src/pipeline.cpp
         src/file.cpp
-        src/gui/gui.cpp include/engine/nbt/nbt_type.hpp)
+        src/gui/gui.cpp include/engine/nbt/nbt_type.hpp include/engine/gui/font/font_renderer.hpp src/gui/font/font_renderer.cpp src/gui/font/ascii_font.cpp)
 
 add_library(libengine STATIC ${HEADERS} ${SOURCES})
 

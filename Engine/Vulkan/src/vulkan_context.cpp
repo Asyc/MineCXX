@@ -8,12 +8,7 @@
 #include <vk_mem_alloc.h>
 
 #include "engine/log.hpp"
-#include "engine/vulkan/render/buffer/vulkan_image.hpp"
 #include "engine/vulkan/render/buffer/vulkan_index_buffer.hpp"
-#include "engine/vulkan/render/buffer/vulkan_vertex_buffer.hpp"
-#include "engine/vulkan/render/command/vulkan_command_pool.hpp"
-#include "engine/vulkan/render/swapchain/vulkan_swapchain.hpp"
-#include "engine/vulkan/render/vulkan_pipeline.hpp"
 
 namespace engine::vulkan::render {
 
@@ -53,6 +48,7 @@ vk::PhysicalDevice findPhysicalDevice(const std::vector<vk::PhysicalDevice>& dev
 
 inline VmaAllocator createAllocator(vk::Instance instance, vk::PhysicalDevice physicalDevice, vk::Device device) {
     VmaAllocatorCreateInfo allocatorCreateInfo{};
+
     allocatorCreateInfo.physicalDevice = physicalDevice;
     allocatorCreateInfo.device = device;
     allocatorCreateInfo.instance = instance;
@@ -63,14 +59,15 @@ inline VmaAllocator createAllocator(vk::Instance instance, vk::PhysicalDevice ph
     return allocator;
 }
 
-VulkanRenderContext::VulkanRenderContext(const Window& window, Swapchain::SwapchainMode modeHint)
+VulkanRenderContext::VulkanRenderContext(const Window& window, const Directory& resourceDirectory, Swapchain::SwapchainMode modeHint)
     : m_Instance(createInstance()),
       m_Surface(window.createSurface(*m_Instance)),
       m_PhysicalDevice(findPhysicalDevice(m_Instance->enumeratePhysicalDevices())),
       m_Device(this, *m_Instance, m_PhysicalDevice, *m_Surface),
       m_MemoryAllocator(createAllocator(*m_Instance, m_PhysicalDevice, m_Device.getDevice()), [](VmaAllocator allocator) { vmaDestroyAllocator(allocator); }),
       m_Swapchain(modeHint, *m_Surface, m_PhysicalDevice, &m_Device, m_Device.getQueueManager()),
-      m_TransferManager(*m_Instance, m_PhysicalDevice, &m_Device, m_Device.getQueueManager().getGraphicsQueueFamily().index) {
+      m_TransferManager(*m_Instance, m_PhysicalDevice, &m_Device, m_Device.getQueueManager().getGraphicsQueueFamily().index),
+      m_FontRenderer(*this, File(resourceDirectory.getPath() + "font/glyph_sizes.bin"), Directory(resourceDirectory.getPath() + "/textures/font")){
 
     std::array<vk::DescriptorPoolSize, 1> poolSizes = {
         vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, 1)

@@ -18,6 +18,9 @@ VulkanImage::VulkanImage(VulkanTransferManager* transferManager, VmaAllocator al
         throw std::runtime_error("failed to load image");
     }
 
+    m_Width = width;
+    m_Height = height;
+
     VkImageCreateInfo imageCreateInfo = vk::ImageCreateInfo(
         {},
         vk::ImageType::e2D,

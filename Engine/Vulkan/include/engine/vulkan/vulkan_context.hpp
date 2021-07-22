@@ -22,7 +22,7 @@ using namespace ::engine::render;
 
 class VulkanRenderContext : public RenderContext {
 public:
-    VulkanRenderContext(const Window& window, Swapchain::SwapchainMode modeHint);
+    VulkanRenderContext(const Window& window, const Directory& resourceDirectory, Swapchain::SwapchainMode modeHint);
 
     std::unique_ptr<buffer::Image> createImage(const File& path) override;
 
@@ -41,7 +41,9 @@ public:
     [[nodiscard]] VulkanSwapchain& getSwapchainVulkan() { return m_Swapchain; }
     [[nodiscard]] device::VulkanDevice& getDevice() { return m_Device; }
 
-    [[nodiscard]] buffer::VulkanTransferManager& getTransferManager() {return m_TransferManager; }
+    [[nodiscard]] buffer::VulkanTransferManager& getTransferManager() { return m_TransferManager; }
+
+    [[nodiscard]] gui::font::FontRenderer& getFontRenderer() override { return m_FontRenderer; }
 private:
     vk::UniqueInstance m_Instance;
     vk::UniqueSurfaceKHR m_Surface;
@@ -54,6 +56,8 @@ private:
     buffer::VulkanTransferManager m_TransferManager;
 
     vk::UniqueDescriptorPool m_DescriptorPool;
+
+    gui::font::FontRenderer m_FontRenderer;
 };
 
 }   // namespace engine::render::vulkan
