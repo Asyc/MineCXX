@@ -36,7 +36,7 @@ void app_main() {
     };
     std::array<uint32_t, 6> indices{0, 1, 2, 0, 3, 2};
 
-    std::array<float, 4> color{1.0f, 1.0f, 1.0f, 1.0f};
+    std::array<float, 4> color{0.0f, 1.0f, 1.0f, 1.0f};
     std::array<uint32_t, 1> sampler{0};
 
     auto vertexBuffer = context->allocateVertexBuffer(size_of<Vertex>(vertices.size()));
@@ -48,10 +48,13 @@ void app_main() {
     auto uniformBuffer = context->allocateUniformBuffer(*pipeline, size_of<float>(color.size()));
     uniformBuffer->write(0, color.data(), size_of<float>(color.size()));
 
+    auto uniformDescriptor = pipeline->allocateDescriptorSet(0);
+    uniformDescriptor->bind(0, *uniformBuffer);
+
     auto render = pool->allocateCommandListImmutable();
     render->begin();
     render->bindPipeline(*pipeline);
-    render->bindUniformBuffer(*uniformBuffer, 0);
+    render->bindUniformDescriptor(*uniformDescriptor);
     render->bindVertexBuffer(*vertexBuffer);
     render->bindIndexBuffer(*indexBuffer);
     render->drawIndexed(1, indices.size());
@@ -75,6 +78,9 @@ void app_main() {
 }
 
 int main() {
+#ifdef MCE_DBG
+    app_main();
+#else
     try {
         app_main();
         return 0;
@@ -82,4 +88,5 @@ int main() {
         std::cerr << ex.what() << std::endl;
         return -1;
     }
+#endif
 }

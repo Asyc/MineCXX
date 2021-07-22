@@ -5,6 +5,7 @@
 
 #include <memory>
 #include <string_view>
+#include <deque>
 #include <vector>
 
 #include <vulkan/vulkan.hpp>
@@ -13,6 +14,7 @@
 
 namespace engine::vulkan::render {
 
+using namespace ::engine;
 using namespace ::engine::render;
 
 class VulkanProgram;
@@ -31,7 +33,7 @@ public:
 private:
     friend class VulkanRenderPipeline;
 
-    vk::UniqueShaderModule m_Vertex, m_Fragment, m_Geometry;
+    vk::UniqueShaderModule m_Vertex, m_Fragment;
     std::vector<vk::PipelineShaderStageCreateInfo> m_Stages;
     vk::UniquePipelineLayout m_PipelineLayout;
 
@@ -45,7 +47,9 @@ class VulkanRenderPipeline : public RenderPipeline {
 public:
     VulkanRenderPipeline(vk::Device device, vk::RenderPass renderPass, VulkanProgram&& program);
 
-    vk::UniqueDescriptorSet allocateDescriptorSet(uint32_t binding) const;
+    std::unique_ptr<::engine::render::buffer::UniformDescriptor> allocateDescriptorSet(uint32_t set) override;
+
+    vk::UniqueDescriptorSet allocateDescriptorSetUnique(uint32_t set);
 
     [[nodiscard]] vk::Pipeline getPipeline() const;
     [[nodiscard]] vk::PipelineLayout getPipelineLayout() const { return *m_PipelineLayout; }
@@ -57,7 +61,7 @@ private:
     std::vector<vk::UniqueDescriptorSetLayout> m_DescriptorSetLayouts;
 
     std::vector<vk::DescriptorPoolSize> m_PoolSizes;
-    std::vector<vk::UniqueDescriptorPool> m_DescriptorPools;
+    std::deque<vk::UniqueDescriptorPool> m_DescriptorPools;
 };
 
 }   // namespace engine::vulkan::render

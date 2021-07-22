@@ -22,7 +22,7 @@ public:
 
     virtual void bindVertexBuffer(const buffer::VertexBuffer& buffer) = 0;
     virtual void bindIndexBuffer(const buffer::IndexBuffer& buffer) = 0;
-    virtual void bindUniformBuffer(const buffer::UniformBuffer& buffer, uint32_t set) = 0;
+    virtual void bindUniformDescriptor(const buffer::UniformDescriptor& descriptor) = 0;
 
     virtual void draw(uint32_t instanceCount, uint32_t vertexCount) = 0;
     virtual void drawIndexed(uint32_t instanceCount, uint32_t indexCount) = 0;

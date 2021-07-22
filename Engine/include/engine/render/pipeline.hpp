@@ -4,8 +4,8 @@
 #include <string>
 
 #include "engine/file.hpp"
-
 #include "engine/log.hpp"
+#include "engine/render/buffer/uniform_buffer.hpp"
 
 namespace engine::render {
 
@@ -34,7 +34,6 @@ public:
                 std::vector<Attribute> inputAttributes;
             } input;
 
-            std::string geometryPath;
             std::string vertexPath;
             std::string fragmentPath;
         } vulkan;
@@ -46,6 +45,8 @@ public:
 class RenderPipeline {
 public:
     virtual ~RenderPipeline() = default;
+
+    virtual std::unique_ptr<buffer::UniformDescriptor> allocateDescriptorSet(uint32_t set) = 0;
 protected:
     RenderPipeline() = default;
 };

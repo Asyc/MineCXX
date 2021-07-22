@@ -44,6 +44,29 @@ protected:
     void* m_MappedPtr;
 };
 
+class VulkanUniformDescriptor : public UniformDescriptor {
+public:
+    VulkanUniformDescriptor(VulkanRenderPipeline* targetPipeline, uint32_t set);
+
+    void bind(uint32_t binding, const VulkanUniformBuffer* uniformBuffer);
+
+    void bindAll(uint32_t* bindings, const UniformBuffer* buffers, size_t count) override;
+    void bind(uint32_t binding, const UniformBuffer& buffer) override {
+        bind(binding, dynamic_cast<const VulkanUniformBuffer*>(&buffer));
+    }
+
+    [[nodiscard]] vk::DescriptorSet getDescriptorSet() const {
+        return *m_Descriptor;
+    }
+
+    [[nodiscard]] uint32_t getSetIndex() const {
+        return m_Set;
+    }
+protected:
+    vk::UniqueDescriptorSet m_Descriptor;
+    uint32_t m_Set;
+};
+
 }
 
 #endif //MINECRAFTCXX_CLIENT_ENGINE_VULKAN_INCLUDE_ENGINE_VULKAN_RENDER_BUFFER_VULKAN_UNIFORM_BUFFER_HPP_

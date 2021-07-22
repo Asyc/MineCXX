@@ -2,6 +2,7 @@
 #define MINECRAFTCXX_CLIENT_ENGINE_INCLUDE_ENGINE_RENDER_IMAGE_HPP_
 
 #include <cstdint>
+#include <tuple>
 
 namespace engine::render::buffer {
 
@@ -12,7 +13,7 @@ public:
     [[nodiscard]] virtual size_t getWidth() const = 0;
     [[nodiscard]] virtual size_t getHeight() const = 0;
 
-    std::pair<size_t, size_t> getSize() { return {getWidth(), getHeight()}; }
+    [[nodiscard]] std::pair<size_t, size_t> getSize() const { return {getWidth(), getHeight()}; }
 protected:
     Image() = default;
 };

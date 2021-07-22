@@ -10,6 +10,7 @@
 namespace engine::gui::font {
 
 FontRenderer::FontRenderer(render::RenderContext& context, const File& glyphSizesPath, const Directory& resourceDirectory) {
+    m_Pipeline = context.createRenderPipeline(File("assets/shaders/font"));
     m_IndexBuffer = context.allocateIndexBuffer(6);
 
     std::array<uint32_t, 6> indices = {0, 1, 2, 0, 3, 2};

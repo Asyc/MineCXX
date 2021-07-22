@@ -1,7 +1,9 @@
-#version 120
+#version 450
 
-uniform sampler2D asciiFontSampler;
+layout (location = 0) in vec2 gs_TexCoord;
+
+layout (location = 0) out vec4 fs_FragColor;
 
 void main() {
-    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+    fs_FragColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
 }

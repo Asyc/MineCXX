@@ -1,6 +1,5 @@
 {
   "vulkan": {
-    "geometryPath": "shader.geom.spv",
     "vertexPath": "shader.vert.spv",
     "fragmentPath": "shader.frag.spv",
     "input": {

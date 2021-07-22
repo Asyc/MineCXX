@@ -28,7 +28,7 @@ public:
 
     void bindVertexBuffer(const buffer::VertexBuffer& buffer) override;
     void bindIndexBuffer(const buffer::IndexBuffer& buffer) override;
-    void bindUniformBuffer(const buffer::UniformBuffer& buffer, uint32_t set) override;
+    void bindUniformDescriptor(const buffer::UniformDescriptor& descriptor) override;
 
     void draw(uint32_t instanceCount, uint32_t vertexCount) override;
     void drawIndexed(uint32_t instanceCount, uint32_t indexCount) override;
