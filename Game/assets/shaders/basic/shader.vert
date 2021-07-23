@@ -5,11 +5,7 @@ layout (location = 1) in vec2 texPos;
 
 layout (location = 0) out vec2 vs_TexPos;
 
-void setTextureCoordinates() {
-    vs_TexPos = texPos;
-}
-
 void main() {
-    setTextureCoordinates();
+    vs_TexPos = texPos;
     gl_Position = vec4(pos, 1.0);
 }

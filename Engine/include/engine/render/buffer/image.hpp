@@ -8,7 +8,7 @@
 
 namespace engine::render::buffer {
 
-class Sampler {
+class Image : public IDescriptorResource {
 public:
     enum class Filtering {
         LINEAR,
@@ -18,11 +18,8 @@ public:
     enum class RepeatMode {
 
     };
-};
 
-class Image : public IDescriptorResource {
-public:
-    virtual ~Image() = default;
+    ~Image() override = default;
 
     [[nodiscard]] virtual size_t getWidth() const = 0;
     [[nodiscard]] virtual size_t getHeight() const = 0;

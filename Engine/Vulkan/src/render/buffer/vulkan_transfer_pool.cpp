@@ -159,9 +159,9 @@ void VulkanTransferManager::submit(bool wait) {
 void VulkanTransferManager::addTask(VulkanTransferBufferUnique src, vk::Buffer dst, size_t srcOffset, size_t dstOffset, size_t length) {
     auto& currentFlight = m_Flights[m_FlightIndex];
     m_CommandPool.getOwner().waitForFences(1, &*currentFlight.fence, VK_FALSE, UINT64_MAX);
-    if (!currentFlight.pendingRelease.empty()) currentFlight.pendingRelease.clear();
 
     if (currentFlight.empty) {
+        if (!currentFlight.pendingRelease.empty()) currentFlight.pendingRelease.clear();
         currentFlight.buffer->begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
         currentFlight.empty = false;
     }
@@ -176,6 +176,7 @@ void VulkanTransferManager::addTaskImage(VulkanTransferBufferUnique src, vk::Ima
 
     m_CommandPool.getOwner().waitForFences(1, &*currentFlight.fence, VK_FALSE, UINT64_MAX);
     if (currentFlight.empty) {
+        if (!currentFlight.pendingRelease.empty()) currentFlight.pendingRelease.clear();
         currentFlight.buffer->begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
         currentFlight.empty = false;
     }

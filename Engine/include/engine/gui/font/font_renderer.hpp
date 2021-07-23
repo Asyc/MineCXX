@@ -37,6 +37,7 @@ public:
 private:
     std::unique_ptr<render::RenderPipeline> m_Pipeline;
     std::unique_ptr<render::buffer::Image> m_AsciiImage;
+    std::unordered_map<uint16_t, std::unique_ptr<render::buffer::VertexBuffer>> m_AsciiFontMap;
 
     std::unique_ptr<render::buffer::IndexBuffer> m_IndexBuffer;
 };
