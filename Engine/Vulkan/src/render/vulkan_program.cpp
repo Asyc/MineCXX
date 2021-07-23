@@ -89,10 +89,8 @@ inline void parseShader(const std::vector<char>& shaderBuffer,
             descriptorSetLayouts.resize(binding + 1);
         }
 
-        descriptorSetLayouts[set].emplace_back(binding, vk::DescriptorType::eSampler, array, flag, nullptr);
+        descriptorSetLayouts[set].emplace_back(binding, vk::DescriptorType::eCombinedImageSampler, array, flag, nullptr);
     }
-
-
 
     uint32_t lowestAccessed = -1, highestAccessed = -1;
 
@@ -187,7 +185,7 @@ VulkanProgram::VulkanProgram(vk::Device device, const std::string_view& program)
     }
 
     File vertexFile(programConfig.vulkan.vertexPath);
-    File fragmentFile(programConfig.vulkan.vertexPath);
+    File fragmentFile(programConfig.vulkan.fragmentPath);
 
 #ifdef MCE_DBG
     File vertexLive(programConfig.vulkan.vertexPath.substr(0, programConfig.vulkan.vertexPath.size() - 4));
@@ -196,6 +194,8 @@ VulkanProgram::VulkanProgram(vk::Device device, const std::string_view& program)
     auto vertexSPV = vertexLive.exists() ? createSPIRV<GLSLANG_STAGE_VERTEX>(vertexLive.readFileText()) : vertexFile.readFileBinary();
     auto fragmentSPV = fragmentLive.exists() ? createSPIRV<GLSLANG_STAGE_FRAGMENT>(fragmentLive.readFileText()) : fragmentFile.readFileBinary();
 
+    vertexFile.write(vertexSPV.data(), vertexSPV.size());
+    fragmentFile.write(fragmentSPV.data(), fragmentSPV.size());
 #else
     auto vertexSPV = vertexFile.readFileBinary();
     auto fragmentSPV = fragmentFile.readFileBinary();

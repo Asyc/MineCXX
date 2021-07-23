@@ -12,6 +12,11 @@ void File::deleteFile() {
         throw std::runtime_error("failed to delete file");
 }
 
+void File::write(const void* data, size_t length) const {
+    std::ofstream stream(m_Path, std::ios_base::binary);
+    stream.write(reinterpret_cast<const char*>(data), length);
+}
+
 std::vector<char> File::readFileBinary() const {
     std::ifstream in(m_Path, std::ios_base::binary | std::ios_base::ate);
     auto pos = in.tellg();

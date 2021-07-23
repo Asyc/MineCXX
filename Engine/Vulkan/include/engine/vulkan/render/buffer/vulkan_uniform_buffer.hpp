@@ -8,6 +8,7 @@
 #include <vulkan/vulkan.hpp>
 
 #include "engine/vulkan/render/buffer/vulkan_transfer_pool.hpp"
+#include "engine/vulkan/render/vulkan_descriptor.hpp"
 #include "engine/vulkan/render/vulkan_pipeline.hpp"
 
 VK_DEFINE_HANDLE(VmaAllocation)
@@ -16,13 +17,7 @@ namespace engine::vulkan::render::buffer {
 
 using namespace ::engine::render::buffer;
 
-class IVulkanUniformBuffer {
-public:
-    [[nodiscard]] virtual vk::Buffer getBuffer() const = 0;
-    [[nodiscard]] virtual vk::DescriptorSet getDescriptorSet() const = 0;
-};
-
-class VulkanUniformBuffer : public UniformBuffer, public IVulkanUniformBuffer {
+class VulkanUniformBuffer : public UniformBuffer, public IVulkanDescriptorResource {
 public:
     VulkanUniformBuffer(VulkanTransferManager* transferManager,
                         VmaAllocator allocator,
@@ -34,37 +29,14 @@ public:
 
     void write(size_t offset, const void* ptr, size_t length) override;
 
-    vk::Buffer getBuffer() const override { return m_Buffer; }
-    vk::DescriptorSet getDescriptorSet() const override {return *m_DescriptorSet;}
+    [[nodiscard]] vk::DescriptorType getDescriptorType() const override { return vk::DescriptorType::eUniformBuffer; }
+    [[nodiscard]] vk::Buffer getBuffer() const override { return m_Buffer; }
 protected:
     vk::Buffer m_Buffer;
     std::unique_ptr<VmaAllocation_T, std::function<void(VmaAllocation)>> m_Allocation;
     vk::UniqueDescriptorSet m_DescriptorSet;
 
     void* m_MappedPtr;
-};
-
-class VulkanUniformDescriptor : public UniformDescriptor {
-public:
-    VulkanUniformDescriptor(VulkanRenderPipeline* targetPipeline, uint32_t set);
-
-    void bind(uint32_t binding, const VulkanUniformBuffer* uniformBuffer);
-
-    void bindAll(uint32_t* bindings, const UniformBuffer* buffers, size_t count) override;
-    void bind(uint32_t binding, const UniformBuffer& buffer) override {
-        bind(binding, dynamic_cast<const VulkanUniformBuffer*>(&buffer));
-    }
-
-    [[nodiscard]] vk::DescriptorSet getDescriptorSet() const {
-        return *m_Descriptor;
-    }
-
-    [[nodiscard]] uint32_t getSetIndex() const {
-        return m_Set;
-    }
-protected:
-    vk::UniqueDescriptorSet m_Descriptor;
-    uint32_t m_Set;
 };
 
 }

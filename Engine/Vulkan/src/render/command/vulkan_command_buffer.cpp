@@ -44,8 +44,8 @@ void VulkanDrawableCommandBuffer::bindIndexBuffer(const buffer::IndexBuffer& buf
     getCommandBufferHandle().bindIndexBuffer(vkBuffer->getBuffer(), 0, vk::IndexType::eUint32);
 }
 
-void VulkanDrawableCommandBuffer::bindUniformDescriptor(const buffer::UniformDescriptor& descriptor) {
-    auto* vkDescriptor = dynamic_cast<const buffer::VulkanUniformDescriptor*>(&descriptor);
+void VulkanDrawableCommandBuffer::bindUniformDescriptor(const UniformDescriptor& descriptor) {
+    auto* vkDescriptor = dynamic_cast<const VulkanUniformDescriptor*>(&descriptor);
     vk::DescriptorSet descriptorSet = vkDescriptor->getDescriptorSet();
 
     getCommandBufferHandle().bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_CurrentLayout, vkDescriptor->getSetIndex(), 1, &descriptorSet, 0, nullptr);

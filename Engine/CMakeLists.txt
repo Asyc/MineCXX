@@ -21,7 +21,7 @@ set(SOURCES
         src/log_internal.hpp
         src/pipeline.cpp
         src/file.cpp
-        src/gui/gui.cpp include/engine/nbt/nbt_type.hpp include/engine/gui/font/font_renderer.hpp src/gui/font/font_renderer.cpp src/gui/font/ascii_font.cpp)
+        src/gui/gui.cpp include/engine/nbt/nbt_type.hpp include/engine/gui/font/font_renderer.hpp src/gui/font/font_renderer.cpp src/gui/font/ascii_font.cpp include/engine/render/descriptor.hpp)
 
 add_library(libengine STATIC ${HEADERS} ${SOURCES})
 

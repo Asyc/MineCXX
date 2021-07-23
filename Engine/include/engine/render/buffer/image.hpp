@@ -4,9 +4,23 @@
 #include <cstdint>
 #include <tuple>
 
+#include "engine/render/descriptor.hpp"
+
 namespace engine::render::buffer {
 
-class Image {
+class Sampler {
+public:
+    enum class Filtering {
+        LINEAR,
+        NEAREST
+    };
+
+    enum class RepeatMode {
+
+    };
+};
+
+class Image : public IDescriptorResource {
 public:
     virtual ~Image() = default;
 

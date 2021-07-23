@@ -36,32 +36,26 @@ void app_main() {
     };
     std::array<uint32_t, 6> indices{0, 1, 2, 0, 3, 2};
 
-    std::array<float, 4> color{0.0f, 1.0f, 1.0f, 1.0f};
-    std::array<uint32_t, 1> sampler{0};
-
     auto vertexBuffer = context->allocateVertexBuffer(size_of<Vertex>(vertices.size()));
     vertexBuffer->write(0, vertices.data(), size_of<Vertex>(vertices.size()));
 
     auto indexBuffer = context->allocateIndexBuffer(indices.size());
     indexBuffer->write(0, indices.data(), indices.size());
 
-    auto uniformBuffer = context->allocateUniformBuffer(*pipeline, size_of<float>(color.size()));
-    uniformBuffer->write(0, color.data(), size_of<float>(color.size()));
-
-    auto uniformDescriptor = pipeline->allocateDescriptorSet(0);
-    uniformDescriptor->bind(0, *uniformBuffer);
+    auto texture = context->createImage(engine::File(R"(C:\Users\Asyc\Downloads\hippo.jpg)"));
+    auto uniformDescriptorSet = pipeline->allocateDescriptorSet(0);
+    uniformDescriptorSet->bind(0, *texture);
 
     auto render = pool->allocateCommandListImmutable();
     render->begin();
     render->bindPipeline(*pipeline);
-    render->bindUniformDescriptor(*uniformDescriptor);
+    render->bindUniformDescriptor(*uniformDescriptorSet);
     render->bindVertexBuffer(*vertexBuffer);
     render->bindIndexBuffer(*indexBuffer);
     render->drawIndexed(1, indices.size());
     render->end();
 
     auto buffer = pool->allocateIndirectCommandBuffer();
-    auto texture = context->createImage(engine::File(R"(C:\Users\Asyc\Documents\backup\pic.jpg)"));
 
     while (!window.shouldClose()) {
         Window::pollEvents();

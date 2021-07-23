@@ -15,6 +15,8 @@ public:
 
     void deleteFile();
 
+    void write(const void* data, size_t length) const;
+
     [[nodiscard]] std::vector<char> readFileBinary() const;
     [[nodiscard]] std::string readFileText() const;
 

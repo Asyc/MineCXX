@@ -12,6 +12,10 @@
 
 #include "engine/file.hpp"
 
+namespace engine::render {
+class UniformDescriptor;
+}   // namespace engine::render
+
 namespace engine::vulkan::render {
 
 using namespace ::engine;
@@ -47,7 +51,7 @@ class VulkanRenderPipeline : public RenderPipeline {
 public:
     VulkanRenderPipeline(vk::Device device, vk::RenderPass renderPass, VulkanProgram&& program);
 
-    std::unique_ptr<::engine::render::buffer::UniformDescriptor> allocateDescriptorSet(uint32_t set) override;
+    std::unique_ptr<::engine::render::UniformDescriptor> allocateDescriptorSet(uint32_t set) override;
 
     vk::UniqueDescriptorSet allocateDescriptorSetUnique(uint32_t set);
 

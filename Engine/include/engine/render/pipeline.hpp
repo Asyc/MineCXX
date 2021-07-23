@@ -46,7 +46,7 @@ class RenderPipeline {
 public:
     virtual ~RenderPipeline() = default;
 
-    virtual std::unique_ptr<buffer::UniformDescriptor> allocateDescriptorSet(uint32_t set) = 0;
+    virtual std::unique_ptr<UniformDescriptor> allocateDescriptorSet(uint32_t set) = 0;
 protected:
     RenderPipeline() = default;
 };

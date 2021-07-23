@@ -172,7 +172,7 @@ void VulkanTransferManager::addTask(VulkanTransferBufferUnique src, vk::Buffer d
 }
 
 void VulkanTransferManager::addTaskImage(VulkanTransferBufferUnique src, vk::Image dst, vk::BufferImageCopy imageCopy) {
-    auto& currentFlight = m_Flights[m_FlightIndex++];
+    auto& currentFlight = m_Flights[m_FlightIndex];
 
     m_CommandPool.getOwner().waitForFences(1, &*currentFlight.fence, VK_FALSE, UINT64_MAX);
     if (currentFlight.empty) {
@@ -185,8 +185,8 @@ void VulkanTransferManager::addTaskImage(VulkanTransferBufferUnique src, vk::Ima
         vk::AccessFlagBits::eTransferWrite,
         vk::ImageLayout::eUndefined,
         vk::ImageLayout::eTransferDstOptimal,
-        {},
-        {},
+        VK_QUEUE_FAMILY_IGNORED,
+        VK_QUEUE_FAMILY_IGNORED,
         dst,
         vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1)
     );
@@ -198,7 +198,9 @@ void VulkanTransferManager::addTaskImage(VulkanTransferBufferUnique src, vk::Ima
     memoryBarrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
     memoryBarrier.oldLayout = memoryBarrier.newLayout;
     memoryBarrier.newLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+
     currentFlight.buffer->pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, {}, 0, nullptr, 0, nullptr, 1, &memoryBarrier);
+
     currentFlight.pendingRelease.emplace_back(std::move(src));
 }
 

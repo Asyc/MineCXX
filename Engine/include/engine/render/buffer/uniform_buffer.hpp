@@ -3,9 +3,11 @@
 
 #include <cstdint>
 
+#include "engine/render/descriptor.hpp"
+
 namespace engine::render::buffer {
 
-class UniformBuffer {
+class UniformBuffer : public IDescriptorResource {
 public:
     virtual ~UniformBuffer() = default;
 
@@ -14,15 +16,7 @@ protected:
     UniformBuffer() = default;
 };
 
-class UniformDescriptor {
-public:
-    virtual ~UniformDescriptor() = default;
 
-    virtual void bind(uint32_t binding, const UniformBuffer& buffer) = 0;
-    virtual void bindAll(uint32_t* bindings, const UniformBuffer* buffers, size_t count) = 0;
-protected:
-    UniformDescriptor() = default;
-};
 
 }
 

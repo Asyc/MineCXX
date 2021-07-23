@@ -3,7 +3,7 @@
 #include <map>
 #include <optional>
 
-#include "engine/vulkan/render/buffer/vulkan_uniform_buffer.hpp"
+#include "engine/vulkan/render/vulkan_descriptor.hpp"
 
 namespace engine::vulkan::render {
 
@@ -87,8 +87,8 @@ VulkanRenderPipeline::VulkanRenderPipeline(vk::Device device, vk::RenderPass ren
     m_DescriptorPools.push_back(device.createDescriptorPoolUnique(vk::DescriptorPoolCreateInfo(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, 3, m_PoolSizes.size(), m_PoolSizes.data())));
 }
 
-std::unique_ptr<buffer::UniformDescriptor> VulkanRenderPipeline::allocateDescriptorSet(uint32_t set) {
-    return std::make_unique<buffer::VulkanUniformDescriptor>(this, set);
+std::unique_ptr<UniformDescriptor> VulkanRenderPipeline::allocateDescriptorSet(uint32_t set) {
+    return std::make_unique<VulkanUniformDescriptor>(this, set);
 }
 
 vk::UniqueDescriptorSet VulkanRenderPipeline::allocateDescriptorSetUnique(uint32_t set) {

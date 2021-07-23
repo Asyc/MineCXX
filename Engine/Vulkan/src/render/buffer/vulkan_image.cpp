@@ -9,8 +9,9 @@
 
 namespace engine::vulkan::render::buffer {
 
-VulkanImage::VulkanImage(VulkanTransferManager* transferManager, VmaAllocator allocator, const File& path) : m_TransferManager(transferManager) {
+VulkanImage::VulkanImage(VulkanTransferManager* transferManager, VmaAllocator allocator, const File& path) {
     int width, height, channels;
+    stbi_set_flip_vertically_on_load(true);
     auto* buffer = stbi_load(path.getFullPath().c_str(), &width, &height, &channels, STBI_rgb_alpha);
     size_t length = width * height * 4;
 
@@ -62,9 +63,14 @@ VulkanImage::VulkanImage(VulkanTransferManager* transferManager, VmaAllocator al
         imageCreateInfo.extent
     );
 
-    m_TransferManager->addTaskImage(std::move(transferBuffer), m_Image, copy);
+    transferManager->addTaskImage(std::move(transferBuffer), m_Image, copy);
 
-    /*vk::ImageViewCreateInfo imageViewCreateInfo({}, m_Image, vk::ImageViewType::e2D, imageCreateInfo.format, {}, vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1));
+    VmaAllocatorInfo allocatorInfo;
+    vmaGetAllocatorInfo(allocator, &allocatorInfo);
+
+    vk::Device device = allocatorInfo.device;
+
+    vk::ImageViewCreateInfo imageViewCreateInfo({}, m_Image, vk::ImageViewType::e2D, vk::Format::eR8G8B8A8Srgb, {}, vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1));
     m_ImageView = device.createImageViewUnique(imageViewCreateInfo);
 
     vk::SamplerCreateInfo samplerCreateInfo(
@@ -77,7 +83,7 @@ VulkanImage::VulkanImage(VulkanTransferManager* transferManager, VmaAllocator al
         vk::SamplerAddressMode::eRepeat
     );
 
-    m_ImageSampler = device.createSamplerUnique(samplerCreateInfo);*/
+    m_Sampler = device.createSamplerUnique(samplerCreateInfo);
 }
 
 }   // namespace engine::vulkan::render::buffer
