@@ -31,7 +31,16 @@ vk::UniqueInstance createInstance() {
     MCE_LOG_DEBUG("Validation Layer: {}", validationLayer);
 #endif
 
-    return vk::createInstanceUnique(instanceCreateInfo);
+    std::array<vk::ValidationFeatureEnableEXT, 1> enabledValidationFeatures = {
+        vk::ValidationFeatureEnableEXT::eDebugPrintf
+    };
+
+    vk::StructureChain<vk::InstanceCreateInfo, vk::ValidationFeaturesEXT> structureChain{
+        instanceCreateInfo,
+        vk::ValidationFeaturesEXT(enabledValidationFeatures.size(), enabledValidationFeatures.data())
+    };
+
+    return vk::createInstanceUnique(structureChain.get<vk::InstanceCreateInfo>());
 }
 
 vk::PhysicalDevice findPhysicalDevice(const std::vector<vk::PhysicalDevice>& devices) {

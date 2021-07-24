@@ -117,8 +117,12 @@ template<glslang_stage_t STAGE>
 std::vector<char> createSPIRV(std::string src) {
     glslang_resource_s resource{};
     resource.max_draw_buffers = true;
-    resource.max_geometry_output_vertices = 256;
-    resource.limits.general_uniform_indexing = true;
+
+    glslang_limits_s limits{
+        true, true, true, true, true, true, true, true, true
+    };
+
+    resource.limits = limits;
 
     const glslang_input_t input{
         GLSLANG_SOURCE_GLSL,

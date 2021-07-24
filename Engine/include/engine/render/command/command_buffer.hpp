@@ -27,6 +27,7 @@ public:
     virtual void draw(uint32_t instanceCount, uint32_t vertexCount) = 0;
     virtual void drawIndexed(uint32_t instanceCount, uint32_t indexCount) = 0;
 
+    virtual void pushConstants(uint32_t offset, void* data, uint32_t length) = 0;
 };
 
 class ISubmittableCommandBuffer : public virtual ICommandBuffer {};

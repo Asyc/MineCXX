@@ -19,8 +19,18 @@ constexpr size_t size_of(size_t val) {
 
 #include <bitset>
 
+struct DummyStruct {
+        uint8_t codepoint;
+
+        struct {
+            float x, y;
+        };
+};
+
 void app_main() {
     engine::init();
+
+    LOG_INFO("SIZE: {}", sizeof(DummyStruct));
 
     Window window(1920, 1080, "Window");
 
@@ -55,13 +65,19 @@ void app_main() {
     render->drawIndexed(1, indices.size());
     render->end();
 
+    auto fontBuffer = pool->allocateCommandListImmutable();
+    fontBuffer->begin();
+    context->getFontRenderer().draw(*fontBuffer, u"FPS: 0000");
+    fontBuffer->end();
+
     auto buffer = pool->allocateIndirectCommandBuffer();
 
     while (!window.shouldClose()) {
         Window::pollEvents();
 
         buffer->begin();
-        buffer->accept(*render);
+        //buffer->accept(*render);
+        buffer->accept(*fontBuffer);
         buffer->end();
 
         context->getSwapchain().submitCommandBuffer(*buffer);

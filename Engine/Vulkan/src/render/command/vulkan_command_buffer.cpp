@@ -59,6 +59,10 @@ void VulkanDrawableCommandBuffer::drawIndexed(uint32_t instanceCount, uint32_t i
     getCommandBufferHandle().drawIndexed(indexCount, instanceCount, 0, 0, 0);
 }
 
+void VulkanDrawableCommandBuffer::pushConstants(uint32_t offset, void* data, uint32_t length) {
+    getCommandBufferHandle().pushConstants(m_CurrentLayout, vk::ShaderStageFlagBits::eVertex, offset, length, data);
+}
+
 VulkanSwitchingCommandBuffer::VulkanSwitchingCommandBuffer(vk::Device device, const VulkanSwapchain* swapchain, vk::CommandPool pool, vk::CommandBufferLevel level) : m_SwapchainHandle(swapchain), m_Fences(swapchain->getFrameCount()) {
     vk::CommandBufferAllocateInfo allocateInfo(pool, level, m_SwapchainHandle->getFrameCount());
     m_Buffers = device.allocateCommandBuffersUnique(allocateInfo);

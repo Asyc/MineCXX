@@ -1,9 +1,21 @@
 #include "engine/vulkan/device/vulkan_device.hpp"
 
+#include "engine/log.hpp"
+
 namespace engine::vulkan::device {
 
 // todo: change
 inline thread_local static VulkanQueueFamily array[2];
+/*
+VkBool32 debugCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char* pLayerPrefix, const char* pMessage, void* pUserData)
+                         {
+    if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT)
+    {
+        printf("debugPrintfEXT: %s", pMessage);
+    }
+
+    return false;
+}*/
 
 inline vk::UniqueDevice createDevice(vk::PhysicalDevice physicalDevice, vk::SurfaceKHR surface) {
     struct QueueFamily {
@@ -42,7 +54,6 @@ inline vk::UniqueDevice createDevice(vk::PhysicalDevice physicalDevice, vk::Surf
 
     std::array<const char*, 1> deviceExtensions{VK_KHR_SWAPCHAIN_EXTENSION_NAME};
     vk::PhysicalDeviceFeatures features;
-    features.geometryShader = true;
     vk::DeviceCreateInfo deviceCreateInfo(
         {},
         graphics.index != present.index ? 2 : 1,
@@ -53,6 +64,12 @@ inline vk::UniqueDevice createDevice(vk::PhysicalDevice physicalDevice, vk::Surf
         deviceExtensions.data(),
         &features
     );
+
+#ifdef MCE_DBG
+    std::array<const char*, 2> debugExtensions{VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME};
+    deviceCreateInfo.enabledExtensionCount = debugExtensions.size();
+    deviceCreateInfo.ppEnabledExtensionNames = debugExtensions.data();
+#endif
 
     array[0] = VulkanQueueFamily{queuesCreateInfo[0].queueFamilyIndex, graphics.maxQueueCount};
     array[1] = graphics.index != present.index ? VulkanQueueFamily{queuesCreateInfo[1].queueFamilyIndex, graphics.maxQueueCount} : array[0];

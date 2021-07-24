@@ -4,11 +4,8 @@
     "fragmentPath": "shader.frag.spv",
     "input": {
       "topology": "eTriangleList",
-      "buffers": [{"binding": 0,"stride": 20}],
-      "attributes": [
-        {"binding": 0,"location": 0,"type": "float3","offset": 0},
-        {"binding": 0,"location": 1,"type": "float2","offset": 12}
-      ]
+      "buffers": [],
+      "attributes": []
     }
   }
 }
