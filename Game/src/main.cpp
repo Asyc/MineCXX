@@ -19,20 +19,22 @@ constexpr size_t size_of(size_t val) {
 
 #include <bitset>
 
-struct DummyStruct {
+struct AsciiVertex {
+        struct {
+            float x, y, z, w;
+        } texPos;
+
         struct {
             float x, y;
         } pos;
 
-        struct {
-            float x, y, z, w;
-        } texPos;
-};
+        char padding[sizeof(float) * 2];
+    };
 
 void app_main() {
     engine::init();
 
-    LOG_INFO("SIZE: {}", sizeof(DummyStruct));
+    LOG_INFO("SIZE: {}", sizeof(AsciiVertex));
 
     Window window(1920, 1080, "Window");
 
@@ -69,7 +71,7 @@ void app_main() {
 
     auto fontBuffer = pool->allocateCommandListImmutable();
     fontBuffer->begin();
-    context->getFontRenderer().draw(*fontBuffer, u"F");
+    context->getFontRenderer().draw(*fontBuffer, u"AAAAAA");
     fontBuffer->end();
 
     auto buffer = pool->allocateIndirectCommandBuffer();

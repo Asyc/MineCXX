@@ -5,7 +5,7 @@
 #define FONT_HEIGHT 8
 
 layout (points) in;
-layout (triangle_strip, max_vertices = 112) out;
+layout (triangle_strip, max_vertices = MAX_CHARACTERS * 6) out;
 
 layout (location = 0) out vec2 gs_TexPos;
 
@@ -30,20 +30,27 @@ void main() {
 
     for (int i = 0; i < MAX_CHARACTERS; i++) {
         uint codepoint = push_constants.string[i];
+        if (codepoint != 80) {
+            vec4 val = vec4(renderOrigin.xy, 0.0f, 0.0f);
+            debugPrintfEXT("%f, %f, %f, %f", val.x, val.y, val.z, val.w);
+        }
         if (codepoint == 0) break;
 
         AsciiNode character = ascii_table[map(codepoint)];
 
-        float scale = 0.125;
+        float scale = 0.0128;
         float width = character.size.x * scale;
         float height = character.size.y * scale;
 
         float texPosX = character.texPos.x;
+
         float texPosY = character.texPos.y;
+        texPosY *= 128.0f;
+        texPosY = 128.0f - texPosY;
+        texPosY /= 128.0f;
+
         float texPosWidth = character.texPos.z;
         float texPosHeight = character.texPos.w;
-
-        debugPrintfEXT("%d, x: %f, y: %f, tx: %f, ty: %f", codepoint, character.size.x, character.size.y, texPosX, texPosY);
 
         gl_Position = vec4(renderOrigin.x, renderOrigin.y + height, 0.0f, 1.0f);    // Top-Left
         gs_TexPos = vec2(texPosX, texPosY + texPosHeight);
@@ -57,12 +64,21 @@ void main() {
         gs_TexPos = vec2(texPosX + texPosWidth, texPosY);
         EmitVertex();
 
+        gl_Position = vec4(renderOrigin.x, renderOrigin.y + height, 0.0f, 1.0f);    // Top-Left
+        gs_TexPos = vec2(texPosX, texPosY + texPosHeight);
+        EmitVertex();
+
         gl_Position = vec4(renderOrigin.x + width, renderOrigin.y + height, 0.0f, 1.0f); // Top Right
         gs_TexPos = vec2(texPosX + texPosWidth, texPosY + texPosHeight);
         EmitVertex();
 
+        vec4 position = vec4(renderOrigin.x + width, renderOrigin.y, 0.0f, 1.0f);
+        gl_Position = vec4(renderOrigin.x + width, renderOrigin.y, 0.0f, 1.0f); // Bottom Right
+        gs_TexPos = vec2(texPosX + texPosWidth, texPosY);
+        EmitVertex();
+
         EndPrimitive();
-        renderOrigin.x += gl_Position.x;
+        renderOrigin.x += position.x;
     }
 }
 

@@ -17,6 +17,8 @@ struct AsciiVertex {
     struct {
         float x, y;
     } pos;
+
+    char padding[sizeof(float) * 2];
 };
 
 struct AsciiTable {
@@ -41,12 +43,11 @@ FontRenderer::FontRenderer(render::RenderContext& context, const File& glyphSize
     float pixelUnitX = 1.0f / static_cast<float>(width);
     float pixelUnitY = 1.0f / static_cast<float>(height);
 
-    size_t pixelX = 0;
     AsciiTable table{};
 
     for (const auto& node : ASCII_CHAR_SIZES) {
-        if (node.x == 0) pixelX = 0;
-        size_t pixelY = node.y * 8;
+        size_t pixelX = node.x * 8;
+        size_t pixelY = (node.y + 1) * 8;
 
         float tx = pixelUnitX * static_cast<float>(pixelX);
         float ty = pixelUnitY * static_cast<float>(pixelY);
@@ -61,7 +62,6 @@ FontRenderer::FontRenderer(render::RenderContext& context, const File& glyphSize
             int i = 0;
         }
         table.data[resolveIndex(node.value)] = AsciiVertex{{tx, ty, tWidth, tHeight}, {horizontalWidth, FONT_HEIGHT}};    // Top-Left
-        pixelX += node.width;
     }
 
     m_AsciiTableUniformBuffer->write(0, &table, sizeof(AsciiTable));
