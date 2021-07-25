@@ -30,10 +30,6 @@ void main() {
 
     for (int i = 0; i < MAX_CHARACTERS; i++) {
         uint codepoint = push_constants.string[i];
-        if (codepoint != 80) {
-            vec4 val = vec4(renderOrigin.xy, 0.0f, 0.0f);
-            debugPrintfEXT("%f, %f, %f, %f", val.x, val.y, val.z, val.w);
-        }
         if (codepoint == 0) break;
 
         AsciiNode character = ascii_table[map(codepoint)];
@@ -72,13 +68,12 @@ void main() {
         gs_TexPos = vec2(texPosX + texPosWidth, texPosY + texPosHeight);
         EmitVertex();
 
-        vec4 position = vec4(renderOrigin.x + width, renderOrigin.y, 0.0f, 1.0f);
         gl_Position = vec4(renderOrigin.x + width, renderOrigin.y, 0.0f, 1.0f); // Bottom Right
         gs_TexPos = vec2(texPosX + texPosWidth, texPosY);
         EmitVertex();
 
         EndPrimitive();
-        renderOrigin.x += position.x;
+        renderOrigin.x += width;
     }
 }
 
