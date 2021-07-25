@@ -10,6 +10,7 @@ extern std::shared_ptr<spdlog::logger> g_EngineLogger;
 extern std::shared_ptr<spdlog::logger> g_GameLogger;
 
 std::shared_ptr<spdlog::logger> createLogger(const std::string_view& name);
+std::shared_ptr<spdlog::logger> createLoggerDetached(const std::string_view& name);
 }   // namespace engine::logging
 
 #define MCE_LOG_DEBUG(...) ::engine::logging::g_EngineLogger->debug(__VA_ARGS__)

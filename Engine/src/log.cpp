@@ -37,6 +37,25 @@ std::shared_ptr<spdlog::logger> createLogger(const std::string_view& name) {
     return std::move(logger);
 }
 
+std::shared_ptr<spdlog::logger> createLoggerDetached(const std::string_view& name) {
+    std::array<spdlog::sink_ptr, 1> sinks = {g_Stdout};
+    auto logger = std::make_shared<spdlog::async_logger>(
+        std::string(name),
+        sinks.begin(),
+        sinks.end(),
+        spdlog::thread_pool(),
+        spdlog::async_overflow_policy::block
+        );
+
+    spdlog::register_logger(logger);
+
+#ifdef MCE_DBG
+    logger->set_level(spdlog::level::debug);
+#endif
+
+    return std::move(logger);
+}
+
 void setupLogging() {
     File file("logs/latest.log");
     if (file.exists()) file.deleteFile();

@@ -3,6 +3,8 @@
 #include <chrono>
 #include <vector>
 
+#include <spdlog/sinks/basic_file_sink.h>
+
 #define VMA_IMPLEMENTATION
 #include <vulkan/vulkan.h>
 #include <vk_mem_alloc.h>
@@ -12,27 +14,24 @@
 
 #ifdef MCE_DBG
 
-static VkDebugReportCallbackEXT g_DebugReportCallback;
-static VkDebugUtilsMessengerEXT g_DebugMessenger;
+thread_local static VkDebugUtilsMessengerEXT g_DebugMessenger;
+thread_local static VkDebugReportCallbackEXT g_DebugReportCallback;
+
+static spdlog::sink_ptr g_VulkanLogFile;
 static std::shared_ptr<spdlog::logger> g_VulkanLogger;
 
-VKAPI_ATTR VkBool32 VKAPI_CALL vulkanDebugCallback(VkDebugReportFlagsEXT flags,
-                                                   VkDebugReportObjectTypeEXT objectType,
-                                                   uint64_t object,
-                                                   size_t location,
-                                                   int32_t messageCode,
-                                                   const char* pLayerPrefix,
-                                                   const char* pMessage,
-                                                   void* pUserData) {
-
-    if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) {
-        MCE_LOG_DEBUG("[SHADER DEBUG] {}", pMessage);
+VKAPI_ATTR VkBool32 VKAPI_CALL vulkanDebugCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT, uint64_t, size_t, int32_t, const char*, const char* pMessage, void* pUserData) {
+    if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT || flags & VK_DEBUG_REPORT_WARNING_BIT_EXT) {
+        g_VulkanLogger->error("{}", pMessage);
+        return false;
     }
-
+    
+    g_VulkanLogger->debug("{}", pMessage);
+    
     return false;
 }
 
-VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
+VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
     switch (messageSeverity) {
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
@@ -40,6 +39,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBits
         break;
     default:
         g_VulkanLogger->debug("{}", pCallbackData->pMessage);
+        break;
     }
 
     return VK_FALSE;
@@ -87,29 +87,25 @@ vk::UniqueInstance createInstance() {
 
     vk::UniqueInstance instance = vk::createInstanceUnique(structureChain.get<vk::InstanceCreateInfo>());
 #ifdef MCE_DBG
+    g_VulkanLogFile = std::make_shared<spdlog::sinks::basic_file_sink_mt>("logs/vulkan_latest.log");
+    g_VulkanLogger = engine::logging::createLoggerDetached("Vulkan");
+    g_VulkanLogger->sinks().push_back(g_VulkanLogFile);
+
+
     VkInstance vulkanInstance = *instance;
 
-    auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(vulkanInstance, "vkCreateDebugUtilsMessengerEXT");
-
-    vk::DebugUtilsMessageSeverityFlagsEXT severityFlags = vk::DebugUtilsMessageSeverityFlagBitsEXT::eError | vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning;
+    vk::DebugUtilsMessageSeverityFlagsEXT severityFlags = vk::DebugUtilsMessageSeverityFlagBitsEXT::eError | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning;
     vk::DebugUtilsMessageTypeFlagsEXT typeFlags = vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation;
+    VkDebugUtilsMessengerCreateInfoEXT createInfoExt = vk::DebugUtilsMessengerCreateInfoEXT({}, severityFlags, vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral, debugCallback, nullptr);
 
-    VkDebugUtilsMessengerCreateInfoEXT
-    createInfoExt = vk::DebugUtilsMessengerCreateInfoEXT({}, severityFlags, vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral, debugCallback, nullptr);
-    func(vulkanInstance, &createInfoExt, nullptr, &g_DebugMessenger);
+    auto vkCreateDebugUtilsMessengerEXT = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(vulkanInstance, "vkCreateDebugUtilsMessengerEXT");
+    vkCreateDebugUtilsMessengerEXT(vulkanInstance, &createInfoExt, nullptr, &g_DebugMessenger);
+    
+    vk::DebugReportFlagsEXT debugReportFlags = vk::DebugReportFlagBitsEXT::eWarning | vk::DebugReportFlagBitsEXT::ePerformanceWarning | vk::DebugReportFlagBitsEXT::eError | vk::DebugReportFlagBitsEXT::eDebug;
+    VkDebugReportCallbackCreateInfoEXT debugReportCallbackCreateInfo = vk::DebugReportCallbackCreateInfoEXT(debugReportFlags, vulkanDebugCallback, nullptr);
 
-    VkDebugReportCallbackCreateInfoEXT debugReportCallbackCreateInfo = vk::DebugReportCallbackCreateInfoEXT({}, vulkanDebugCallback, nullptr);
-
-    PFN_vkCreateDebugReportCallbackEXT CreateDebugReportCallback = VK_NULL_HANDLE;
-    auto* ptr = vkGetInstanceProcAddr(vulkanInstance, "vkCreateDebugReportCallbackEXT");
-    CreateDebugReportCallback = (PFN_vkCreateDebugReportCallbackEXT) ptr;
-
-    VkDebugReportCallbackEXT handle;
-    CreateDebugReportCallback(vulkanInstance, &debugReportCallbackCreateInfo, nullptr, &handle);
-
-    g_DebugReportCallback = handle;
-
-    g_VulkanLogger = engine::logging::createLogger("Vulkan");
+    auto vkCreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT) vkGetInstanceProcAddr(vulkanInstance, "vkCreateDebugReportCallbackEXT");
+    vkCreateDebugReportCallbackEXT(vulkanInstance, &debugReportCallbackCreateInfo, nullptr, &g_DebugReportCallback);
 #endif
 
     return std::move(instance);
@@ -150,9 +146,21 @@ VulkanRenderContext::VulkanRenderContext(const Window& window, const Directory& 
       m_TransferManager(*m_Instance, m_PhysicalDevice, &m_Device, m_Device.getQueueManager().getGraphicsQueueFamily().index),
       m_FontRenderer(*this, File(resourceDirectory.getPath() + "font/glyph_sizes.bin"), Directory(resourceDirectory.getPath() + "/textures/font")) {
 
+    VkInstance instance = *m_Instance;
+    m_DebugMessenger = {g_DebugMessenger, [instance](VkDebugUtilsMessengerEXT messenger){
+         auto vkDestroyDebugUtilsMessengerEXT = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+         vkDestroyDebugUtilsMessengerEXT(instance, messenger, nullptr);
+    }};
+
+    m_DebugReportCallback = { g_DebugReportCallback, [instance](VkDebugReportCallbackEXT debugReportCallback) {
+         auto vkDestroyDebugReportCallbackEXT = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT");
+         vkDestroyDebugReportCallbackEXT(instance, debugReportCallback, nullptr);
+    }};
+
     std::array<vk::DescriptorPoolSize, 1> poolSizes = {
         vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, 1)
     };
+
     m_DescriptorPool = m_Device.getDevice().createDescriptorPoolUnique(vk::DescriptorPoolCreateInfo({}, 4, poolSizes.size(), poolSizes.data()));
 }
 

@@ -169,7 +169,7 @@ void VulkanSwapchain::createSwapchain() {
         m_SwapchainFormat.colorSpace,
         m_SwapchainExtent,
         1,
-        vk::ImageUsageFlagBits::eColorAttachment,
+        vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferDst,
         vk::SharingMode::eExclusive,
         0,
         nullptr,

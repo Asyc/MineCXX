@@ -3,6 +3,7 @@
 
 #include "engine/render/render_context.hpp"
 
+#include <memory>
 #include <vector>
 
 #include <vulkan/vulkan.hpp>
@@ -46,6 +47,11 @@ public:
     [[nodiscard]] gui::font::FontRenderer& getFontRenderer() override { return m_FontRenderer; }
 private:
     vk::UniqueInstance m_Instance;
+#ifdef MCE_DBG
+    std::unique_ptr<VkDebugUtilsMessengerEXT_T, std::function<void(VkDebugUtilsMessengerEXT)>> m_DebugMessenger;
+    std::unique_ptr<VkDebugReportCallbackEXT_T, std::function<void(VkDebugReportCallbackEXT)>> m_DebugReportCallback;
+#endif
+
     vk::UniqueSurfaceKHR m_Surface;
     vk::PhysicalDevice m_PhysicalDevice;
 

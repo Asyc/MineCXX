@@ -26,7 +26,6 @@ layout (push_constant) uniform PushConstantBlock {
 uint map(uint value);
 
 void main() {
-    debugPrintfEXT("Test");
     vec2 renderOrigin = gl_in[0].gl_Position.xy;
 
     for (int i = 0; i < MAX_CHARACTERS; i++) {

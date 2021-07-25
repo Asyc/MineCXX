@@ -6,16 +6,6 @@ namespace engine::vulkan::device {
 
 // todo: change
 inline thread_local static VulkanQueueFamily array[2];
-/*
-VkBool32 debugCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char* pLayerPrefix, const char* pMessage, void* pUserData)
-                         {
-    if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT)
-    {
-        printf("debugPrintfEXT: %s", pMessage);
-    }
-
-    return false;
-}*/
 
 inline vk::UniqueDevice createDevice(vk::PhysicalDevice physicalDevice, vk::SurfaceKHR surface) {
     struct QueueFamily {

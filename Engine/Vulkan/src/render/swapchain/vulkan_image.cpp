@@ -30,7 +30,7 @@ Image::Image(device::VulkanDevice* device,
         {},
         {},
         vk::ImageLayout::eUndefined,
-        vk::ImageLayout::eColorAttachmentOptimal,
+        vk::ImageLayout::eTransferDstOptimal,
         VK_QUEUE_FAMILY_IGNORED,
         VK_QUEUE_FAMILY_IGNORED,
         image,
@@ -40,8 +40,8 @@ Image::Image(device::VulkanDevice* device,
     clearScreenCommandBuffer = std::move(buffers[0]);
     clearScreenCommandBuffer->begin(vk::CommandBufferBeginInfo());
     clearScreenCommandBuffer->pipelineBarrier(
-        vk::PipelineStageFlagBits::eTopOfPipe,
-        vk::PipelineStageFlagBits::eBottomOfPipe,
+        vk::PipelineStageFlagBits::eAllCommands,
+        vk::PipelineStageFlagBits::eAllCommands,
         {},
         {},
         {},
@@ -53,7 +53,21 @@ Image::Image(device::VulkanDevice* device,
 
     vk::ClearColorValue clearColorValue{};
     vk::ImageSubresourceRange subresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1);
-    clearScreenCommandBuffer->clearColorImage(image, vk::ImageLayout::eColorAttachmentOptimal, &clearColorValue, 1, &subresourceRange);
+    clearScreenCommandBuffer->clearColorImage(image, vk::ImageLayout::eTransferDstOptimal, &clearColorValue, 1, &subresourceRange);
+    memoryBarrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
+    memoryBarrier.newLayout = vk::ImageLayout::eColorAttachmentOptimal;
+    clearScreenCommandBuffer->pipelineBarrier(
+        vk::PipelineStageFlagBits::eAllCommands,
+        vk::PipelineStageFlagBits::eAllCommands,
+        {},
+        {},
+        {},
+        {},
+        {},
+        1,
+        &memoryBarrier
+    );
+
     clearScreenCommandBuffer->end();
 
     memoryBarrier.oldLayout = vk::ImageLayout::eColorAttachmentOptimal;
