@@ -28,6 +28,10 @@ Program::Program(const File& pipelineConfiguration) {
 
     auto vulkan = document["vulkan"].GetObject();
     programConfig.vulkan.vertexPath = pipelineConfiguration.getParentPath() + '/' + getStringOptional(vulkan, "vertexPath", "vertex_shader.spv");
+
+    std::string geometryPath = getStringOptional(vulkan, "geometryPath", "");
+    if (!geometryPath.empty()) programConfig.vulkan.geometryPath = pipelineConfiguration.getParentPath() + '/' + geometryPath;
+
     programConfig.vulkan.fragmentPath = pipelineConfiguration.getParentPath() + '/' + getStringOptional(vulkan, "fragmentPath", "fragment_shader.spv");
 
     auto vulkanInput = vulkan["input"].GetObject();

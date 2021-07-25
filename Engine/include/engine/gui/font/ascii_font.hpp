@@ -3,9 +3,18 @@
 
 #include <array>
 #include <cstdint>
+#include <memory>
 #include <string>
+#include <stdexcept>
+
+#include <unordered_map>
 
 namespace engine::gui::font {
+
+extern std::array<struct CharNode, 256> ASCII_CHAR_SIZES;
+extern std::unique_ptr<std::unordered_map<char16_t, uint8_t>> ASCII_INDEXES;
+
+uint8_t map(int8_t value);
 
 struct CharNode {
     uint16_t value;
@@ -13,7 +22,14 @@ struct CharNode {
     size_t width;
 };
 
-extern std::array<CharNode, 256> ASCII_CHAR_SIZES;
+inline uint8_t resolveIndex(char16_t character) {
+    auto it = ASCII_INDEXES->find(character);
+    if (it == ASCII_INDEXES->end()) {
+        throw std::runtime_error("index out of range");
+    }
+
+    return it->second;
+}
 
 }   // namespace engine::font::font
 

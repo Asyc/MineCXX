@@ -54,6 +54,7 @@ inline vk::UniqueDevice createDevice(vk::PhysicalDevice physicalDevice, vk::Surf
 
     std::array<const char*, 1> deviceExtensions{VK_KHR_SWAPCHAIN_EXTENSION_NAME};
     vk::PhysicalDeviceFeatures features;
+    features.geometryShader = true;
     vk::DeviceCreateInfo deviceCreateInfo(
         {},
         graphics.index != present.index ? 2 : 1,

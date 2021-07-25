@@ -59,11 +59,26 @@ void VulkanDrawableCommandBuffer::drawIndexed(uint32_t instanceCount, uint32_t i
     getCommandBufferHandle().drawIndexed(indexCount, instanceCount, 0, 0, 0);
 }
 
-void VulkanDrawableCommandBuffer::pushConstants(uint32_t offset, void* data, uint32_t length) {
-    getCommandBufferHandle().pushConstants(m_CurrentLayout, vk::ShaderStageFlagBits::eVertex, offset, length, data);
+void VulkanDrawableCommandBuffer::pushConstants(PushConstantUsage usage, uint32_t offset, void* data, uint32_t length) {
+    using IntEnum = std::underlying_type<PushConstantUsage>::type;
+    auto value = static_cast<IntEnum>(usage);
+
+    vk::ShaderStageFlags stageFlags;
+    if (value & static_cast<IntEnum>(PushConstantUsage::VERTEX)) {
+        stageFlags |= vk::ShaderStageFlagBits::eVertex;
+    }
+    if (value & static_cast<IntEnum>(PushConstantUsage::GEOMETRY)) {
+        stageFlags |= vk::ShaderStageFlagBits::eGeometry;
+    }
+    if (value & static_cast<IntEnum>(PushConstantUsage::FRAGMENT)) {
+        stageFlags |= vk::ShaderStageFlagBits::eFragment;
+    }
+
+    getCommandBufferHandle().pushConstants(m_CurrentLayout, stageFlags, offset, length, data);
 }
 
-VulkanSwitchingCommandBuffer::VulkanSwitchingCommandBuffer(vk::Device device, const VulkanSwapchain* swapchain, vk::CommandPool pool, vk::CommandBufferLevel level) : m_SwapchainHandle(swapchain), m_Fences(swapchain->getFrameCount()) {
+VulkanSwitchingCommandBuffer::VulkanSwitchingCommandBuffer(vk::Device device, const VulkanSwapchain* swapchain, vk::CommandPool pool, vk::CommandBufferLevel level)
+    : m_SwapchainHandle(swapchain), m_Fences(swapchain->getFrameCount()) {
     vk::CommandBufferAllocateInfo allocateInfo(pool, level, m_SwapchainHandle->getFrameCount());
     m_Buffers = device.allocateCommandBuffersUnique(allocateInfo);
 
@@ -94,7 +109,8 @@ void VulkanCommandList::begin() {
     getCommandBufferHandle().begin(beginInfo);
 }
 
-VulkanImmutableCommandList::VulkanImmutableCommandList(vk::Device device, const VulkanSwapchain* swapchain, vk::CommandPool pool) : VulkanDrawableCommandBuffer(swapchain), m_SwapchainHandle(swapchain) {
+VulkanImmutableCommandList::VulkanImmutableCommandList(vk::Device device, const VulkanSwapchain* swapchain, vk::CommandPool pool)
+    : VulkanDrawableCommandBuffer(swapchain), m_SwapchainHandle(swapchain) {
     vk::CommandBufferAllocateInfo allocateInfo(pool, vk::CommandBufferLevel::eSecondary, 1);
 
     m_CommandBuffer = std::move(device.allocateCommandBuffersUnique(allocateInfo)[0]);
@@ -106,11 +122,13 @@ void VulkanImmutableCommandList::begin() {
     getCommandBufferHandle().begin(beginInfo);
 }
 
-VulkanCommandList::VulkanCommandList(vk::Device device, const VulkanSwapchain* swapchain, vk::CommandPool pool) : VulkanDrawableCommandBuffer(swapchain), VulkanSwitchingCommandBuffer(device, swapchain, pool, vk::CommandBufferLevel::eSecondary) {
+VulkanCommandList::VulkanCommandList(vk::Device device, const VulkanSwapchain* swapchain, vk::CommandPool pool)
+    : VulkanDrawableCommandBuffer(swapchain), VulkanSwitchingCommandBuffer(device, swapchain, pool, vk::CommandBufferLevel::eSecondary) {
 
 }
 
-VulkanDirectCommandBuffer::VulkanDirectCommandBuffer(vk::Device device, const VulkanSwapchain* swapchain, vk::CommandPool pool) : VulkanDrawableCommandBuffer(swapchain), VulkanSwitchingCommandBuffer(device, swapchain, pool, vk::CommandBufferLevel::ePrimary) {
+VulkanDirectCommandBuffer::VulkanDirectCommandBuffer(vk::Device device, const VulkanSwapchain* swapchain, vk::CommandPool pool)
+    : VulkanDrawableCommandBuffer(swapchain), VulkanSwitchingCommandBuffer(device, swapchain, pool, vk::CommandBufferLevel::ePrimary) {
 
 }
 
@@ -118,7 +136,7 @@ void VulkanDirectCommandBuffer::begin() {
     vk::CommandBufferBeginInfo beginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
     getCommandBufferHandle().begin(beginInfo);
 
-    auto [w, h] = m_SwapchainHandle->getSize();
+    auto[w, h] = m_SwapchainHandle->getSize();
     vk::RenderPassBeginInfo renderPassBeginInfo(m_SwapchainHandle->getRenderPass(), m_SwapchainHandle->getCurrentFrame(), vk::Rect2D({}, {w, h}));
     getCommandBufferHandle().beginRenderPass(renderPassBeginInfo, vk::SubpassContents::eInline);
 }
@@ -132,7 +150,7 @@ void VulkanIndirectCommandBuffer::begin() {
     vk::CommandBufferBeginInfo beginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
     getCommandBufferHandle().begin(beginInfo);
 
-    auto [w, h] = m_SwapchainHandle->getSize();
+    auto[w, h] = m_SwapchainHandle->getSize();
     vk::RenderPassBeginInfo renderPassBeginInfo(m_SwapchainHandle->getRenderPass(), m_SwapchainHandle->getCurrentFrame(), vk::Rect2D({}, {w, h}));
     getCommandBufferHandle().beginRenderPass(renderPassBeginInfo, vk::SubpassContents::eSecondaryCommandBuffers);
 }
@@ -142,7 +160,10 @@ void VulkanIndirectCommandBuffer::end() {
     VulkanCommandBuffer::end();
 }
 
-VulkanIndirectCommandBuffer::VulkanIndirectCommandBuffer(vk::Device device, const VulkanSwapchain* swapchain, vk::CommandPool pool) : VulkanSwitchingCommandBuffer(device, swapchain, pool, vk::CommandBufferLevel::ePrimary) {
+VulkanIndirectCommandBuffer::VulkanIndirectCommandBuffer(vk::Device device, const VulkanSwapchain* swapchain, vk::CommandPool pool) : VulkanSwitchingCommandBuffer(device,
+                                                                                                                                                                   swapchain,
+                                                                                                                                                                   pool,
+                                                                                                                                                                   vk::CommandBufferLevel::ePrimary) {
 
 }
 

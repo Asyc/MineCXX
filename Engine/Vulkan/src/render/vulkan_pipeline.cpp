@@ -19,9 +19,11 @@ VulkanRenderPipeline::VulkanRenderPipeline(vk::Device device, vk::RenderPass ren
     vk::PrimitiveTopology topology;
     if (program.programConfig.vulkan.input.topology == "ePointList") {
         topology = vk::PrimitiveTopology::ePointList;
+    } else if (program.programConfig.vulkan.input.topology == "eTriangleList") {
+        topology = vk::PrimitiveTopology::eTriangleList;
     }
 
-    vk::PipelineInputAssemblyStateCreateInfo inputAssemblyStateCreateInfo({}, vk::PrimitiveTopology::eTriangleList, VK_FALSE);
+    vk::PipelineInputAssemblyStateCreateInfo inputAssemblyStateCreateInfo({}, topology, VK_FALSE);
 
     vk::PipelineViewportStateCreateInfo viewportStateCreateInfo({}, 1, nullptr, 1, nullptr);
 

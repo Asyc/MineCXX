@@ -1,9 +1,10 @@
 {
   "vulkan": {
     "vertexPath": "shader.vert.spv",
+    "geometryPath": "shader.geom.spv",
     "fragmentPath": "shader.frag.spv",
     "input": {
-      "topology": "eTriangleList",
+      "topology": "ePointList",
       "buffers": [],
       "attributes": []
     }

@@ -37,7 +37,7 @@ public:
 private:
     friend class VulkanRenderPipeline;
 
-    vk::UniqueShaderModule m_Vertex, m_Fragment;
+    vk::UniqueShaderModule m_Vertex, m_Geometry, m_Fragment;
     std::vector<vk::PipelineShaderStageCreateInfo> m_Stages;
     vk::UniquePipelineLayout m_PipelineLayout;
 
@@ -54,6 +54,8 @@ public:
     std::unique_ptr<::engine::render::UniformDescriptor> allocateDescriptorSet(uint32_t set) override;
 
     vk::UniqueDescriptorSet allocateDescriptorSetUnique(uint32_t set);
+
+    vk::ShaderStageFlags getRangeUsage(uint32_t low, uint32_t high) const;
 
     [[nodiscard]] vk::Pipeline getPipeline() const;
     [[nodiscard]] vk::PipelineLayout getPipelineLayout() const { return *m_PipelineLayout; }

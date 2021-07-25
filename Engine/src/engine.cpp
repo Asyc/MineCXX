@@ -14,8 +14,16 @@
 
 namespace engine {
 
+namespace gui::font {
+void initAsciiIndexes();
+}
+
 void init() {
+    gui::font::initAsciiIndexes();
+
     logging::setupLogging();
+
+
 
     glfwInit();
 

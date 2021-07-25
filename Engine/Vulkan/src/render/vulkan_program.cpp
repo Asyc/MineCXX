@@ -61,6 +61,10 @@ inline void parseShader(const std::vector<char>& shaderBuffer,
             flag = vk::ShaderStageFlagBits::eFragment;
             break;
         }
+        case spv::ExecutionModelGeometry: {
+            flag = vk::ShaderStageFlagBits::eGeometry;
+            break;
+        }
         default: throw std::runtime_error("invalid shader stage");
     }
 
@@ -117,6 +121,7 @@ template<glslang_stage_t STAGE>
 std::vector<char> createSPIRV(std::string src) {
     glslang_resource_s resource{};
     resource.max_draw_buffers = true;
+    resource.max_geometry_output_vertices = 256;
 
     glslang_limits_s limits{
         true, true, true, true, true, true, true, true, true
@@ -143,21 +148,38 @@ std::vector<char> createSPIRV(std::string src) {
     glslang_initialize_process();
     auto* shader = glslang_shader_create(&input);
 
+    const char* shaderStage;
+    switch (STAGE) {
+        case GLSLANG_STAGE_GEOMETRY:
+            shaderStage = "Geometry Shader";
+            break;
+        case GLSLANG_STAGE_VERTEX:
+            shaderStage = "Vertex Shader";
+            break;
+        case GLSLANG_STAGE_FRAGMENT:
+            shaderStage = "Fragment Shader";
+            break;
+        default:
+            shaderStage = "Unknown Shader";
+            break;
+    }
+
     if (!glslang_shader_preprocess(shader, &input)) {
-        LOG_ERROR("{}\n\n{}", glslang_shader_get_info_log(shader), glslang_shader_get_info_debug_log(shader));
+        LOG_ERROR("{}\n{}\n{}\n", shaderStage, glslang_shader_get_info_log(shader), glslang_shader_get_info_debug_log(shader));
         return {};
     }
 
     if (!glslang_shader_parse(shader, &input)) {
-        LOG_ERROR("{}\n\n{}", glslang_shader_get_info_log(shader), glslang_shader_get_info_debug_log(shader));
+        LOG_ERROR("{}\n{}\n{}\n", shaderStage, glslang_shader_get_info_log(shader), glslang_shader_get_info_debug_log(shader));
         return {};
     }
 
     glslang_program_t* program = glslang_program_create();
     glslang_program_add_shader(program, shader);
 
+
     if (!glslang_program_link(program, GLSLANG_MSG_SPV_RULES_BIT | GLSLANG_MSG_VULKAN_RULES_BIT)) {
-        LOG_ERROR("{}\n\n{}", glslang_shader_get_info_log(shader), glslang_shader_get_info_debug_log(shader));
+        LOG_ERROR("Program:{}\n{}\n{}\n", shaderStage, glslang_shader_get_info_log(shader), glslang_shader_get_info_debug_log(shader));
         return {};
     }
 
@@ -188,7 +210,10 @@ VulkanProgram::VulkanProgram(vk::Device device, const std::string_view& program)
         m_InputAttributes.emplace_back(inputAttribute.location, inputAttribute.binding, mapType(inputAttribute.type), inputAttribute.offset);
     }
 
+    const bool hasGeometry = !programConfig.vulkan.geometryPath.empty();
+
     File vertexFile(programConfig.vulkan.vertexPath);
+    File geometryFile(programConfig.vulkan.geometryPath);
     File fragmentFile(programConfig.vulkan.fragmentPath);
 
 #ifdef MCE_DBG
@@ -197,12 +222,20 @@ VulkanProgram::VulkanProgram(vk::Device device, const std::string_view& program)
 
     auto vertexSPV = vertexLive.exists() ? createSPIRV<GLSLANG_STAGE_VERTEX>(vertexLive.readFileText()) : vertexFile.readFileBinary();
     auto fragmentSPV = fragmentLive.exists() ? createSPIRV<GLSLANG_STAGE_FRAGMENT>(fragmentLive.readFileText()) : fragmentFile.readFileBinary();
+    std::vector<char> geometrySPV;
 
     vertexFile.write(vertexSPV.data(), vertexSPV.size());
     fragmentFile.write(fragmentSPV.data(), fragmentSPV.size());
+
+    if (hasGeometry) {
+        File geometryLive(programConfig.vulkan.geometryPath.substr(0, programConfig.vulkan.geometryPath.size() - 4));
+        geometrySPV = geometryLive.exists() ? createSPIRV<GLSLANG_STAGE_GEOMETRY>(geometryLive.readFileText()) : geometryFile.readFileBinary();
+        geometryFile.write(geometrySPV.data(), geometrySPV.size());
+    }
 #else
     auto vertexSPV = vertexFile.readFileBinary();
     auto fragmentSPV = fragmentFile.readFileBinary();
+    if (hasGeometry) geometrySPV = geometryFile.readFileBinary();
 #endif
 
     vk::ShaderModuleCreateInfo vertexModuleCreateInfo({}, vertexSPV.size(), reinterpret_cast<const uint32_t*>(vertexSPV.data()));
@@ -211,8 +244,12 @@ VulkanProgram::VulkanProgram(vk::Device device, const std::string_view& program)
     vk::ShaderModuleCreateInfo fragmentModuleCreateInfo({}, fragmentSPV.size(), reinterpret_cast<const uint32_t*>(fragmentSPV.data()));
     m_Fragment = device.createShaderModuleUnique(fragmentModuleCreateInfo);
 
+    vk::ShaderModuleCreateInfo geometryModuleCreateInfo({}, geometrySPV.size(), reinterpret_cast<const uint32_t*>(geometrySPV.data()));
+    if (hasGeometry) m_Geometry = device.createShaderModuleUnique(geometryModuleCreateInfo);
+
     m_Stages.emplace_back(vk::PipelineShaderStageCreateFlagBits{}, vk::ShaderStageFlagBits::eVertex, *m_Vertex, "main");
     m_Stages.emplace_back(vk::PipelineShaderStageCreateFlagBits{}, vk::ShaderStageFlagBits::eFragment, *m_Fragment, "main");
+    if (hasGeometry) m_Stages.emplace_back(vk::PipelineShaderStageCreateFlagBits{}, vk::ShaderStageFlagBits::eGeometry, *m_Geometry, "main");
 
     spirv_cross::Compiler vertexShader(reinterpret_cast<const uint32_t*>(vertexSPV.data()), vertexSPV.size() / sizeof(uint32_t));
     auto vertexShaderData = vertexShader.get_shader_resources();
@@ -221,6 +258,7 @@ VulkanProgram::VulkanProgram(vk::Device device, const std::string_view& program)
     std::vector<vk::PushConstantRange> pushConstantRanges;
     parseShader(vertexSPV, setBindingTable, pushConstantRanges);
     parseShader(fragmentSPV, setBindingTable, pushConstantRanges);
+    if (hasGeometry) parseShader(geometrySPV, setBindingTable, pushConstantRanges);
 
     std::vector<vk::UniqueDescriptorSetLayout> descriptorSets(setBindingTable.size());
     uint32_t index = 0;
@@ -231,6 +269,7 @@ VulkanProgram::VulkanProgram(vk::Device device, const std::string_view& program)
 
     auto* buffer = (vk::DescriptorSetLayout*) alloca(sizeof(vk::DescriptorSet) * descriptorSets.size());
     for (size_t i = 0; i < descriptorSets.size(); i++) buffer[i] = *descriptorSets[i];
+
 
     vk::PipelineLayoutCreateInfo layoutCreateInfo({}, descriptorSets.size(), buffer, pushConstantRanges.size(), pushConstantRanges.data());
     m_PipelineLayout = device.createPipelineLayoutUnique(layoutCreateInfo);

@@ -20,11 +20,13 @@ constexpr size_t size_of(size_t val) {
 #include <bitset>
 
 struct DummyStruct {
-        uint8_t codepoint;
-
         struct {
             float x, y;
-        };
+        } pos;
+
+        struct {
+            float x, y, z, w;
+        } texPos;
 };
 
 void app_main() {
@@ -67,7 +69,7 @@ void app_main() {
 
     auto fontBuffer = pool->allocateCommandListImmutable();
     fontBuffer->begin();
-    context->getFontRenderer().draw(*fontBuffer, u"FPS: 0000");
+    context->getFontRenderer().draw(*fontBuffer, u"F");
     fontBuffer->end();
 
     auto buffer = pool->allocateIndirectCommandBuffer();

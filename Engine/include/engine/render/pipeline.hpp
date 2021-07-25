@@ -35,6 +35,7 @@ public:
             } input;
 
             std::string vertexPath;
+            std::string geometryPath;
             std::string fragmentPath;
         } vulkan;
     } programConfig;

@@ -33,7 +33,7 @@ public:
     void draw(uint32_t instanceCount, uint32_t vertexCount) override;
     void drawIndexed(uint32_t instanceCount, uint32_t indexCount) override;
 
-    void pushConstants(uint32_t offset, void* data, uint32_t length) override;
+    void pushConstants(PushConstantUsage usage, uint32_t offset, void* data, uint32_t length) override;
 private:
     const VulkanSwapchain* m_Handle;
 
