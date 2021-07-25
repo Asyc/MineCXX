@@ -12,7 +12,13 @@ set(HEADERS
         include/engine/render/command/command_buffer.hpp
         include/engine/render/buffer/vertex_buffer.hpp
         include/engine/render/buffer/index_buffer.hpp
-        include/engine/gui/gui.hpp include/engine/gui/element/element.hpp include/engine/gui/input.hpp include/engine/render/buffer/image.hpp include/engine/render/buffer/uniform_buffer.hpp include/engine/nbt/nbt_parser.hpp include/engine/nbt/nbt_writer.hpp include/engine/gui/font/ascii_font.hpp)
+        include/engine/gui/gui.hpp include/engine/gui/element/element.hpp 
+        include/engine/gui/input.hpp include/engine/render/buffer/image.hpp 
+        include/engine/render/buffer/uniform_buffer.hpp 
+        include/engine/nbt/nbt_parser.hpp 
+        include/engine/nbt/nbt_writer.hpp 
+        include/engine/gui/font/ascii_font.hpp
+        )
 
 set(SOURCES
         src/engine.cpp
@@ -21,7 +27,13 @@ set(SOURCES
         src/log_internal.hpp
         src/pipeline.cpp
         src/file.cpp
-        src/gui/gui.cpp include/engine/nbt/nbt_type.hpp include/engine/gui/font/font_renderer.hpp src/gui/font/font_renderer.cpp src/gui/font/ascii_font.cpp include/engine/render/descriptor.hpp)
+        src/gui/gui.cpp 
+        include/engine/nbt/nbt_type.hpp 
+        include/engine/gui/font/font_renderer.hpp 
+        src/gui/font/font_renderer.cpp 
+        src/gui/font/ascii_font.cpp 
+        include/engine/render/descriptor.hpp
+        )
 
 add_library(libengine STATIC ${HEADERS} ${SOURCES})
 
@@ -39,9 +51,6 @@ endif()
 
 target_include_directories(libengine PUBLIC include)
 target_include_directories(libengine PRIVATE src)
-
-add_subdirectory(vendors/glfw)
-add_subdirectory(vendors/spdlog)
 
 target_link_libraries(libengine PRIVATE glfw)
 target_link_libraries(libengine PUBLIC rapidjson spdlog)

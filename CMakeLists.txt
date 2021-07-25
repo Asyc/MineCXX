@@ -3,9 +3,11 @@ project(MinecraftCXX_Client)
 
 set(CMAKE_CXX_STANDARD 17)
 
+# Adding All Subdirectory Libraries
 add_subdirectory(vendors/spirv-cross)
 add_subdirectory(vendors/glslang)
-
+add_subdirectory(vendors/glfw)
+add_subdirectory(vendors/spdlog)
 
 # Create a custom target for RapidJSON library
 add_library(rapidjson INTERFACE)
