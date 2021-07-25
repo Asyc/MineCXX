@@ -120,9 +120,10 @@ inline void parseShader(const std::vector<char>& shaderBuffer,
 template<glslang_stage_t STAGE>
 std::vector<char> createSPIRV(std::string src) {
     glslang_resource_s resource{};
-    resource.max_draw_buffers = true;
+    resource.max_draw_buffers = 1;
     resource.max_geometry_output_vertices = 256;
-
+    resource.max_geometry_total_output_components = 1024;
+    resource.max_geometry_output_vertices = 256;
     glslang_limits_s limits{
         true, true, true, true, true, true, true, true, true
     };

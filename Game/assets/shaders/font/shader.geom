@@ -1,11 +1,11 @@
 #version 450
 #extension GL_EXT_debug_printf : enable
 
-#define MAX_CHARACTERS 28
+#define MAX_CHARACTERS 18
 #define FONT_HEIGHT 8
 
 layout (points) in;
-layout (triangle_strip, max_vertices = MAX_CHARACTERS * 6) out;
+layout (triangle_strip, max_vertices = 112) out;
 
 layout (location = 0) out vec2 gs_TexPos;
 
@@ -26,6 +26,7 @@ layout (push_constant) uniform PushConstantBlock {
 uint map(uint value);
 
 void main() {
+    debugPrintfEXT("Test");
     vec2 renderOrigin = gl_in[0].gl_Position.xy;
 
     for (int i = 0; i < MAX_CHARACTERS; i++) {

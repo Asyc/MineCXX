@@ -70,6 +70,8 @@ inline vk::UniqueDevice createDevice(vk::PhysicalDevice physicalDevice, vk::Surf
     std::array<const char*, 2> debugExtensions{VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME};
     deviceCreateInfo.enabledExtensionCount = debugExtensions.size();
     deviceCreateInfo.ppEnabledExtensionNames = debugExtensions.data();
+
+
 #endif
 
     array[0] = VulkanQueueFamily{queuesCreateInfo[0].queueFamilyIndex, graphics.maxQueueCount};

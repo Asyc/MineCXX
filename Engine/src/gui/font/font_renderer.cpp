@@ -84,7 +84,7 @@ inline T roundUp(T numToRound, T multiple) {
 }
 
 void FontRenderer::draw(render::command::IDrawableCommandBuffer& commandBuffer, const FontRenderer::StringView& string) {
-    constexpr size_t MAX_CHARACTERS = 28;
+    constexpr size_t MAX_CHARACTERS = 18;
 
     commandBuffer.bindPipeline(*m_Pipeline);
     commandBuffer.bindUniformDescriptor(*m_UniformDescriptorSet);
@@ -95,7 +95,7 @@ void FontRenderer::draw(render::command::IDrawableCommandBuffer& commandBuffer, 
     size_t drawCalls = std::ceil(string.size() / MAX_CHARACTERS);
     if (drawCalls == 0) drawCalls = 1;
 
-    std::array<uint32_t, 112 / 4> pushConstantBuffer{};
+    std::array<uint32_t, MAX_CHARACTERS> pushConstantBuffer{};
 
     size_t stringIndex = 0;
 

@@ -10,6 +10,40 @@
 #include "engine/log.hpp"
 #include "engine/vulkan/render/buffer/vulkan_index_buffer.hpp"
 
+#ifdef MCE_DBG
+
+static VkDebugReportCallbackEXT g_DebugReportCallback;
+static VkDebugUtilsMessengerEXT g_DebugMessenger;
+
+VKAPI_ATTR VkBool32 VKAPI_CALL vulkanDebugCallback(VkDebugReportFlagsEXT flags,
+                                                   VkDebugReportObjectTypeEXT objectType,
+                                                   uint64_t object,
+                                                   size_t location,
+                                                   int32_t messageCode,
+                                                   const char* pLayerPrefix,
+                                                   const char* pMessage,
+                                                   void* pUserData) {
+
+    if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) {
+        MCE_LOG_DEBUG("[SHADER DEBUG] {}", pMessage);
+    }
+
+    return false;
+}
+
+VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
+    switch (messageSeverity) {
+
+    }
+
+
+    LOG_ERROR("Validation Layer: {}", pCallbackData->pMessage);
+
+    return VK_FALSE;
+}
+
+#endif
+
 namespace engine::vulkan::render {
 
 vk::UniqueInstance createInstance() {
@@ -25,22 +59,55 @@ vk::UniqueInstance createInstance() {
     vk::InstanceCreateInfo instanceCreateInfo({}, &applicationInfo, 0, nullptr, extensionCount, extensions);
 
 #ifdef MCE_DBG
+    const char** debugExtensions = (const char**) (alloca(sizeof(const char*) * (extensionCount + 2)));
+    memcpy(debugExtensions, extensions, (extensionCount + 1) * sizeof(const char*));
+    debugExtensions[extensionCount] = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
+    debugExtensions[extensionCount + 1] = VK_EXT_DEBUG_REPORT_EXTENSION_NAME;
+
+    instanceCreateInfo.enabledExtensionCount += 2;
+    instanceCreateInfo.ppEnabledExtensionNames = debugExtensions;
+
     const char* validationLayer = "VK_LAYER_KHRONOS_validation";
     instanceCreateInfo.enabledLayerCount = 1;
     instanceCreateInfo.ppEnabledLayerNames = &validationLayer;
     MCE_LOG_DEBUG("Validation Layer: {}", validationLayer);
 #endif
-
     std::array<vk::ValidationFeatureEnableEXT, 1> enabledValidationFeatures = {
         vk::ValidationFeatureEnableEXT::eDebugPrintf
     };
 
-    vk::StructureChain<vk::InstanceCreateInfo, vk::ValidationFeaturesEXT> structureChain{
+    vk::StructureChain<vk::InstanceCreateInfo, vk::DebugUtilsMessengerCreateInfoEXT, vk::ValidationFeaturesEXT> structureChain{
         instanceCreateInfo,
-        vk::ValidationFeaturesEXT(enabledValidationFeatures.size(), enabledValidationFeatures.data())
+        vk::DebugUtilsMessengerCreateInfoEXT({}, vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning, vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral, debugCallback, nullptr),
+        vk::ValidationFeaturesEXT(enabledValidationFeatures.size(), enabledValidationFeatures.data()),
     };
 
-    return vk::createInstanceUnique(structureChain.get<vk::InstanceCreateInfo>());
+    vk::UniqueInstance instance = vk::createInstanceUnique(structureChain.get<vk::InstanceCreateInfo>());
+#ifdef MCE_DBG
+    VkInstance vulkanInstance = *instance;
+
+    auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(vulkanInstance, "vkCreateDebugUtilsMessengerEXT");
+
+    vk::DebugUtilsMessageSeverityFlagsEXT severityFlags = vk::DebugUtilsMessageSeverityFlagBitsEXT::eError | vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning;
+    vk::DebugUtilsMessageTypeFlagsEXT typeFlags = vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation;
+
+    VkDebugUtilsMessengerCreateInfoEXT
+    createInfoExt = vk::DebugUtilsMessengerCreateInfoEXT({}, severityFlags, vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral, debugCallback, nullptr);
+    func(vulkanInstance, &createInfoExt, nullptr, &g_DebugMessenger);
+
+    VkDebugReportCallbackCreateInfoEXT debugReportCallbackCreateInfo = vk::DebugReportCallbackCreateInfoEXT({}, vulkanDebugCallback, nullptr);
+
+    PFN_vkCreateDebugReportCallbackEXT CreateDebugReportCallback = VK_NULL_HANDLE;
+    auto* ptr = vkGetInstanceProcAddr(vulkanInstance, "vkCreateDebugReportCallbackEXT");
+    CreateDebugReportCallback = (PFN_vkCreateDebugReportCallbackEXT) ptr;
+
+    VkDebugReportCallbackEXT handle;
+    CreateDebugReportCallback(vulkanInstance, &debugReportCallbackCreateInfo, nullptr, &handle);
+
+    g_DebugReportCallback = handle;
+#endif
+
+    return std::move(instance);
 }
 
 vk::PhysicalDevice findPhysicalDevice(const std::vector<vk::PhysicalDevice>& devices) {
@@ -76,7 +143,7 @@ VulkanRenderContext::VulkanRenderContext(const Window& window, const Directory& 
       m_MemoryAllocator(createAllocator(*m_Instance, m_PhysicalDevice, m_Device.getDevice()), [](VmaAllocator allocator) { vmaDestroyAllocator(allocator); }),
       m_Swapchain(modeHint, *m_Surface, m_PhysicalDevice, &m_Device, m_Device.getQueueManager()),
       m_TransferManager(*m_Instance, m_PhysicalDevice, &m_Device, m_Device.getQueueManager().getGraphicsQueueFamily().index),
-      m_FontRenderer(*this, File(resourceDirectory.getPath() + "font/glyph_sizes.bin"), Directory(resourceDirectory.getPath() + "/textures/font")){
+      m_FontRenderer(*this, File(resourceDirectory.getPath() + "font/glyph_sizes.bin"), Directory(resourceDirectory.getPath() + "/textures/font")) {
 
     std::array<vk::DescriptorPoolSize, 1> poolSizes = {
         vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, 1)
