@@ -1,16 +1,10 @@
-import ctypes
 import pathlib
 import os
 import sys
 import zipfile
 
-from pathlib import Path
-
-import ctypes, sys
-
 def get_datadir() -> pathlib.Path:
     home = pathlib.Path.home()
-
     if sys.platform == "win32":
         return home / "AppData/Roaming/.minecraft/"
     elif sys.platform == "linux":
@@ -30,3 +24,6 @@ archive = zipfile.ZipFile(jar_path)
 for file in archive.namelist():
     if file.startswith('assets/'):
         archive.extract(file, 'Game/')
+        
+print("Done")
+input("Press Enter to Exit...")
