@@ -1,6 +1,12 @@
-import sys
+import ctypes
 import pathlib
+import os
+import sys
 import zipfile
+
+from pathlib import Path
+
+import ctypes, sys
 
 def get_datadir() -> pathlib.Path:
     home = pathlib.Path.home()
@@ -12,7 +18,6 @@ def get_datadir() -> pathlib.Path:
     elif sys.platform == "darwin":
         return home / "Library/Application Support/minecraft/"
         
-
 jar_path = get_datadir() / "versions/1.8.9/1.8.9.jar"
 
 if jar_path.exists():

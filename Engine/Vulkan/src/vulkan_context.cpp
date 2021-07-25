@@ -14,6 +14,7 @@
 
 static VkDebugReportCallbackEXT g_DebugReportCallback;
 static VkDebugUtilsMessengerEXT g_DebugMessenger;
+static std::shared_ptr<spdlog::logger> g_VulkanLogger;
 
 VKAPI_ATTR VkBool32 VKAPI_CALL vulkanDebugCallback(VkDebugReportFlagsEXT flags,
                                                    VkDebugReportObjectTypeEXT objectType,
@@ -33,11 +34,13 @@ VKAPI_ATTR VkBool32 VKAPI_CALL vulkanDebugCallback(VkDebugReportFlagsEXT flags,
 
 VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
     switch (messageSeverity) {
-
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+        g_VulkanLogger->error("{}", pCallbackData->pMessage);
+        break;
+    default:
+        g_VulkanLogger->debug("{}", pCallbackData->pMessage);
     }
-
-
-    LOG_ERROR("Validation Layer: {}", pCallbackData->pMessage);
 
     return VK_FALSE;
 }
@@ -105,6 +108,8 @@ vk::UniqueInstance createInstance() {
     CreateDebugReportCallback(vulkanInstance, &debugReportCallbackCreateInfo, nullptr, &handle);
 
     g_DebugReportCallback = handle;
+
+    g_VulkanLogger = engine::logging::createLogger("Vulkan");
 #endif
 
     return std::move(instance);

@@ -17,3 +17,8 @@ logs/
 
 # MC Assets
 Game/assets/minecraft/
+
+# Visual Studio
+.vs/
+out/
+CMakeSettings.json
