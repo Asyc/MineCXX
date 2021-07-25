@@ -40,8 +40,8 @@ Image::Image(device::VulkanDevice* device,
     clearScreenCommandBuffer = std::move(buffers[0]);
     clearScreenCommandBuffer->begin(vk::CommandBufferBeginInfo());
     clearScreenCommandBuffer->pipelineBarrier(
-        vk::PipelineStageFlagBits::eBottomOfPipe,
         vk::PipelineStageFlagBits::eTopOfPipe,
+        vk::PipelineStageFlagBits::eBottomOfPipe,
         {},
         {},
         {},
@@ -50,6 +50,10 @@ Image::Image(device::VulkanDevice* device,
         1,
         &memoryBarrier
     );
+
+    vk::ClearColorValue clearColorValue{};
+    vk::ImageSubresourceRange subresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1);
+    clearScreenCommandBuffer->clearColorImage(image, vk::ImageLayout::eColorAttachmentOptimal, &clearColorValue, 1, &subresourceRange);
     clearScreenCommandBuffer->end();
 
     memoryBarrier.oldLayout = vk::ImageLayout::eColorAttachmentOptimal;
