@@ -74,7 +74,7 @@ vk::UniqueInstance createInstance() {
     instanceCreateInfo.enabledLayerCount = 1;
     instanceCreateInfo.ppEnabledLayerNames = &validationLayer;
     MCE_LOG_DEBUG("Validation Layer: {}", validationLayer);
-#endif
+   
     std::array<vk::ValidationFeatureEnableEXT, 1> enabledValidationFeatures = {
         vk::ValidationFeatureEnableEXT::eDebugPrintf
     };
@@ -85,13 +85,11 @@ vk::UniqueInstance createInstance() {
         vk::ValidationFeaturesEXT(enabledValidationFeatures.size(), enabledValidationFeatures.data()),
     };
 
-    vk::UniqueInstance instance = vk::createInstanceUnique(structureChain.get<vk::InstanceCreateInfo>());
-#ifdef MCE_DBG
     g_VulkanLogFile = std::make_shared<spdlog::sinks::basic_file_sink_mt>("logs/vulkan_latest.log");
     g_VulkanLogger = engine::logging::createLoggerDetached("Vulkan");
     g_VulkanLogger->sinks().push_back(g_VulkanLogFile);
 
-
+    vk::UniqueInstance instance = vk::createInstanceUnique(structureChain.get<vk::InstanceCreateInfo>());
     VkInstance vulkanInstance = *instance;
 
     vk::DebugUtilsMessageSeverityFlagsEXT severityFlags = vk::DebugUtilsMessageSeverityFlagBitsEXT::eError | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning;
@@ -106,9 +104,10 @@ vk::UniqueInstance createInstance() {
 
     auto vkCreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT) vkGetInstanceProcAddr(vulkanInstance, "vkCreateDebugReportCallbackEXT");
     vkCreateDebugReportCallbackEXT(vulkanInstance, &debugReportCallbackCreateInfo, nullptr, &g_DebugReportCallback);
-#endif
-
     return std::move(instance);
+#else
+    return vk::createInstanceUnique(instanceCreateInfo);
+#endif
 }
 
 vk::PhysicalDevice findPhysicalDevice(const std::vector<vk::PhysicalDevice>& devices) {
@@ -146,6 +145,7 @@ VulkanRenderContext::VulkanRenderContext(const Window& window, const Directory& 
       m_TransferManager(*m_Instance, m_PhysicalDevice, &m_Device, m_Device.getQueueManager().getGraphicsQueueFamily().index),
       m_FontRenderer(*this, File(resourceDirectory.getPath() + "font/glyph_sizes.bin"), Directory(resourceDirectory.getPath() + "/textures/font")) {
 
+#ifdef MCE_DBG
     VkInstance instance = *m_Instance;
     m_DebugMessenger = {g_DebugMessenger, [instance](VkDebugUtilsMessengerEXT messenger){
          auto vkDestroyDebugUtilsMessengerEXT = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
@@ -156,7 +156,7 @@ VulkanRenderContext::VulkanRenderContext(const Window& window, const Directory& 
          auto vkDestroyDebugReportCallbackEXT = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT");
          vkDestroyDebugReportCallbackEXT(instance, debugReportCallback, nullptr);
     }};
-
+#endif
     std::array<vk::DescriptorPoolSize, 1> poolSizes = {
         vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, 1)
     };

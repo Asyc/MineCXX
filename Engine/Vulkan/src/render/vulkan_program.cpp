@@ -236,6 +236,8 @@ VulkanProgram::VulkanProgram(vk::Device device, const std::string_view& program)
 #else
     auto vertexSPV = vertexFile.readFileBinary();
     auto fragmentSPV = fragmentFile.readFileBinary();
+
+    std::vector<char> geometrySPV;
     if (hasGeometry) geometrySPV = geometryFile.readFileBinary();
 #endif
 
