@@ -1,11 +1,10 @@
 #include "engine/gui/font/font_renderer.hpp"
 
-#include "engine/gui/font/ascii_font.hpp"
-#include "engine/render/render_context.hpp"
-
 #include <vulkan/vulkan.hpp>
 
+#include "engine/gui/font/ascii_font.hpp"
 #include "engine/log.hpp"
+#include "engine/render/render_context.hpp"
 
 namespace engine::gui::font {
 
@@ -18,7 +17,7 @@ struct AsciiVertex {
         float x, y;
     } pos;
 
-    char padding[sizeof(float) * 2];
+    float padding[2];
 };
 
 struct AsciiTable {
@@ -48,6 +47,7 @@ FontRenderer::FontRenderer(render::RenderContext& context, const File& glyphSize
     for (const auto& node : ASCII_CHAR_SIZES) {
         size_t pixelX = node.x * 8;
         size_t pixelY = (node.y + 1) * 8;
+        pixelY = width - pixelY;    // Invert Y-Coord
 
         float tx = pixelUnitX * static_cast<float>(pixelX);
         float ty = pixelUnitY * static_cast<float>(pixelY);
@@ -58,9 +58,6 @@ FontRenderer::FontRenderer(render::RenderContext& context, const File& glyphSize
         float tHeight = pixelUnitY * static_cast<float>(FONT_HEIGHT);
 
         auto horizontalWidth = static_cast<float>(node.width);
-        if (node.value == u'F') {
-            int i = 0;
-        }
         table.data[resolveIndex(node.value)] = AsciiVertex{{tx, ty, tWidth, tHeight}, {horizontalWidth, FONT_HEIGHT}};    // Top-Left
     }
 
@@ -106,12 +103,11 @@ void FontRenderer::draw(render::command::IDrawableCommandBuffer& commandBuffer, 
         }
 
         stringIndex += characters;
-        if (characters < pushConstantBuffer.size()) pushConstantBuffer[characters] = 0; // Null-Terminator
+        if (characters != MAX_CHARACTERS) pushConstantBuffer[characters] = 0;   // Null-Terminator
 
         commandBuffer.pushConstants(render::command::PushConstantUsage::GEOMETRY, 8, pushConstantBuffer.data(), pushConstantBuffer.size() * sizeof(uint32_t));
         commandBuffer.draw(1, 1);
     }
-
 }
 
 }

@@ -6,7 +6,6 @@
 
 layout (points) in;
 layout (triangle_strip, max_vertices = 112) out;
-
 layout (location = 0) out vec2 gs_TexPos;
 
 struct AsciiNode {
@@ -34,16 +33,15 @@ void main() {
 
         AsciiNode character = ascii_table[map(codepoint)];
 
+        float whRatio = character.size.y / character.size.x;
+
         float scale = 0.0128;
-        float width = character.size.x * scale;
+
+        float width = character.size.x * scale * 0.6f;
         float height = character.size.y * scale;
 
         float texPosX = character.texPos.x;
-
         float texPosY = character.texPos.y;
-        texPosY *= 128.0f;
-        texPosY = 128.0f - texPosY;
-        texPosY /= 128.0f;
 
         float texPosWidth = character.texPos.z;
         float texPosHeight = character.texPos.w;
@@ -326,7 +324,6 @@ uint map(uint value) {
         case 8319:return 252;
         case 178:return 253;
         case 9632:return 254;
-        default :
-        return value;
+        default:return value;
     }
 }

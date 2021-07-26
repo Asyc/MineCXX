@@ -23,7 +23,7 @@ void app_main() {
 
     Window window(1920, 1080, "Window");
 
-    auto context = window.createRenderContext(Swapchain::SwapchainMode::DOUBLE_BUFFER);
+    auto context = window.createRenderContext(Swapchain::SwapchainMode::DOUBLE_BUFFER_VSYNC);
     auto pipeline = context->createRenderPipeline(engine::File("assets/shaders/basic"));
     auto pool = context->createCommandPool();
 
@@ -81,7 +81,6 @@ void app_main() {
         context->getSwapchain().nextImage();
 
         auto now = std::chrono::high_resolution_clock::now();
-        fps++;
         if (std::chrono::duration_cast<std::chrono::milliseconds>(now - last).count() >= 1000) {
             last = now;
 
@@ -96,6 +95,8 @@ void app_main() {
             stringFps[index + 5] = '\0';
 
             fps = 0;
+        } else {
+            fps++;
         }
     }
 
