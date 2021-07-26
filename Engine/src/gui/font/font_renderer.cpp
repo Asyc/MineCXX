@@ -47,10 +47,9 @@ FontRenderer::FontRenderer(render::RenderContext& context, const File& glyphSize
     for (const auto& node : ASCII_CHAR_SIZES) {
         size_t pixelX = node.x * 8;
         size_t pixelY = (node.y + 1) * 8;
-        pixelY = width - pixelY;    // Invert Y-Coord
 
         float tx = pixelUnitX * static_cast<float>(pixelX);
-        float ty = pixelUnitY * static_cast<float>(pixelY);
+        float ty = 1.0f - pixelUnitY * static_cast<float>(pixelY);
 
         constexpr float FONT_HEIGHT = 8;
 
@@ -81,7 +80,7 @@ inline T roundUp(T numToRound, T multiple) {
 }
 
 void FontRenderer::draw(render::command::IDrawableCommandBuffer& commandBuffer, const FontRenderer::StringView& string) {
-    constexpr size_t MAX_CHARACTERS = 18;
+    constexpr size_t MAX_CHARACTERS = 18;   // Due to total output components available in the geometry shader.
 
     commandBuffer.bindPipeline(*m_Pipeline);
     commandBuffer.bindUniformDescriptor(*m_UniformDescriptorSet);
@@ -106,6 +105,8 @@ void FontRenderer::draw(render::command::IDrawableCommandBuffer& commandBuffer, 
         if (characters != MAX_CHARACTERS) pushConstantBuffer[characters] = 0;   // Null-Terminator
 
         commandBuffer.pushConstants(render::command::PushConstantUsage::GEOMETRY, 8, pushConstantBuffer.data(), pushConstantBuffer.size() * sizeof(uint32_t));
+
+        // 0-8 in Push Constants is Render Origin.
         commandBuffer.draw(1, 1);
     }
 }

@@ -50,7 +50,7 @@ void app_main() {
     auto font = pool->allocateDirectCommandBuffer();
 
     size_t fps = 0;
-    std::u16string stringFps ;
+    std::u16string stringFps;
 
     auto last = std::chrono::high_resolution_clock::now();
 
@@ -104,7 +104,6 @@ void tickFps() {
 const std::u16string& getFpsString() {
     return fpsString;
 }
-
 
 int main() {
 #ifdef MCE_DBG
