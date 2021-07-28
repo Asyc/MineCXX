@@ -36,6 +36,8 @@ std::unique_ptr<render::RenderContext> Window::createRenderContext(render::Swapc
     glfwSetWindowSizeCallback(m_Window.get(), [](GLFWwindow* handle, int width, int height){
         auto* ref = reinterpret_cast<vulkan::render::VulkanRenderContext*>(glfwGetWindowUserPointer(handle));
         ref->getSwapchain().onResize(width, height);
+        if (ref->getResizeCallback() != nullptr)
+            std::invoke(ref->getResizeCallback(), width, height);
     });
 
     glfwSetMouseButtonCallback(m_Window.get(), [](GLFWwindow* handle, int button, int action, int modifier){

@@ -68,4 +68,12 @@ const std::string& Directory::getParentPath() const {
     return *m_ParentPath;
 }
 
+std::string concat(const std::string_view& ns, const std::string_view& path) {
+    return "assets/" + std::string(ns) + "/" + std::string(path);
+}
+
+NamespaceFile::NamespaceFile(const std::string_view& pNamespace, const std::string_view& path) : File(concat(pNamespace, path)){
+
+}
+
 }   // namespace engine

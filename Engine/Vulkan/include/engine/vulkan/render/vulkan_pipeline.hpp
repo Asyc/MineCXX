@@ -55,8 +55,6 @@ public:
 
     vk::UniqueDescriptorSet allocateDescriptorSetUnique(uint32_t set);
 
-    vk::ShaderStageFlags getRangeUsage(uint32_t low, uint32_t high) const;
-
     [[nodiscard]] vk::Pipeline getPipeline() const;
     [[nodiscard]] vk::PipelineLayout getPipelineLayout() const { return *m_PipelineLayout; }
     [[nodiscard]] const std::vector<vk::UniqueDescriptorSetLayout>& getDescriptorSetLayoutTable() const { return m_DescriptorSetLayouts; }

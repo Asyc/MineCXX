@@ -49,6 +49,8 @@ VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBits
 
 namespace engine::vulkan::render {
 
+thread_local std::unordered_map<VulkanRenderContext*, command::VulkanCommandPool> VulkanRenderContext::s_ThreadCommandPoolMap;
+
 vk::UniqueInstance createInstance() {
     vk::ApplicationInfo applicationInfo(
         "Minecraft",
@@ -170,6 +172,16 @@ std::unique_ptr<buffer::Image> VulkanRenderContext::createImage(const File& path
 
 std::unique_ptr<command::CommandPool> VulkanRenderContext::createCommandPool() const {
     return std::make_unique<render::command::VulkanCommandPool>(m_Device.getDevice(), m_Device.getQueueManager().getGraphicsQueueFamily().index, false, &m_Swapchain);
+}
+
+command::CommandPool& VulkanRenderContext::getThreadCommandPool() {
+    auto it = s_ThreadCommandPoolMap.find(this);
+    if (it == s_ThreadCommandPoolMap.end()) {
+        auto ref = s_ThreadCommandPoolMap.emplace(this, command::VulkanCommandPool(m_Device.getDevice(), m_Device.getQueueManager().getGraphicsQueueFamily().index, false, &m_Swapchain));
+        return ref.first->second;
+    }
+
+    return it->second;
 }
 
 std::unique_ptr<buffer::VertexBuffer> VulkanRenderContext::allocateVertexBuffer(size_t size) {

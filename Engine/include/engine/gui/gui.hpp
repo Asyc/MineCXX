@@ -19,8 +19,12 @@ class Gui {
 public:
     virtual ~Gui() = default;
 
-    virtual void draw(engine::render::command::IDrawableCommandBuffer& buffer) = 0;
-private:
+    void draw(engine::render::command::IDrawableCommandBuffer& buffer);
+protected:
+    Gui() = default;
+
+    void pushElement(std::unique_ptr<Element> element);
+
     std::vector<std::unique_ptr<Element>> m_Elements;
 };
 

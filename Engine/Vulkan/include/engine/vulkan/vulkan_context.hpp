@@ -32,7 +32,9 @@ public:
     [[nodiscard]] std::unique_ptr<buffer::UniformBuffer> allocateUniformBuffer(const RenderPipeline& pipeline, size_t size) override;
 
     [[nodiscard]] std::unique_ptr<RenderPipeline> createRenderPipeline(const File& file) const override;
+
     [[nodiscard]] std::unique_ptr<command::CommandPool> createCommandPool() const override;
+    [[nodiscard]] command::CommandPool& getThreadCommandPool() override;
 
     [[nodiscard]] Swapchain& getSwapchain() override { return m_Swapchain; }
     [[nodiscard]] const Swapchain& getSwapchain() const override { return m_Swapchain; }
@@ -45,6 +47,10 @@ public:
     [[nodiscard]] buffer::VulkanTransferManager& getTransferManager() { return m_TransferManager; }
 
     [[nodiscard]] gui::font::FontRenderer& getFontRenderer() override { return m_FontRenderer; }
+
+    void setResizeCallback(ResizeCallback callback) override { m_ResizeCallback = std::move(callback); }
+
+    [[nodiscard]] const ResizeCallback& getResizeCallback() { return m_ResizeCallback; }
 private:
     vk::UniqueInstance m_Instance;
 #ifdef MCE_DBG
@@ -64,6 +70,10 @@ private:
     vk::UniqueDescriptorPool m_DescriptorPool;
 
     gui::font::FontRenderer m_FontRenderer;
+
+    ResizeCallback m_ResizeCallback;
+
+    static thread_local std::unordered_map<VulkanRenderContext*, command::VulkanCommandPool> s_ThreadCommandPoolMap;
 };
 
 }   // namespace engine::render::vulkan

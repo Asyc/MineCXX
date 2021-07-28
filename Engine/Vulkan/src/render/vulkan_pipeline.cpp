@@ -21,6 +21,8 @@ VulkanRenderPipeline::VulkanRenderPipeline(vk::Device device, vk::RenderPass ren
         topology = vk::PrimitiveTopology::ePointList;
     } else if (program.programConfig.vulkan.input.topology == "eTriangleList") {
         topology = vk::PrimitiveTopology::eTriangleList;
+    } else {
+        throw std::runtime_error("Unsupported Topology");
     }
 
     vk::PipelineInputAssemblyStateCreateInfo inputAssemblyStateCreateInfo({}, topology, VK_FALSE);

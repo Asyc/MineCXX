@@ -12,12 +12,14 @@ set(HEADERS
         include/engine/render/command/command_buffer.hpp
         include/engine/render/buffer/vertex_buffer.hpp
         include/engine/render/buffer/index_buffer.hpp
-        include/engine/gui/gui.hpp include/engine/gui/element/element.hpp 
+        include/engine/gui/gui.hpp
         include/engine/gui/input.hpp include/engine/render/buffer/image.hpp 
         include/engine/render/buffer/uniform_buffer.hpp 
         include/engine/nbt/nbt_parser.hpp 
         include/engine/nbt/nbt_writer.hpp 
         include/engine/gui/font/ascii_font.hpp
+        include/engine/gui/scene.hpp
+        include/engine/gui/element/element.hpp
         )
 
 set(SOURCES
@@ -33,6 +35,8 @@ set(SOURCES
         src/gui/font/font_renderer.cpp 
         src/gui/font/ascii_font.cpp 
         include/engine/render/descriptor.hpp
+        src/gui/scene.cpp
+        src/gui/element.cpp
         )
 
 add_library(libengine STATIC ${HEADERS} ${SOURCES})

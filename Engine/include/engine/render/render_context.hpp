@@ -10,7 +10,6 @@
 #include "command/command_pool.hpp"
 #include "engine/file.hpp"
 #include "engine/gui/font/font_renderer.hpp"
-#include "engine/gui/gui.hpp"
 #include "engine/gui/input.hpp"
 
 #include "pipeline.hpp"
@@ -21,6 +20,8 @@ namespace engine::render {
 
 class RenderContext {
 public:
+    using ResizeCallback = std::function<void(uint32_t, uint32_t)>;
+
     virtual ~RenderContext() = default;
 
     [[nodiscard]] virtual std::unique_ptr<buffer::Image> createImage(const File& path) = 0;
@@ -33,19 +34,19 @@ public:
     [[nodiscard]] virtual std::unique_ptr<RenderPipeline> createRenderPipeline(const File& file) const = 0;
 
     [[nodiscard]] virtual std::unique_ptr<command::CommandPool> createCommandPool() const = 0;
+    [[nodiscard]] virtual command::CommandPool& getThreadCommandPool() = 0;
 
     [[nodiscard]] virtual Swapchain& getSwapchain() = 0;
     [[nodiscard]] virtual const Swapchain& getSwapchain() const = 0;
 
     [[nodiscard]] virtual gui::font::FontRenderer& getFontRenderer() = 0;
 
+    virtual void setResizeCallback(ResizeCallback callback) = 0;
+
     // Callback functions
     virtual void mouseButtonCallback(gui::input::MouseButton button, gui::input::MouseButtonAction action, double x, double y) = 0;
 protected:
     RenderContext() = default;
-
-
-
 };
 
 }   // namespace engine::render
