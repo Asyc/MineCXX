@@ -25,21 +25,22 @@ VKAPI_ATTR VkBool32 VKAPI_CALL vulkanDebugCallback(VkDebugReportFlagsEXT flags, 
         g_VulkanLogger->error("{}", pMessage);
         return false;
     }
-    
+
     g_VulkanLogger->debug("{}", pMessage);
-    
+
     return false;
 }
 
-VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
+VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+                                             VkDebugUtilsMessageTypeFlagsEXT,
+                                             const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+                                             void* pUserData) {
     switch (messageSeverity) {
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-        g_VulkanLogger->error("{}", pCallbackData->pMessage);
-        break;
-    default:
-        g_VulkanLogger->debug("{}", pCallbackData->pMessage);
-        break;
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:g_VulkanLogger->error("{}", pCallbackData->pMessage);
+            break;
+        default:g_VulkanLogger->debug("{}", pCallbackData->pMessage);
+            break;
     }
 
     return VK_FALSE;
@@ -76,7 +77,7 @@ vk::UniqueInstance createInstance() {
     instanceCreateInfo.enabledLayerCount = 1;
     instanceCreateInfo.ppEnabledLayerNames = &validationLayer;
     MCE_LOG_DEBUG("Validation Layer: {}", validationLayer);
-   
+
     std::array<vk::ValidationFeatureEnableEXT, 1> enabledValidationFeatures = {
         vk::ValidationFeatureEnableEXT::eDebugPrintf
     };
@@ -100,8 +101,9 @@ vk::UniqueInstance createInstance() {
 
     auto vkCreateDebugUtilsMessengerEXT = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(vulkanInstance, "vkCreateDebugUtilsMessengerEXT");
     vkCreateDebugUtilsMessengerEXT(vulkanInstance, &createInfoExt, nullptr, &g_DebugMessenger);
-    
-    vk::DebugReportFlagsEXT debugReportFlags = vk::DebugReportFlagBitsEXT::eWarning | vk::DebugReportFlagBitsEXT::ePerformanceWarning | vk::DebugReportFlagBitsEXT::eError | vk::DebugReportFlagBitsEXT::eDebug;
+
+    vk::DebugReportFlagsEXT
+        debugReportFlags = vk::DebugReportFlagBitsEXT::eWarning | vk::DebugReportFlagBitsEXT::ePerformanceWarning | vk::DebugReportFlagBitsEXT::eError | vk::DebugReportFlagBitsEXT::eDebug;
     VkDebugReportCallbackCreateInfoEXT debugReportCallbackCreateInfo = vk::DebugReportCallbackCreateInfoEXT(debugReportFlags, vulkanDebugCallback, nullptr);
 
     auto vkCreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT) vkGetInstanceProcAddr(vulkanInstance, "vkCreateDebugReportCallbackEXT");
@@ -149,14 +151,14 @@ VulkanRenderContext::VulkanRenderContext(const Window& window, const Directory& 
 
 #ifdef MCE_DBG
     VkInstance instance = *m_Instance;
-    m_DebugMessenger = {g_DebugMessenger, [instance](VkDebugUtilsMessengerEXT messenger){
-         auto vkDestroyDebugUtilsMessengerEXT = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
-         vkDestroyDebugUtilsMessengerEXT(instance, messenger, nullptr);
+    m_DebugMessenger = {g_DebugMessenger, [instance](VkDebugUtilsMessengerEXT messenger) {
+        auto vkDestroyDebugUtilsMessengerEXT = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+        vkDestroyDebugUtilsMessengerEXT(instance, messenger, nullptr);
     }};
 
-    m_DebugReportCallback = { g_DebugReportCallback, [instance](VkDebugReportCallbackEXT debugReportCallback) {
-         auto vkDestroyDebugReportCallbackEXT = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT");
-         vkDestroyDebugReportCallbackEXT(instance, debugReportCallback, nullptr);
+    m_DebugReportCallback = {g_DebugReportCallback, [instance](VkDebugReportCallbackEXT debugReportCallback) {
+        auto vkDestroyDebugReportCallbackEXT = (PFN_vkDestroyDebugReportCallbackEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT");
+        vkDestroyDebugReportCallbackEXT(instance, debugReportCallback, nullptr);
     }};
 #endif
     std::array<vk::DescriptorPoolSize, 1> poolSizes = {
@@ -166,8 +168,8 @@ VulkanRenderContext::VulkanRenderContext(const Window& window, const Directory& 
     m_DescriptorPool = m_Device.getDevice().createDescriptorPoolUnique(vk::DescriptorPoolCreateInfo({}, 4, poolSizes.size(), poolSizes.data()));
 }
 
-std::unique_ptr<buffer::Image> VulkanRenderContext::createImage(const File& path) {
-    return std::make_unique<buffer::VulkanImage>(&m_TransferManager, m_MemoryAllocator.get(), path);
+std::shared_ptr<buffer::Image> VulkanRenderContext::createImage(const File& path) {
+    return std::make_shared<buffer::VulkanImage>(&m_TransferManager, m_MemoryAllocator.get(), path);
 }
 
 std::unique_ptr<command::CommandPool> VulkanRenderContext::createCommandPool() const {

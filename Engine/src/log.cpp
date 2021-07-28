@@ -45,7 +45,7 @@ std::shared_ptr<spdlog::logger> createLoggerDetached(const std::string_view& nam
         sinks.end(),
         spdlog::thread_pool(),
         spdlog::async_overflow_policy::block
-        );
+    );
 
     spdlog::register_logger(logger);
 

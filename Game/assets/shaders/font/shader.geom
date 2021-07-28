@@ -35,7 +35,7 @@ void main() {
 
         float whRatio = character.size.y / character.size.x;
 
-        float scale = 0.0128;
+        float scale = 0.00528;
 
         float width = character.size.x * scale * 0.6f;
         float height = character.size.y * scale;
@@ -46,28 +46,28 @@ void main() {
         float texPosWidth = character.texPos.z;
         float texPosHeight = character.texPos.w;
 
-        gl_Position = vec4(renderOrigin.x, renderOrigin.y + height, 0.0f, 1.0f);    // Top-Left
-        gs_TexPos = vec2(texPosX, texPosY + texPosHeight);
-        EmitVertex();
-
-        gl_Position = vec4(renderOrigin, 0.0f, 1.0f); // Bottom-Left
+        gl_Position = vec4(renderOrigin, 0.0f, 1.0f);// Top-Left
         gs_TexPos = vec2(texPosX, texPosY);
         EmitVertex();
 
-        gl_Position = vec4(renderOrigin.x + width, renderOrigin.y, 0.0f, 1.0f); // Bottom Right
-        gs_TexPos = vec2(texPosX + texPosWidth, texPosY);
-        EmitVertex();
-
-        gl_Position = vec4(renderOrigin.x, renderOrigin.y + height, 0.0f, 1.0f);    // Top-Left
+        gl_Position = vec4(renderOrigin.x, renderOrigin.y - height, 0.0f, 1.0f);// Bottom-Left
         gs_TexPos = vec2(texPosX, texPosY + texPosHeight);
         EmitVertex();
 
-        gl_Position = vec4(renderOrigin.x + width, renderOrigin.y + height, 0.0f, 1.0f); // Top Right
+        gl_Position = vec4(renderOrigin.x + width, renderOrigin.y - height, 0.0f, 1.0f);// Bottom Right
         gs_TexPos = vec2(texPosX + texPosWidth, texPosY + texPosHeight);
         EmitVertex();
 
-        gl_Position = vec4(renderOrigin.x + width, renderOrigin.y, 0.0f, 1.0f); // Bottom Right
+        gl_Position = vec4(renderOrigin, 0.0f, 1.0f);// Top-Left
+        gs_TexPos = vec2(texPosX, texPosY);
+        EmitVertex();
+
+        gl_Position = vec4(renderOrigin.x + width, renderOrigin.y, 0.0f, 1.0f);// Top Right
         gs_TexPos = vec2(texPosX + texPosWidth, texPosY);
+        EmitVertex();
+
+        gl_Position = vec4(renderOrigin.x + width, renderOrigin.y - height, 0.0f, 1.0f);// Bottom Right
+        gs_TexPos = vec2(texPosX + texPosWidth, texPosY + texPosHeight);
         EmitVertex();
 
         EndPrimitive();
@@ -324,6 +324,6 @@ uint map(uint value) {
         case 8319:return 252;
         case 178:return 253;
         case 9632:return 254;
-        default:return value;
+        default :return value;
     }
 }

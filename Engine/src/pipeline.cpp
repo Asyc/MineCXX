@@ -6,13 +6,13 @@
 
 namespace engine::render {
 
-template <typename Document>
+template<typename Document>
 inline std::string getString(const Document& document, const char* key) {
     const auto& element = document[key];
     return std::string(element.GetString(), element.GetStringLength());
 }
 
-template <typename Document>
+template<typename Document>
 inline std::string getStringOptional(const Document& document, const char* key, const char* defaultValue) {
     if (document.HasMember(key)) {
         return getString(document, key);
@@ -49,11 +49,11 @@ Program::Program(const File& pipelineConfiguration) {
     for (const auto& inputAttribute : vulkanInputAttributes) {
         auto object = inputAttribute.GetObject();
         programConfig.vulkan.input.inputAttributes.push_back({
-            object["binding"].GetUint(),
-            object["location"].GetUint(),
-            getString(object, "type"),
-            object["offset"].GetUint()
-        });
+                                                                 object["binding"].GetUint(),
+                                                                 object["location"].GetUint(),
+                                                                 getString(object, "type"),
+                                                                 object["offset"].GetUint()
+                                                             });
     }
 
     MCE_LOG_DEBUG("Registered pipeline: {}, Config: Custom", pipelineConfiguration.getPath());

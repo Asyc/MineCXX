@@ -11,7 +11,8 @@ namespace engine::vulkan::render::buffer {
 
 VulkanImage::VulkanImage(VulkanTransferManager* transferManager, VmaAllocator allocator, const File& path) {
     int width, height, channels;
-    stbi_set_flip_vertically_on_load(true);
+    stbi_set_flip_vertically_on_load(false);
+
     auto* buffer = stbi_load(path.getFullPath().c_str(), &width, &height, &channels, STBI_rgb_alpha);
     size_t length = width * height * 4;
 
@@ -46,7 +47,7 @@ VulkanImage::VulkanImage(VulkanTransferManager* transferManager, VmaAllocator al
     vmaCreateImage(allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, &allocationInfo);
 
     m_Image = image;
-    m_Allocation = {allocation, [allocator, image](VmaAllocation allocation){
+    m_Allocation = {allocation, [allocator, image](VmaAllocation allocation) {
         vmaDestroyImage(allocator, image, allocation);
     }};
 

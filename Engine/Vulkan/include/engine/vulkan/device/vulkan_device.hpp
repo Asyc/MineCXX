@@ -24,7 +24,7 @@ public:
     }
 
     VulkanQueueManager& getQueueManager() { return m_QueueManager; }
-    [[nodiscard]] const VulkanQueueManager& getQueueManager() const {return m_QueueManager;};
+    [[nodiscard]] const VulkanQueueManager& getQueueManager() const { return m_QueueManager; };
 private:
     vk::UniqueDevice m_Device;
     VulkanQueueManager m_QueueManager;

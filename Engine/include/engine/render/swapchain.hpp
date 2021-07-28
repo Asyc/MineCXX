@@ -38,17 +38,13 @@ public:
     static std::string_view toString(SwapchainMode mode) {
         std::string_view string;
         switch (mode) {
-            case render::Swapchain::SwapchainMode::DOUBLE_BUFFER:
-                string = "Double Buffer";
+            case render::Swapchain::SwapchainMode::DOUBLE_BUFFER:string = "Double Buffer";
                 break;
-            case render::Swapchain::SwapchainMode::TRIPLE_BUFFER:
-                string = "Triple Buffer";
+            case render::Swapchain::SwapchainMode::TRIPLE_BUFFER:string = "Triple Buffer";
                 break;
-            case render::Swapchain::SwapchainMode::DOUBLE_BUFFER_VSYNC:
-                string = "Double Buffer (VSYNC)";
+            case render::Swapchain::SwapchainMode::DOUBLE_BUFFER_VSYNC:string = "Double Buffer (VSYNC)";
                 break;
-            case render::Swapchain::SwapchainMode::TRIPLE_BUFFER_VSYNC:
-                string = "Triple Buffer (VSYNC)";
+            case render::Swapchain::SwapchainMode::TRIPLE_BUFFER_VSYNC:string = "Triple Buffer (VSYNC)";
                 break;
         }
 

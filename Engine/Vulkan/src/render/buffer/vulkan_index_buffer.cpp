@@ -1,6 +1,5 @@
 #include "engine/vulkan/render/buffer/vulkan_index_buffer.hpp"
 
-
 #include "engine/vulkan/vulkan_context.hpp"
 
 namespace engine::vulkan::render::buffer {
@@ -21,7 +20,7 @@ VulkanIndexBuffer::VulkanIndexBuffer(VulkanTransferManager* transferManager, Vma
     vmaCreateBuffer(allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, &m_AllocationInfo);
 
     m_Buffer = buffer;
-    m_Allocation = {allocation, [allocator, buffer](VmaAllocation allocation){
+    m_Allocation = {allocation, [allocator, buffer](VmaAllocation allocation) {
         vmaDestroyBuffer(allocator, buffer, allocation);
     }};
 }

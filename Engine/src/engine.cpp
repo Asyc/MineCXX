@@ -11,7 +11,6 @@
 
 #include "engine/log.hpp"
 
-
 namespace engine {
 
 namespace gui::font {
@@ -22,8 +21,6 @@ void init() {
     gui::font::initAsciiIndexes();
 
     logging::setupLogging();
-
-
 
     glfwInit();
 

@@ -32,7 +32,7 @@ std::string File::readFileText() const {
 
     std::string buffer;
     buffer.assign((std::istreambuf_iterator<char>(in)),
-               std::istreambuf_iterator<char>());
+                  std::istreambuf_iterator<char>());
 
     return std::move(buffer);
 }
@@ -72,7 +72,7 @@ std::string concat(const std::string_view& ns, const std::string_view& path) {
     return "assets/" + std::string(ns) + "/" + std::string(path);
 }
 
-NamespaceFile::NamespaceFile(const std::string_view& pNamespace, const std::string_view& path) : File(concat(pNamespace, path)){
+NamespaceFile::NamespaceFile(const std::string_view& pNamespace, const std::string_view& path) : File(concat(pNamespace, path)) {
 
 }
 

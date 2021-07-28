@@ -25,7 +25,7 @@ class VulkanRenderContext : public RenderContext {
 public:
     VulkanRenderContext(const Window& window, const Directory& resourceDirectory, Swapchain::SwapchainMode modeHint);
 
-    std::unique_ptr<buffer::Image> createImage(const File& path) override;
+    std::shared_ptr<buffer::Image> createImage(const File& path) override;
 
     [[nodiscard]] std::unique_ptr<buffer::VertexBuffer> allocateVertexBuffer(size_t size) override;
     [[nodiscard]] std::unique_ptr<buffer::IndexBuffer> allocateIndexBuffer(size_t size) override;

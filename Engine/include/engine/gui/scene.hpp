@@ -16,7 +16,7 @@ public:
 
     void setGui(std::unique_ptr<Gui> gui) { m_Gui = std::move(gui); }
 
-    template <typename T>
+    template<typename T>
     typename std::enable_if<std::is_base_of<Gui, T>::value>::type setGui() { setGui(std::make_unique<T>(*m_Context)); }
 
     void render();

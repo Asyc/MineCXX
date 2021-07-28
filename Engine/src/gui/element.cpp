@@ -4,7 +4,7 @@
 
 namespace engine::gui {
 
-ElementImage::ElementImage(engine::render::RenderContext& context, std::shared_ptr<engine::render::buffer::Image> image, float x, float y) : m_Image(std::move(image)) {
+ElementImage::ElementImage(engine::render::RenderContext& context, std::shared_ptr<engine::render::buffer::Image> image, float x, float y, const ImageRegion& region) : m_Image(std::move(image)) {
     m_Pipeline = context.createRenderPipeline(File("assets/shaders/gui/image"));
     m_UniformDescriptorSet = m_Pipeline->allocateDescriptorSet(0);
     m_UniformDescriptorSet->bind(0, *m_Image);
@@ -19,16 +19,19 @@ ElementImage::ElementImage(engine::render::RenderContext& context, std::shared_p
     };
 
     float width = 0.601f, height = 0.2f;
-    float tX = 0.0f, tY = 0.0f, tWidth = 1.0f, tHeight = 1.0f;
 
-    x -= width / 2.0f;
-    y += height * 2;
+    float pixelUnitX = 1.0f / static_cast<float>(m_Image->getWidth());
+    float pixelUnitY = 1.0f / static_cast<float>(m_Image->getHeight());
+    float tX = pixelUnitX * static_cast<float>(region.x);
+    float tY = pixelUnitY * static_cast<float>(region.y);
+    float tWidth = pixelUnitX * static_cast<float>(region.width);
+    float tHeight = pixelUnitY * static_cast<float>(region.height);
 
-    std::array<Vertex, 4> vertices {
-        Vertex{x, y + height, tX, tY + tHeight},
-        Vertex{x, y, tX, tY},
-        Vertex{x + width, y, tX + tWidth, tY},
-        Vertex{x + width, y + height, tX + tWidth, tY + tHeight}
+    std::array<Vertex, 4> vertices{
+        Vertex{x, y + height, tX, tY},
+        Vertex{x, y, tX, tY + tHeight},
+        Vertex{x + width, y, tX + tWidth, tY + tHeight},
+        Vertex{x + width, y + height, tX + tWidth, tY}
     };
     constexpr size_t length = sizeof(Vertex) * vertices.size();
     m_VertexBuffer = context.allocateVertexBuffer(length);

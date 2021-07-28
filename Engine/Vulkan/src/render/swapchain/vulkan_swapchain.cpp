@@ -17,7 +17,11 @@ inline vk::PresentModeKHR mapSwapchainMode(Swapchain::SwapchainMode mode) {
 
 void threadEntry(VulkanSwapchain*);
 
-VulkanSwapchain::VulkanSwapchain(Swapchain::SwapchainMode modeHint, vk::SurfaceKHR surface, vk::PhysicalDevice physicalDevice, device::VulkanDevice* device, const device::VulkanQueueManager& queueManager) : m_Owner(device) {
+VulkanSwapchain::VulkanSwapchain(Swapchain::SwapchainMode modeHint,
+                                 vk::SurfaceKHR surface,
+                                 vk::PhysicalDevice physicalDevice,
+                                 device::VulkanDevice* device,
+                                 const device::VulkanQueueManager& queueManager) : m_Owner(device) {
     vk::SurfaceCapabilitiesKHR capabilities = physicalDevice.getSurfaceCapabilitiesKHR(surface);
 
     bool tripleBuffer = false;

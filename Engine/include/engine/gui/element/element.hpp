@@ -15,7 +15,12 @@ public:
 
 class ElementImage : public Element {
 public:
-    ElementImage(engine::render::RenderContext& context, std::shared_ptr<engine::render::buffer::Image> image, float x, float y);
+    struct ImageRegion {
+        float x, y;
+        float width, height;
+    };
+
+    ElementImage(engine::render::RenderContext& context, std::shared_ptr<engine::render::buffer::Image> image, float x, float y, const ImageRegion& region = {0.0f, 0.0f, 0.0f, 0.0f});
 
     void draw(engine::render::command::IDrawableCommandBuffer& buffer) override;
 private:

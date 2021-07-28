@@ -15,10 +15,10 @@ class IVulkanDescriptorResource {
 public:
     [[nodiscard]] virtual vk::DescriptorType getDescriptorType() const = 0;
 
-    [[nodiscard]] virtual vk::Buffer getBuffer() const {return {};}
+    [[nodiscard]] virtual vk::Buffer getBuffer() const { return {}; }
 
-    [[nodiscard]] virtual vk::Sampler getSampler() const {return {};}
-    [[nodiscard]] virtual vk::ImageView getImageView() const {return {};}
+    [[nodiscard]] virtual vk::Sampler getSampler() const { return {}; }
+    [[nodiscard]] virtual vk::ImageView getImageView() const { return {}; }
 };
 
 class VulkanUniformDescriptor : public UniformDescriptor {

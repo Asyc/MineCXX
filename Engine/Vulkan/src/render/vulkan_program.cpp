@@ -151,17 +151,13 @@ std::vector<char> createSPIRV(std::string src) {
 
     const char* shaderStage;
     switch (STAGE) {
-        case GLSLANG_STAGE_GEOMETRY:
-            shaderStage = "Geometry Shader";
+        case GLSLANG_STAGE_GEOMETRY:shaderStage = "Geometry Shader";
             break;
-        case GLSLANG_STAGE_VERTEX:
-            shaderStage = "Vertex Shader";
+        case GLSLANG_STAGE_VERTEX:shaderStage = "Vertex Shader";
             break;
-        case GLSLANG_STAGE_FRAGMENT:
-            shaderStage = "Fragment Shader";
+        case GLSLANG_STAGE_FRAGMENT:shaderStage = "Fragment Shader";
             break;
-        default:
-            shaderStage = "Unknown Shader";
+        default:shaderStage = "Unknown Shader";
             break;
     }
 
@@ -177,7 +173,6 @@ std::vector<char> createSPIRV(std::string src) {
 
     glslang_program_t* program = glslang_program_create();
     glslang_program_add_shader(program, shader);
-
 
     if (!glslang_program_link(program, GLSLANG_MSG_SPV_RULES_BIT | GLSLANG_MSG_VULKAN_RULES_BIT)) {
         LOG_ERROR("Program:{}\n{}\n{}\n", shaderStage, glslang_shader_get_info_log(shader), glslang_shader_get_info_debug_log(shader));
@@ -272,7 +267,6 @@ VulkanProgram::VulkanProgram(vk::Device device, const std::string_view& program)
 
     auto* buffer = (vk::DescriptorSetLayout*) alloca(sizeof(vk::DescriptorSet) * descriptorSets.size());
     for (size_t i = 0; i < descriptorSets.size(); i++) buffer[i] = *descriptorSets[i];
-
 
     vk::PipelineLayoutCreateInfo layoutCreateInfo({}, descriptorSets.size(), buffer, pushConstantRanges.size(), pushConstantRanges.data());
     m_PipelineLayout = device.createPipelineLayoutUnique(layoutCreateInfo);

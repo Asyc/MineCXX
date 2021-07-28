@@ -14,7 +14,6 @@ protected:
     IndexBuffer() = default;
 };
 
-
 }   // namespace engine::render::buffer
 
 #endif //MINECRAFTCXX_CLIENT_ENGINE_INCLUDE_ENGINE_RENDER_BUFFER_INDEX_BUFFER_HPP_

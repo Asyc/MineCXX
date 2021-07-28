@@ -28,7 +28,7 @@ VulkanUniformBuffer::VulkanUniformBuffer(VulkanTransferManager* transferManager,
     vmaCreateBuffer(allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, &allocationInfo);
 
     m_Buffer = buffer;
-    m_Allocation = {allocation, [allocator, buffer](VmaAllocation allocation){
+    m_Allocation = {allocation, [allocator, buffer](VmaAllocation allocation) {
         vmaDestroyBuffer(allocator, buffer, allocation);
     }};
     m_MappedPtr = allocationInfo.pMappedData;

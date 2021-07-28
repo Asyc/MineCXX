@@ -14,7 +14,7 @@ public:
     virtual ~Program() = default;
 
     struct ProgramConfig {
-        struct VulkanConfig{
+        struct VulkanConfig {
             struct InputConfig {
                 std::string topology;
 

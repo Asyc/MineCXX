@@ -33,13 +33,13 @@ public:
 
     FontRenderer(render::RenderContext& context, const File& glyphSizesPath, const Directory& resourceDirectory);
 
-    void draw(render::command::IDrawableCommandBuffer& commandBuffer, const StringView& string);
+    void draw(render::command::IDrawableCommandBuffer& commandBuffer, const StringView& string, float x, float y);
 private:
     std::unique_ptr<render::RenderPipeline> m_Pipeline;
     std::unique_ptr<render::buffer::UniformBuffer> m_AsciiTableUniformBuffer;
     std::unique_ptr<render::UniformDescriptor> m_UniformDescriptorSet;
 
-    std::unique_ptr<render::buffer::Image> m_AsciiImage;
+    std::shared_ptr<render::buffer::Image> m_AsciiImage;
     std::unordered_map<uint16_t, std::unique_ptr<render::buffer::VertexBuffer>> m_AsciiFontMap;
 
     std::unique_ptr<render::buffer::IndexBuffer> m_IndexBuffer;

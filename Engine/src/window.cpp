@@ -33,40 +33,34 @@ std::unique_ptr<render::RenderContext> Window::createRenderContext(render::Swapc
     }
 
     glfwSetWindowUserPointer(m_Window.get(), ptr.get());
-    glfwSetWindowSizeCallback(m_Window.get(), [](GLFWwindow* handle, int width, int height){
+    glfwSetWindowSizeCallback(m_Window.get(), [](GLFWwindow* handle, int width, int height) {
         auto* ref = reinterpret_cast<vulkan::render::VulkanRenderContext*>(glfwGetWindowUserPointer(handle));
         ref->getSwapchain().onResize(width, height);
         if (ref->getResizeCallback() != nullptr)
             std::invoke(ref->getResizeCallback(), width, height);
     });
 
-    glfwSetMouseButtonCallback(m_Window.get(), [](GLFWwindow* handle, int button, int action, int modifier){
+    glfwSetMouseButtonCallback(m_Window.get(), [](GLFWwindow* handle, int button, int action, int modifier) {
         auto* ref = reinterpret_cast<vulkan::render::VulkanRenderContext*>(glfwGetWindowUserPointer(handle));
 
         engine::gui::input::MouseButton buttonFlag;
         switch (button) {
-            case GLFW_MOUSE_BUTTON_LEFT:
-                buttonFlag = gui::input::MouseButton::LEFT;
+            case GLFW_MOUSE_BUTTON_LEFT:buttonFlag = gui::input::MouseButton::LEFT;
                 break;
-            case GLFW_MOUSE_BUTTON_RIGHT:
-                buttonFlag = gui::input::MouseButton::RIGHT;
+            case GLFW_MOUSE_BUTTON_RIGHT:buttonFlag = gui::input::MouseButton::RIGHT;
                 break;
-            case GLFW_MOUSE_BUTTON_MIDDLE:
-                buttonFlag = gui::input::MouseButton::MIDDLE;
+            case GLFW_MOUSE_BUTTON_MIDDLE:buttonFlag = gui::input::MouseButton::MIDDLE;
                 break;
             default: return;
         }
 
         engine::gui::input::MouseButtonAction actionFlag;
         switch (action) {
-            case GLFW_PRESS:
-                actionFlag = gui::input::MouseButtonAction::PRESS;
+            case GLFW_PRESS:actionFlag = gui::input::MouseButtonAction::PRESS;
                 break;
-            case GLFW_RELEASE:
-                actionFlag = gui::input::MouseButtonAction::RELEASE;
+            case GLFW_RELEASE:actionFlag = gui::input::MouseButtonAction::RELEASE;
                 break;
-            default:
-                return;
+            default:return;
         }
 
         double x, y;

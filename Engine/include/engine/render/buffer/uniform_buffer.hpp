@@ -16,8 +16,6 @@ protected:
     UniformBuffer() = default;
 };
 
-
-
 }
 
 #endif //MINECRAFTCXX_CLIENT_ENGINE_INCLUDE_ENGINE_RENDER_BUFFER_UNIFORM_BUFFER_HPP_

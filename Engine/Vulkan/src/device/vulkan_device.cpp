@@ -61,7 +61,6 @@ inline vk::UniqueDevice createDevice(vk::PhysicalDevice physicalDevice, vk::Surf
     deviceCreateInfo.enabledExtensionCount = debugExtensions.size();
     deviceCreateInfo.ppEnabledExtensionNames = debugExtensions.data();
 
-
 #endif
 
     array[0] = VulkanQueueFamily{queuesCreateInfo[0].queueFamilyIndex, graphics.maxQueueCount};
@@ -71,6 +70,6 @@ inline vk::UniqueDevice createDevice(vk::PhysicalDevice physicalDevice, vk::Surf
 
 VulkanDevice::VulkanDevice(render::VulkanRenderContext* context, vk::Instance owner, vk::PhysicalDevice device, vk::SurfaceKHR surface)
     : m_Device(createDevice(device, surface)),
-    m_QueueManager(context, array[0], array[1]) {}
+      m_QueueManager(context, array[0], array[1]) {}
 
 }   // namespace engine::vulkan::device

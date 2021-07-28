@@ -45,8 +45,6 @@ protected:
     mutable std::optional<std::string> m_FullPath, m_ParentPath;
 };
 
-
-
 class NamespaceFile : public File {
 public:
     NamespaceFile(const std::string_view& pNamespace, const std::string_view& path);

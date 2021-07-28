@@ -525,8 +525,7 @@ uint8_t map(int8_t value) {
         case 8319:return 252;
         case 178:return 253;
         case 9632:return 254;
-        default:
-            MCE_LOG_ERROR("Reached End of Font Map(I) function"); // soft error
+        default:MCE_LOG_ERROR("Reached End of Font Map(I) function"); // soft error
             return value;
     }
 }

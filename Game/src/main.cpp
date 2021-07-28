@@ -38,7 +38,7 @@ void app_main() {
         scene.render();
 
         font->begin();
-        context->getFontRenderer().draw(*font, getFpsString());
+        context->getFontRenderer().draw(*font, getFpsString(), -0.99f, 0.99f);
         font->end();
 
         // Submission

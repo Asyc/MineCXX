@@ -1,8 +1,16 @@
 #include "main_menu.hpp"
 
-using namespace engine;
+#include <array>
 
-MainMenu::MainMenu(engine::render::RenderContext& context)  {
-    auto image = context.createImage(NamespaceFile("minecraft", "textures/gui/title/minecraft.png"));
-    pushElement(std::make_unique<gui::ElementImage>(context, std::move(image), 0.0f, 0.0f));
+using namespace engine;
+using namespace engine::gui;
+
+MainMenu::MainMenu(engine::render::RenderContext& context) {
+    auto file = NamespaceFile("minecraft", "textures/gui/title/minecraft.png");
+    auto image = context.createImage(file);
+
+    float y = 0.6f;
+
+    pushElement(std::make_unique<gui::ElementImage>(context, image, -0.6f, y, ElementImage::ImageRegion{0.0f, 0.0f, 155.0f, 45.0f}));
+    pushElement(std::make_unique<gui::ElementImage>(context, image, 0.0f, y, ElementImage::ImageRegion{0.0f, 45.0f, 119.0f, 45.0f}));
 }

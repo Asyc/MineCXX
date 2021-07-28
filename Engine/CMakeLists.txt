@@ -13,10 +13,10 @@ set(HEADERS
         include/engine/render/buffer/vertex_buffer.hpp
         include/engine/render/buffer/index_buffer.hpp
         include/engine/gui/gui.hpp
-        include/engine/gui/input.hpp include/engine/render/buffer/image.hpp 
-        include/engine/render/buffer/uniform_buffer.hpp 
-        include/engine/nbt/nbt_parser.hpp 
-        include/engine/nbt/nbt_writer.hpp 
+        include/engine/gui/input.hpp include/engine/render/buffer/image.hpp
+        include/engine/render/buffer/uniform_buffer.hpp
+        include/engine/nbt/nbt_parser.hpp
+        include/engine/nbt/nbt_writer.hpp
         include/engine/gui/font/ascii_font.hpp
         include/engine/gui/scene.hpp
         include/engine/gui/element/element.hpp
@@ -29,11 +29,11 @@ set(SOURCES
         src/log_internal.hpp
         src/pipeline.cpp
         src/file.cpp
-        src/gui/gui.cpp 
-        include/engine/nbt/nbt_type.hpp 
-        include/engine/gui/font/font_renderer.hpp 
-        src/gui/font/font_renderer.cpp 
-        src/gui/font/ascii_font.cpp 
+        src/gui/gui.cpp
+        include/engine/nbt/nbt_type.hpp
+        include/engine/gui/font/font_renderer.hpp
+        src/gui/font/font_renderer.cpp
+        src/gui/font/ascii_font.cpp
         include/engine/render/descriptor.hpp
         src/gui/scene.cpp
         src/gui/element.cpp
@@ -41,17 +41,17 @@ set(SOURCES
 
 add_library(libengine STATIC ${HEADERS} ${SOURCES})
 
-if(Vulkan_FOUND)
+if (Vulkan_FOUND)
     message("-- Linking Vulkan Module")
     target_compile_definitions(libengine PUBLIC MCE_VK)
 
     add_subdirectory(Vulkan)
     target_link_libraries(libengine PUBLIC libvk)
-endif()
+endif ()
 
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(libengine PUBLIC MCE_DBG)
-endif()
+endif ()
 
 target_include_directories(libengine PUBLIC include)
 target_include_directories(libengine PRIVATE src)

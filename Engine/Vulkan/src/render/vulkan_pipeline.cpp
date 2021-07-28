@@ -108,7 +108,10 @@ vk::UniqueDescriptorSet VulkanRenderPipeline::allocateDescriptorSetUnique(uint32
         }
     }
 
-    auto& ref = m_DescriptorPools.emplace_back(m_Pipeline.getOwner().createDescriptorPoolUnique(vk::DescriptorPoolCreateInfo(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, 3, m_PoolSizes.size(), m_PoolSizes.data())));
+    auto& ref = m_DescriptorPools.emplace_back(m_Pipeline.getOwner().createDescriptorPoolUnique(vk::DescriptorPoolCreateInfo(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet,
+                                                                                                                             3,
+                                                                                                                             m_PoolSizes.size(),
+                                                                                                                             m_PoolSizes.data())));
     allocateInfo.descriptorPool = *ref;
 
     VkDescriptorSet descriptorSet;

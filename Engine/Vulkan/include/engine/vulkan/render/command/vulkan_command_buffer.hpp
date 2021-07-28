@@ -79,7 +79,6 @@ private:
     vk::UniqueCommandBuffer m_CommandBuffer;
 };
 
-
 class VulkanDirectCommandBuffer : public virtual DirectCommandBuffer, public virtual VulkanDrawableCommandBuffer, public virtual VulkanSwitchingCommandBuffer {
 public:
     VulkanDirectCommandBuffer(vk::Device device, const VulkanSwapchain* swapchain, vk::CommandPool pool);

@@ -34,7 +34,7 @@ struct NbtNode {
 
 class NbtCompound {
 public:
-    [[nodiscard]] const std::string& getName() const {return m_Name;}
+    [[nodiscard]] const std::string& getName() const { return m_Name; }
 private:
     std::string m_Name;
     std::unordered_map<std::string, NbtNode> m_Values;

@@ -15,7 +15,6 @@
 #include "pipeline.hpp"
 #include "swapchain.hpp"
 
-
 namespace engine::render {
 
 class RenderContext {
@@ -24,7 +23,7 @@ public:
 
     virtual ~RenderContext() = default;
 
-    [[nodiscard]] virtual std::unique_ptr<buffer::Image> createImage(const File& path) = 0;
+    [[nodiscard]] virtual std::shared_ptr<buffer::Image> createImage(const File& path) = 0;
 
     [[nodiscard]] virtual std::unique_ptr<buffer::VertexBuffer> allocateVertexBuffer(size_t size) = 0;
 

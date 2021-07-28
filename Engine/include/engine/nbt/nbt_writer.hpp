@@ -7,13 +7,13 @@
 
 namespace engine::nbt {
 
-template <NbtType type, typename T>
+template<NbtType type, typename T>
 class NbtSerializer {
 public:
     size_t write(T value, char* pOut) = delete;
 };
 
-template <>
+template<>
 class NbtSerializer<NbtType::TAG_BYTE, int8_t> {
 public:
     size_t write(int8_t value, char* pOut) {
@@ -22,7 +22,7 @@ public:
     }
 };
 
-template <>
+template<>
 class NbtSerializer<NbtType::TAG_SHORT, int16_t> {
 public:
     size_t write(int16_t value, char* pOut) {
@@ -30,8 +30,6 @@ public:
         return 1;
     }
 };
-
-
 
 class NbtWriter {
 public:

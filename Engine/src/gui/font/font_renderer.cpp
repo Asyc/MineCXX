@@ -46,10 +46,10 @@ FontRenderer::FontRenderer(render::RenderContext& context, const File& glyphSize
 
     for (const auto& node : ASCII_CHAR_SIZES) {
         size_t pixelX = node.x * 8;
-        size_t pixelY = (node.y + 1) * 8;
+        size_t pixelY = node.y * 8;
 
         float tx = pixelUnitX * static_cast<float>(pixelX);
-        float ty = 1.0f - pixelUnitY * static_cast<float>(pixelY);
+        float ty = pixelUnitY * static_cast<float>(pixelY);
 
         constexpr float FONT_HEIGHT = 8;
 
@@ -79,13 +79,13 @@ inline T roundUp(T numToRound, T multiple) {
     return numToRound + multiple - remainder;
 }
 
-void FontRenderer::draw(render::command::IDrawableCommandBuffer& commandBuffer, const FontRenderer::StringView& string) {
+void FontRenderer::draw(render::command::IDrawableCommandBuffer& commandBuffer, const FontRenderer::StringView& string, float x, float y) {
     constexpr size_t MAX_CHARACTERS = 18;   // Due to total output components available in the geometry shader.
 
     commandBuffer.bindPipeline(*m_Pipeline);
     commandBuffer.bindUniformDescriptor(*m_UniformDescriptorSet);
 
-    std::array<float, 2> data = {0.0f, 0.0f};
+    std::array<float, 2> data = {x, y};
     commandBuffer.pushConstants(render::command::PushConstantUsage::VERTEX, 0, data.data(), data.size() * sizeof(float));
 
     size_t drawCalls = std::ceil(string.size() / MAX_CHARACTERS);
@@ -98,7 +98,7 @@ void FontRenderer::draw(render::command::IDrawableCommandBuffer& commandBuffer, 
     for (size_t i = 0; i < drawCalls; i++) {
         uint32_t characters = std::min(MAX_CHARACTERS, string.size() - (i * MAX_CHARACTERS));
         for (uint32_t j = 0; j < characters; j++) {
-            pushConstantBuffer[j] = static_cast<uint16_t>(string.data()[stringIndex++]);
+            pushConstantBuffer[j] = static_cast<uint16_t>(string[stringIndex++]);
         }
 
         stringIndex += characters;
