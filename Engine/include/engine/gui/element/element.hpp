@@ -20,7 +20,7 @@ public:
         float width, height;
     };
 
-    ElementImage(engine::render::RenderContext& context, std::shared_ptr<engine::render::buffer::Image> image, float x, float y, const ImageRegion& region = {0.0f, 0.0f, 0.0f, 0.0f});
+    ElementImage(engine::render::RenderContext& context, std::shared_ptr<engine::render::buffer::Image> image, float x, float y, float w, float h, const ImageRegion& region = {0.0f, 0.0f, 0.0f, 0.0f});
 
     void draw(engine::render::command::IDrawableCommandBuffer& buffer) override;
 private:
