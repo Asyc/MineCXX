@@ -170,6 +170,10 @@ VulkanRenderContext::VulkanRenderContext(Window& window, const Directory& resour
     m_DescriptorPool = m_Device.getDevice().createDescriptorPoolUnique(vk::DescriptorPoolCreateInfo({}, 4, poolSizes.size(), poolSizes.data()));
 }
 
+VulkanRenderContext::~VulkanRenderContext() {
+    s_ThreadCommandPoolMap.clear();
+}
+
 std::shared_ptr<buffer::Image> VulkanRenderContext::createImage(const File& path) {
     return std::make_shared<buffer::VulkanImage>(&m_TransferManager, m_MemoryAllocator.get(), path);
 }

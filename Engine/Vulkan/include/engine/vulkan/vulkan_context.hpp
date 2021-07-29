@@ -24,7 +24,7 @@ using namespace ::engine::render;
 class VulkanRenderContext : public RenderContext {
 public:
     VulkanRenderContext(Window& window, const Directory& resourceDirectory, Swapchain::SwapchainMode modeHint);
-
+    ~VulkanRenderContext();
     std::shared_ptr<buffer::Image> createImage(const File& path) override;
 
     [[nodiscard]] std::unique_ptr<buffer::VertexBuffer> allocateVertexBuffer(size_t size) override;
