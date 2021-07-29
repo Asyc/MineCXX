@@ -23,7 +23,7 @@ using namespace ::engine::render;
 
 class VulkanRenderContext : public RenderContext {
 public:
-    VulkanRenderContext(const Window& window, const Directory& resourceDirectory, Swapchain::SwapchainMode modeHint);
+    VulkanRenderContext(Window& window, const Directory& resourceDirectory, Swapchain::SwapchainMode modeHint);
 
     std::shared_ptr<buffer::Image> createImage(const File& path) override;
 
@@ -31,7 +31,7 @@ public:
     [[nodiscard]] std::unique_ptr<buffer::IndexBuffer> allocateIndexBuffer(size_t size) override;
     [[nodiscard]] std::unique_ptr<buffer::UniformBuffer> allocateUniformBuffer(const RenderPipeline& pipeline, size_t size) override;
 
-    [[nodiscard]] std::unique_ptr<RenderPipeline> createRenderPipeline(const File& file) const override;
+    [[nodiscard]] std::shared_ptr<RenderPipeline> createRenderPipeline(const File& file) override;
 
     [[nodiscard]] std::unique_ptr<command::CommandPool> createCommandPool() const override;
     [[nodiscard]] command::CommandPool& getThreadCommandPool() override;
@@ -48,6 +48,8 @@ public:
 
     [[nodiscard]] gui::font::FontRenderer& getFontRenderer() override { return m_FontRenderer; }
 
+    [[nodiscard]] const Window& getWindow() const override { return *m_Window; }
+
     void setResizeCallback(ResizeCallback callback) override { m_ResizeCallback = std::move(callback); }
 
     [[nodiscard]] const ResizeCallback& getResizeCallback() { return m_ResizeCallback; }
@@ -57,6 +59,7 @@ private:
     std::unique_ptr<VkDebugUtilsMessengerEXT_T, std::function<void(VkDebugUtilsMessengerEXT)>> m_DebugMessenger;
     std::unique_ptr<VkDebugReportCallbackEXT_T, std::function<void(VkDebugReportCallbackEXT)>> m_DebugReportCallback;
 #endif
+    Window* m_Window;
 
     vk::UniqueSurfaceKHR m_Surface;
     vk::PhysicalDevice m_PhysicalDevice;
@@ -68,6 +71,8 @@ private:
     buffer::VulkanTransferManager m_TransferManager;
 
     vk::UniqueDescriptorPool m_DescriptorPool;
+
+    std::unordered_map<std::string, std::weak_ptr<VulkanRenderPipeline>> m_Pipelines;
 
     gui::font::FontRenderer m_FontRenderer;
 

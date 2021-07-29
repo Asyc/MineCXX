@@ -45,6 +45,11 @@ VulkanSwapchain::VulkanSwapchain(Swapchain::SwapchainMode modeHint,
 
     auto availableFormats = physicalDevice.getSurfaceFormatsKHR(surface);
     vk::SurfaceFormatKHR selectedFormat = availableFormats[0];
+    for (const auto& format : availableFormats) {
+        if (format.format == vk::Format::eB8G8R8A8Srgb && format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear) {
+            selectedFormat = format;
+        }
+    }
 
     m_Mode = modeHint;
 

@@ -20,15 +20,51 @@ public:
         float width, height;
     };
 
-    ElementImage(engine::render::RenderContext& context, std::shared_ptr<engine::render::buffer::Image> image, float x, float y, float w, float h, const ImageRegion& region = {0.0f, 0.0f, 0.0f, 0.0f});
+    struct Options {
+        struct {
+            float r = 1.0f, g = 1.0f, b = 1.0f, a = 1.0f;
+        } color;
+    };
+
+    ElementImage(engine::render::RenderContext& context,
+                 std::shared_ptr<engine::render::buffer::Image> image,
+                 float x,
+                 float y,
+                 float w,
+                 float h,
+                 const ImageRegion& region = {0.0f, 0.0f, 0.0f, 0.0f},
+                 const Options& options = Options{1.0f, 1.0f, 1.0f, 1.0f});
 
     void draw(engine::render::command::IDrawableCommandBuffer& buffer) override;
 private:
-    std::unique_ptr<render::RenderPipeline> m_Pipeline;
+    std::shared_ptr<render::RenderPipeline> m_Pipeline;
     std::unique_ptr<render::UniformDescriptor> m_UniformDescriptorSet;
     std::shared_ptr<render::buffer::Image> m_Image;
     std::unique_ptr<render::buffer::VertexBuffer> m_VertexBuffer;
     std::unique_ptr<render::buffer::IndexBuffer> m_IndexBuffer;
+    Options m_Options;
+};
+
+class ElementButton : public Element {
+public:
+    ElementButton(engine::render::RenderContext& context, float x, float y, float w, float h);
+
+    void draw(engine::render::command::IDrawableCommandBuffer& buffer) override;
+
+    void setText(std::u16string text) {m_Text = std::move(text);}
+private:
+    engine::render::RenderContext* m_Context;
+    std::shared_ptr<render::RenderPipeline> m_Pipeline;
+    std::unique_ptr<render::UniformDescriptor> m_UniformDescriptorSet;
+    std::shared_ptr<render::buffer::Image> m_Image;
+    std::unique_ptr<render::buffer::VertexBuffer> m_VertexBuffer;
+    std::unique_ptr<render::buffer::IndexBuffer> m_IndexBuffer;
+
+    struct {
+        float x, y;
+        float w, h;
+    } m_Position;
+    std::u16string m_Text;
 };
 
 }

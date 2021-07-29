@@ -15,6 +15,10 @@
 #include "pipeline.hpp"
 #include "swapchain.hpp"
 
+namespace engine {
+class Window;
+}
+
 namespace engine::render {
 
 class RenderContext {
@@ -30,7 +34,7 @@ public:
     [[nodiscard]] virtual std::unique_ptr<buffer::IndexBuffer> allocateIndexBuffer(size_t size) = 0;
     [[nodiscard]] virtual std::unique_ptr<buffer::UniformBuffer> allocateUniformBuffer(const RenderPipeline& pipeline, size_t size) = 0;
 
-    [[nodiscard]] virtual std::unique_ptr<RenderPipeline> createRenderPipeline(const File& file) const = 0;
+    [[nodiscard]] virtual std::shared_ptr<RenderPipeline> createRenderPipeline(const File& file) = 0;
 
     [[nodiscard]] virtual std::unique_ptr<command::CommandPool> createCommandPool() const = 0;
     [[nodiscard]] virtual command::CommandPool& getThreadCommandPool() = 0;
@@ -39,6 +43,8 @@ public:
     [[nodiscard]] virtual const Swapchain& getSwapchain() const = 0;
 
     [[nodiscard]] virtual gui::font::FontRenderer& getFontRenderer() = 0;
+
+    [[nodiscard]] virtual const Window& getWindow() const = 0;
 
     virtual void setResizeCallback(ResizeCallback callback) = 0;
 

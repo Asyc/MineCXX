@@ -35,7 +35,7 @@ public:
 
     void draw(render::command::IDrawableCommandBuffer& commandBuffer, const StringView& string, float x, float y);
 private:
-    std::unique_ptr<render::RenderPipeline> m_Pipeline;
+    std::shared_ptr<render::RenderPipeline> m_Pipeline;
     std::unique_ptr<render::buffer::UniformBuffer> m_AsciiTableUniformBuffer;
     std::unique_ptr<render::UniformDescriptor> m_UniformDescriptorSet;
 

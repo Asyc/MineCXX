@@ -139,14 +139,16 @@ inline VmaAllocator createAllocator(vk::Instance instance, vk::PhysicalDevice ph
     return allocator;
 }
 
-VulkanRenderContext::VulkanRenderContext(const Window& window, const Directory& resourceDirectory, Swapchain::SwapchainMode modeHint)
-    : m_Instance(createInstance()),
+VulkanRenderContext::VulkanRenderContext(Window& window, const Directory& resourceDirectory, Swapchain::SwapchainMode modeHint)
+    : m_Window(&window),
+      m_Instance(createInstance()),
       m_Surface(window.createSurface(*m_Instance)),
       m_PhysicalDevice(findPhysicalDevice(m_Instance->enumeratePhysicalDevices())),
       m_Device(this, *m_Instance, m_PhysicalDevice, *m_Surface),
       m_MemoryAllocator(createAllocator(*m_Instance, m_PhysicalDevice, m_Device.getDevice()), [](VmaAllocator allocator) { vmaDestroyAllocator(allocator); }),
       m_Swapchain(modeHint, *m_Surface, m_PhysicalDevice, &m_Device, m_Device.getQueueManager()),
       m_TransferManager(*m_Instance, m_PhysicalDevice, &m_Device, m_Device.getQueueManager().getGraphicsQueueFamily().index),
+      m_Pipelines(),
       m_FontRenderer(*this, File(resourceDirectory.getPath() + "font/glyph_sizes.bin"), Directory(resourceDirectory.getPath() + "/textures/font")) {
 
 #ifdef MCE_DBG
@@ -199,8 +201,19 @@ std::unique_ptr<buffer::UniformBuffer> VulkanRenderContext::allocateUniformBuffe
     return std::make_unique<buffer::VulkanUniformBuffer>(&m_TransferManager, m_MemoryAllocator.get(), vkPipeline, *m_DescriptorPool, size, 0, 0);
 }
 
-std::unique_ptr<RenderPipeline> VulkanRenderContext::createRenderPipeline(const File& file) const {
-    return std::make_unique<VulkanRenderPipeline>(m_Device.getDevice(), m_Swapchain.getRenderPass(), VulkanProgram(m_Device.getDevice(), file.getPath()));
+std::shared_ptr<RenderPipeline> VulkanRenderContext::createRenderPipeline(const File& file) {
+    auto it = m_Pipelines.find(file.getFullPath());
+    if (it == m_Pipelines.end() || it->second.expired()) {
+        auto ptr = std::make_shared<VulkanRenderPipeline>(m_Device.getDevice(), m_Swapchain.getRenderPass(), VulkanProgram(m_Device.getDevice(), file.getPath()));
+        if (it == m_Pipelines.end()) {
+            m_Pipelines.emplace(file.getFullPath(), std::weak_ptr<VulkanRenderPipeline>(ptr));
+        } else {
+            it->second = ptr;
+        }
+        return std::move(ptr);
+    }
+
+    return std::shared_ptr<RenderPipeline>{it->second};
 }
 
 void VulkanRenderContext::mouseButtonCallback(gui::input::MouseButton button, gui::input::MouseButtonAction action, double x, double y) {

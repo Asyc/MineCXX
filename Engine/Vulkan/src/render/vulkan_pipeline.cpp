@@ -46,11 +46,11 @@ VulkanRenderPipeline::VulkanRenderPipeline(vk::Device device, vk::RenderPass ren
     vk::PipelineMultisampleStateCreateInfo multisampleStateCreateInfo({}, vk::SampleCountFlagBits::e1, VK_FALSE);
 
     vk::PipelineColorBlendAttachmentState attachmentState(
-        VK_FALSE,
-        vk::BlendFactor::eZero,
-        vk::BlendFactor::eZero,
+        VK_TRUE,
+        vk::BlendFactor::eSrcAlpha,
+        vk::BlendFactor::eOneMinusSrcAlpha,
         vk::BlendOp::eAdd,
-        vk::BlendFactor::eZero,
+        vk::BlendFactor::eOne,
         vk::BlendFactor::eZero,
         vk::BlendOp::eAdd,
         vk::ColorComponentFlags{vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA}

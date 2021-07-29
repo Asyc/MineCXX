@@ -57,5 +57,5 @@ target_include_directories(libengine PUBLIC include)
 target_include_directories(libengine PRIVATE src)
 
 target_link_libraries(libengine PRIVATE glfw)
-target_link_libraries(libengine PUBLIC rapidjson spdlog)
+target_link_libraries(libengine PUBLIC rapidjson spdlog glm)
 

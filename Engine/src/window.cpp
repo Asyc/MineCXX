@@ -1,6 +1,7 @@
 #include "engine/window.hpp"
 
 #include <GLFW/glfw3.h>
+#include <stb_image.h>
 
 #include "engine/gui/input.hpp"
 #include "engine/log.hpp"
@@ -14,6 +15,18 @@ Window::Window(int32_t width, int32_t height, const std::string_view& title) {
 
     auto* window = glfwCreateWindow(width, height, title.data(), nullptr, nullptr);
     m_Window = WindowHandle(window, [](GLFWwindow* handle) { glfwDestroyWindow(handle); });
+
+    auto file = NamespaceFile("minecraft", "textures/blocks/dirt.png");
+    int imageWidth, imageHeight, channels;
+    auto* buffer = stbi_load(file.getPath().c_str(), &imageWidth, &imageHeight, &channels, STBI_rgb_alpha);
+    GLFWimage image{
+        imageWidth,
+        imageHeight,
+        buffer
+    };
+
+    glfwSetWindowIcon(m_Window.get(), 1, &image);
+    stbi_image_free(buffer);
 }
 
 std::unique_ptr<render::RenderContext> Window::createRenderContext(render::Swapchain::SwapchainMode modeHint) {
@@ -74,6 +87,13 @@ std::unique_ptr<render::RenderContext> Window::createRenderContext(render::Swapc
 
 bool Window::shouldClose() const {
     return glfwWindowShouldClose(m_Window.get());
+}
+
+std::pair<size_t, size_t> Window::getCursorPosition() const {
+    double x, y;
+    glfwGetCursorPos(m_Window.get(), &x, &y);
+
+    return {static_cast<size_t>(std::floor(x)), static_cast<size_t>(std::floor(y))};
 }
 
 void Window::pollEvents() {

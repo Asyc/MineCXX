@@ -28,6 +28,8 @@ public:
 
     [[nodiscard]] bool shouldClose() const;
 
+    [[nodiscard]] std::pair<size_t, size_t> getCursorPosition() const;
+
 #ifdef MCE_VK
     [[nodiscard]] vk::UniqueSurfaceKHR createSurface(const vk::Instance& instance) const;
 
