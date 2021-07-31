@@ -24,14 +24,18 @@ struct AsciiTable {
     AsciiVertex data[256];
 };
 
-FontRenderer::FontRenderer(render::RenderContext& context, const File& glyphSizesPath, const Directory& resourceDirectory) {
-    m_Pipeline = context.createRenderPipeline(File("assets/shaders/font"));
+StringOptions::StringOptions() : color({1.0f, 1.0f, 1.0f, 1.0f}), scale(0.00f), center(false), shadow(false) {}
+StringOptions::StringOptions(float r, float g, float b, float a, bool center, bool shadow, float scale) : color({r, g, b, a}), scale(scale), center(center), shadow(shadow) {}
+
+FontRenderer::FontRenderer(render::RenderContext& context, const File& glyphSizesPath, const Directory& resourceDirectory) : m_Owner(&context) {
+    m_DynamicPipeline = context.createRenderPipeline(File("assets/shaders/font/dynamic"));
+    m_CachedPipeline = context.createRenderPipeline(File("assets/shaders/font/cached"));
     m_IndexBuffer = context.allocateIndexBuffer(6);
 
     std::array<uint32_t, 6> indices = {0, 1, 2, 0, 3, 2};
     m_IndexBuffer->write(0, indices.data(), indices.size());
 
-    m_AsciiTableUniformBuffer = context.allocateUniformBuffer(*m_Pipeline, sizeof(AsciiVertex) * 4 * UINT8_MAX);
+    m_AsciiTableUniformBuffer = context.allocateUniformBuffer(sizeof(AsciiVertex) * 4 * UINT8_MAX);
 
     File asciiImage(resourceDirectory.getPath() + "/ascii.png");
 
@@ -62,28 +66,108 @@ FontRenderer::FontRenderer(render::RenderContext& context, const File& glyphSize
 
     m_AsciiTableUniformBuffer->write(0, &table, sizeof(AsciiTable));
 
-    m_UniformDescriptorSet = m_Pipeline->allocateDescriptorSet(0);
-    m_UniformDescriptorSet->bind(0, *m_AsciiTableUniformBuffer);
-    m_UniformDescriptorSet->bind(1, *m_AsciiImage);
+    m_UniformDescriptorSetCached = m_CachedPipeline->allocateDescriptorSet(0);
+    m_UniformDescriptorSetDynamic = m_DynamicPipeline->allocateDescriptorSet(0);
+    m_UniformDescriptorSetCached->bind(0, *m_AsciiTableUniformBuffer);
+    m_UniformDescriptorSetCached->bind(1, *m_AsciiImage);
+    m_UniformDescriptorSetDynamic->bind(0, *m_AsciiTableUniformBuffer);
+    m_UniformDescriptorSetDynamic->bind(1, *m_AsciiImage);
 }
 
-template<typename T>
-inline T roundUp(T numToRound, T multiple) {
-    if (multiple == 0)
-        return numToRound;
+void FontRenderer::drawCached(render::command::IDrawableCommandBuffer& commandBuffer, const FontRenderer::String& string, float x, float y, const StringOptions& renderOptions) {
+    constexpr size_t MAX_CHARACTERS = 18;   // Due to total output components available in the geometry shader.
+    if (renderOptions.shadow) {
+        static StringOptions shadowOptions(15.0f / 255.0f, 15.0f / 255.0f, 15.0f / 255.0f, 1.0f, renderOptions.center);
+        constexpr float positionOffsetX = 0.0040f;
+        constexpr float positionOffsetY = 0.0035f;
 
-    T remainder = numToRound % multiple;
-    if (remainder == 0)
-        return numToRound;
+        drawCached(commandBuffer, string, x + positionOffsetX, y - positionOffsetY, shadowOptions);
+    }
 
-    return numToRound + multiple - remainder;
+    commandBuffer.bindPipeline(*m_CachedPipeline);
+    commandBuffer.bindUniformDescriptor(*m_UniformDescriptorSetCached);
+
+    auto it = m_StringCache.find(string);
+    if (it == m_StringCache.end()) {
+        std::unique_ptr<render::buffer::UniformBuffer> buffer = m_Owner->allocateUniformBuffer(18 * sizeof(uint32_t));
+        std::unique_ptr<render::UniformDescriptor> uniformDescriptor = m_DynamicPipeline->allocateDescriptorSet(1);
+
+        auto ptr = std::make_unique<uint32_t[]>(string.size() + 1);
+        for (size_t i = 0; i < string.length(); i++) {
+            ptr[i] = (uint32_t) string[i];
+        }
+
+        ptr[string.size()] = 0;
+
+        buffer->write(0, ptr.get(), sizeof(uint32_t) * (string.length() + 1));    // Include null-terminator
+        uniformDescriptor->bind(0, *buffer);
+
+        commandBuffer.bindUniformDescriptor(*uniformDescriptor);
+        m_StringCache.emplace(string, CachedObject{std::move(buffer), std::move(uniformDescriptor)});
+    } else {
+        commandBuffer.bindUniformDescriptor(*it->second.uniformDescriptor);
+    }
+
+    std::array<float, 2> data = {x, y};
+    /**
+      * layout (offset = 8) float scale;
+      * layout (offset = 12) bool center;
+      * layout (offset = 16) vec4 color;
+      * layout (offset = 52) uint string_offset;
+     */
+
+    struct {
+        float scale;
+        uint32_t center;
+        struct {
+            float r, g, b, a;
+        } color;
+    } pushConstants{renderOptions.scale, renderOptions.center, renderOptions.color.r, renderOptions.color.g, renderOptions.color.b, renderOptions.color.a};
+
+    commandBuffer.pushConstants(render::command::PushConstantUsage::VERTEX, 0, &data[0], sizeof(data));
+    commandBuffer.pushConstants(render::command::PushConstantUsage::GEOMETRY, 8, &pushConstants, sizeof(pushConstants));
+
+    size_t drawCalls = std::ceil(string.size() / MAX_CHARACTERS);
+    if (drawCalls == 0) drawCalls = 1;
+
+    uint32_t stringIndex = 0;
+
+    for (size_t i = 0; i < drawCalls; i++) {
+        uint32_t characters = std::min(MAX_CHARACTERS, string.size() - (i * MAX_CHARACTERS));
+
+        commandBuffer.pushConstants(render::command::PushConstantUsage::GEOMETRY, 52, &stringIndex, sizeof(uint32_t));
+        commandBuffer.draw(1, 1);
+        stringIndex += characters;
+    }
 }
 
-void FontRenderer::draw(render::command::IDrawableCommandBuffer& commandBuffer, const FontRenderer::StringView& string, float x, float y) {
+void FontRenderer::drawDynamic(render::command::IDrawableCommandBuffer& commandBuffer, const FontRenderer::StringView& string, float x, float y, const StringOptions& renderOptions) {
+    if (renderOptions.shadow) {
+        static StringOptions shadowOptions(15.0f / 255.0f, 15.0f / 255.0f, 15.0f / 255.0f, 1.0f, renderOptions.center);
+        constexpr float positionOffsetX = 0.0040f;
+        constexpr float positionOffsetY = 0.0035f;
+
+        drawDynamic(commandBuffer, string, x + positionOffsetX, y - positionOffsetY, shadowOptions);
+    }
+
     constexpr size_t MAX_CHARACTERS = 18;   // Due to total output components available in the geometry shader.
 
-    commandBuffer.bindPipeline(*m_Pipeline);
-    commandBuffer.bindUniformDescriptor(*m_UniformDescriptorSet);
+    commandBuffer.bindPipeline(*m_DynamicPipeline);
+    commandBuffer.bindUniformDescriptor(*m_UniformDescriptorSetDynamic);
+
+    auto it = m_OptionCache.find(renderOptions);
+    if (it == m_OptionCache.end()) {
+        std::unique_ptr<render::buffer::UniformBuffer> buffer = m_Owner->allocateUniformBuffer(sizeof(StringOptions));
+        std::unique_ptr<render::UniformDescriptor> uniformDescriptor = m_DynamicPipeline->allocateDescriptorSet(1);
+
+        buffer->write(0, &renderOptions, sizeof(StringOptions));
+        uniformDescriptor->bind(0, *buffer);
+
+        commandBuffer.bindUniformDescriptor(*uniformDescriptor);
+        m_OptionCache.emplace(renderOptions, CachedObject{std::move(buffer), std::move(uniformDescriptor)});
+    } else {
+        commandBuffer.bindUniformDescriptor(*it->second.uniformDescriptor);
+    }
 
     std::array<float, 2> data = {x, y};
     commandBuffer.pushConstants(render::command::PushConstantUsage::VERTEX, 0, data.data(), data.size() * sizeof(float));

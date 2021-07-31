@@ -52,6 +52,9 @@ public:
     void draw(engine::render::command::IDrawableCommandBuffer& buffer) override;
 
     void setText(std::u16string text) {m_Text = std::move(text);}
+
+    [[nodiscard]] float getX() const { return m_Position.x; }
+    [[nodiscard]] float getY() const { return m_Position.y; }
 private:
     engine::render::RenderContext* m_Context;
     std::shared_ptr<render::RenderPipeline> m_Pipeline;
@@ -65,6 +68,16 @@ private:
         float w, h;
     } m_Position;
     std::u16string m_Text;
+
+    struct TexturePositionData{
+        struct Vertex{
+            float x, y;
+            float padding[2];
+        };
+
+        Vertex standard[4];
+        Vertex hover[4];
+    } m_TextureData{};
 };
 
 }

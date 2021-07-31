@@ -59,7 +59,7 @@ void VulkanDrawableCommandBuffer::drawIndexed(uint32_t instanceCount, uint32_t i
     getCommandBufferHandle().drawIndexed(indexCount, instanceCount, 0, 0, 0);
 }
 
-void VulkanDrawableCommandBuffer::pushConstants(PushConstantUsage usage, uint32_t offset, void* data, uint32_t length) {
+void VulkanDrawableCommandBuffer::pushConstants(PushConstantUsage usage, uint32_t offset, const void* data, uint32_t length) {
     using IntEnum = std::underlying_type<PushConstantUsage>::type;
     auto value = static_cast<IntEnum>(usage);
 

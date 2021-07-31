@@ -11,8 +11,8 @@ MainMenu::MainMenu(engine::render::RenderContext& context) {
 
     auto backgroundImage = context.createImage(NamespaceFile("minecraft", "textures/gui/options_background.png"));
 
-    auto [windowWidth, windowHeight] = context.getSwapchain().getSize();
-    auto [backgroundWidth, backgroundHeight] = backgroundImage->getSize();
+    auto[windowWidth, windowHeight] = context.getSwapchain().getSize();
+    auto[backgroundWidth, backgroundHeight] = backgroundImage->getSize();
     float horizontalCount = static_cast<float>(windowWidth) / static_cast<float>(backgroundWidth) * 3;
     float verticalCount = static_cast<float>(windowHeight) / static_cast<float>(backgroundHeight) * 3;
 
@@ -25,9 +25,43 @@ MainMenu::MainMenu(engine::render::RenderContext& context) {
     pushElement(std::make_unique<gui::ElementImage>(context, image, -0.4f, 0.8f, width, height, ElementImage::ImageRegion{0.0f, 0.0f, 155.0f, 45.0f}));
     pushElement(std::make_unique<gui::ElementImage>(context, image, 0.0f, 0.8f, width, height, ElementImage::ImageRegion{0.0f, 45.0f, 119.0f, 45.0f}));
 
-
     float ratio = 20.0f / 200.0f;
     float w = 0.8f, h = ratio * w;
-    pushElement(std::make_unique<gui::ElementButton>(context, 0.0f - w / 2, 0.5f, w, h));
+    w = 0.5f;
 
+    float y = 0.3f;
+    float buttonOffset = h / 5.f;
+
+    auto button = std::make_unique<gui::ElementButton>(context, 0.0f - w / 2, y, w, h);
+    float leftBound = button->getX();
+    button->setText(u"Singleplayer");
+    pushElement(std::move(button));
+
+    y -= h + buttonOffset;
+
+    button = std::make_unique<gui::ElementButton>(context, 0.0f - w / 2, y, w, h);
+    button->setText(u"Multiplayer");
+    pushElement(std::move(button));
+
+    y -= h + buttonOffset;
+
+    button = std::make_unique<gui::ElementButton>(context, 0.0f - w / 2, y, w, h);
+    button->setText(u"Minecraft Realms");
+    pushElement(std::move(button));
+
+    buttonOffset = h * 0.59f;
+    y -= h + buttonOffset;
+
+    float blank = w * 0.05f;
+
+    w -= blank;
+    w /= 2.0f;
+
+    button = std::make_unique<gui::ElementButton>(context, leftBound, y, w, h);
+    button->setText(u"Options");
+    pushElement(std::move(button));
+
+    button = std::make_unique<gui::ElementButton>(context, leftBound + w + blank, y, w, h);
+    button->setText(u"Quit Game");
+    pushElement(std::move(button));
 }

@@ -1,5 +1,6 @@
 #include "engine/vulkan/render/vulkan_pipeline.hpp"
 
+#include <set>
 #include <map>
 #include <optional>
 
@@ -75,8 +76,8 @@ inline void parseShader(const std::vector<char>& shaderBuffer,
         uint32_t binding = compiler.get_decoration(it.id, spv::DecorationBinding);
         uint32_t array = type.array.empty() ? 1 : type.array[0];
 
-        if (descriptorSetLayouts.size() <= binding) {
-            descriptorSetLayouts.resize(binding + 1);
+        if (descriptorSetLayouts.size() <= set) {
+            descriptorSetLayouts.resize(set + 1);
         }
 
         descriptorSetLayouts[set].emplace_back(binding, vk::DescriptorType::eUniformBuffer, array, flag, nullptr);
@@ -89,8 +90,8 @@ inline void parseShader(const std::vector<char>& shaderBuffer,
         uint32_t binding = compiler.get_decoration(it.id, spv::DecorationBinding);
         uint32_t array = type.array.empty() ? 1 : type.array[0];
 
-        if (descriptorSetLayouts.size() <= binding) {
-            descriptorSetLayouts.resize(binding + 1);
+        if (descriptorSetLayouts.size() <= set) {
+            descriptorSetLayouts.resize(set + 1);
         }
 
         descriptorSetLayouts[set].emplace_back(binding, vk::DescriptorType::eCombinedImageSampler, array, flag, nullptr);
@@ -249,14 +250,38 @@ VulkanProgram::VulkanProgram(vk::Device device, const std::string_view& program)
     m_Stages.emplace_back(vk::PipelineShaderStageCreateFlagBits{}, vk::ShaderStageFlagBits::eFragment, *m_Fragment, "main");
     if (hasGeometry) m_Stages.emplace_back(vk::PipelineShaderStageCreateFlagBits{}, vk::ShaderStageFlagBits::eGeometry, *m_Geometry, "main");
 
-    spirv_cross::Compiler vertexShader(reinterpret_cast<const uint32_t*>(vertexSPV.data()), vertexSPV.size() / sizeof(uint32_t));
-    auto vertexShaderData = vertexShader.get_shader_resources();
-
     std::vector<std::vector<vk::DescriptorSetLayoutBinding>> setBindingTable;
     std::vector<vk::PushConstantRange> pushConstantRanges;
     parseShader(vertexSPV, setBindingTable, pushConstantRanges);
     parseShader(fragmentSPV, setBindingTable, pushConstantRanges);
     if (hasGeometry) parseShader(geometrySPV, setBindingTable, pushConstantRanges);
+
+
+
+    size_t setIndex = 0;
+    for (auto& bindings : setBindingTable) {
+        uint32_t maxBinding = -1;
+
+        for (const auto& bindingData : bindings) {
+            if (maxBinding == -1 || bindingData.binding > maxBinding) maxBinding = bindingData.binding;
+        }
+
+        std::vector<vk::DescriptorSetLayoutBinding> flattenedBindings(maxBinding + 1);
+        std::set<uint32_t> indexSet;
+
+        for (const auto& bindingData : bindings) {
+            if (indexSet.find(bindingData.binding) != indexSet.end()) {
+                flattenedBindings[bindingData.binding].stageFlags |= bindingData.stageFlags;
+                continue;
+            }
+
+            flattenedBindings[bindingData.binding] = bindingData;
+            indexSet.insert(bindingData.binding);
+        }
+
+        bindings = std::move(flattenedBindings);
+        setIndex++;
+    }
 
     std::vector<vk::UniqueDescriptorSetLayout> descriptorSets(setBindingTable.size());
     uint32_t index = 0;

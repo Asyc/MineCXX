@@ -19,13 +19,7 @@ using namespace ::engine::render::buffer;
 
 class VulkanUniformBuffer : public UniformBuffer, public IVulkanDescriptorResource {
 public:
-    VulkanUniformBuffer(VulkanTransferManager* transferManager,
-                        VmaAllocator allocator,
-                        const VulkanRenderPipeline* pipeline,
-                        vk::DescriptorPool descriptorPool,
-                        size_t size,
-                        uint32_t set,
-                        uint32_t binding);
+    VulkanUniformBuffer(VmaAllocator allocator, size_t size);
 
     void write(size_t offset, const void* ptr, size_t length) override;
 

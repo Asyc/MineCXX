@@ -29,7 +29,7 @@ public:
 
     [[nodiscard]] std::unique_ptr<buffer::VertexBuffer> allocateVertexBuffer(size_t size) override;
     [[nodiscard]] std::unique_ptr<buffer::IndexBuffer> allocateIndexBuffer(size_t size) override;
-    [[nodiscard]] std::unique_ptr<buffer::UniformBuffer> allocateUniformBuffer(const RenderPipeline& pipeline, size_t size) override;
+    [[nodiscard]] std::unique_ptr<buffer::UniformBuffer> allocateUniformBuffer(size_t size) override;
 
     [[nodiscard]] std::shared_ptr<RenderPipeline> createRenderPipeline(const File& file) override;
 

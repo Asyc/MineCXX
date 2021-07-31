@@ -80,11 +80,25 @@ ElementButton::ElementButton(render::RenderContext& context, float x, float y, f
     m_IndexBuffer->write(0, indices.data(), indices.size());
 
     m_Position = {x, y, w, h};
-}
 
-float normalize(float min, float max, float value) {
-    float range = max - min;
-    return (value - min) / range;
+    float pixelUnitX = 1.0f / static_cast<float>(m_Image->getWidth());
+    float pixelUnitY = 1.0f / static_cast<float>(m_Image->getHeight());
+    float tX = pixelUnitX * static_cast<float>(0.35f);
+    float tY = pixelUnitY * static_cast<float>(66);
+    float tWidth = pixelUnitX * static_cast<float>(199.45f);
+    float tHeight = pixelUnitY * static_cast<float>(20);
+
+    m_TextureData.standard[0] = {tX, tY};
+    m_TextureData.standard[1] = {tX, tY + tHeight};
+    m_TextureData.standard[2] = {tX + tWidth, tY + tHeight};
+    m_TextureData.standard[3] = {tX + tWidth, tY};
+
+    tY += tHeight;
+
+    m_TextureData.hover[0] = {tX, tY};
+    m_TextureData.hover[1] = {tX, tY + tHeight};
+    m_TextureData.hover[2] = {tX + tWidth, tY + tHeight};
+    m_TextureData.hover[3] = {tX + tWidth, tY};
 }
 
 void ElementButton::draw(render::command::IDrawableCommandBuffer& buffer) {
@@ -92,20 +106,6 @@ void ElementButton::draw(render::command::IDrawableCommandBuffer& buffer) {
     buffer.bindUniformDescriptor(*m_UniformDescriptorSet);
     buffer.bindVertexBuffer(*m_VertexBuffer);
     buffer.bindIndexBuffer(*m_IndexBuffer);
-
-    struct {
-        struct {
-            float x, y;
-            float padding[2];
-        } texPos[4];
-    } pushConstants{};
-
-    float pixelUnitX = 1.0f / static_cast<float>(m_Image->getWidth());
-    float pixelUnitY = 1.0f / static_cast<float>(m_Image->getHeight());
-    float tX = pixelUnitX * static_cast<float>(0);
-    float tY = pixelUnitY * static_cast<float>(66);
-    float tWidth = pixelUnitX * static_cast<float>(200);
-    float tHeight = pixelUnitY * static_cast<float>(20);
 
     auto [mouseX, mouseY] = m_Context->getWindow().getCursorPosition();
     auto [windowWidth, windowHeight] = m_Context->getSwapchain().getSize();
@@ -124,17 +124,20 @@ void ElementButton::draw(render::command::IDrawableCommandBuffer& buffer) {
 
     bool xAlign = viewportMouseX >= m_Position.x && viewportMouseX <= m_Position.x + m_Position.w;
     bool yAlign = viewportMouseY <= m_Position.y && viewportMouseY >= m_Position.y - m_Position.h;
-    if (xAlign && yAlign) {
-        tY += tHeight;
-    }
 
-    pushConstants.texPos[0] = {tX, tY};
-    pushConstants.texPos[1] = {tX, tY + tHeight};
-    pushConstants.texPos[2] = {tX + tWidth, tY + tHeight};
-    pushConstants.texPos[3] = {tX + tWidth, tY};
+    const auto* pushConstantData = xAlign && yAlign ? m_TextureData.hover : m_TextureData.standard;
 
-    buffer.pushConstants(render::command::PushConstantUsage::VERTEX, 0, &pushConstants, sizeof(pushConstants));
+    buffer.pushConstants(render::command::PushConstantUsage::VERTEX, 0, pushConstantData, sizeof(TexturePositionData::Vertex) * 4);
     buffer.drawIndexed(1, 6);
+
+    if (!m_Text.empty()) {
+        float x = m_Position.w / 2.0f + m_Position.x;
+        float y = m_Position.y - m_Position.h / 4.0f;
+
+        engine::gui::font::StringOptions stringOptions(1.0f, 1.0f, 1.0f, 1.0f, true, true);
+
+        m_Context->getFontRenderer().drawDynamic(buffer, m_Text, x, y, stringOptions);
+    }
 }
 
 }

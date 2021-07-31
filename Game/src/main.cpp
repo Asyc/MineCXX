@@ -1,5 +1,7 @@
 #include <iostream>
 #include <chrono>
+#include <string>
+#include <codecvt>
 
 #include "engine/engine.hpp"
 #include "engine/file.hpp"
@@ -18,7 +20,7 @@ const std::u16string& getFpsString();
 void app_main() {
     Window window(1920, 1080, "Window");
 
-    auto context = window.createRenderContext(Swapchain::SwapchainMode::DOUBLE_BUFFER);
+    auto context = window.createRenderContext(Swapchain::SwapchainMode::DOUBLE_BUFFER_VSYNC);
     auto pipeline = context->createRenderPipeline(engine::File("assets/shaders/basic"));
     auto pool = context->createCommandPool();
 
@@ -56,14 +58,8 @@ size_t fpsCounter = 0;
 void tickFps() {
     auto now = std::chrono::high_resolution_clock::now();
     if (std::chrono::duration_cast<std::chrono::seconds>(now - lastTick).count() >= 1) {
-        std::string numeric = std::to_string(fpsCounter);
-
-        for (size_t i = 0; i < numeric.size(); i++) {
-            fpsString[i + 5] = static_cast<char16_t>(numeric[i]);
-        }
-
-        fpsString[numeric.size() + 5] = u'\0';
-
+        std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+        fpsString = conv.from_bytes("FPS: " + std::to_string(fpsCounter));
         fpsCounter = 0;
         lastTick = now;
     } else {

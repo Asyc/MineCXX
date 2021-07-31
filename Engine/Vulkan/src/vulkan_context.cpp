@@ -200,9 +200,8 @@ std::unique_ptr<buffer::IndexBuffer> VulkanRenderContext::allocateIndexBuffer(si
     return std::make_unique<buffer::VulkanIndexBuffer>(&m_TransferManager, m_MemoryAllocator.get(), size);
 }
 
-std::unique_ptr<buffer::UniformBuffer> VulkanRenderContext::allocateUniformBuffer(const RenderPipeline& pipeline, size_t size) {
-    auto* vkPipeline = dynamic_cast<const VulkanRenderPipeline*>(&pipeline);
-    return std::make_unique<buffer::VulkanUniformBuffer>(&m_TransferManager, m_MemoryAllocator.get(), vkPipeline, *m_DescriptorPool, size, 0, 0);
+std::unique_ptr<buffer::UniformBuffer> VulkanRenderContext::allocateUniformBuffer(size_t size) {
+    return std::make_unique<buffer::VulkanUniformBuffer>(m_MemoryAllocator.get(), size);
 }
 
 std::shared_ptr<RenderPipeline> VulkanRenderContext::createRenderPipeline(const File& file) {

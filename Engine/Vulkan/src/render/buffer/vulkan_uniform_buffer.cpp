@@ -7,13 +7,7 @@
 
 namespace engine::vulkan::render::buffer {
 
-VulkanUniformBuffer::VulkanUniformBuffer(VulkanTransferManager* transferManager,
-                                         VmaAllocator allocator,
-                                         const VulkanRenderPipeline* pipeline,
-                                         vk::DescriptorPool descriptorPool,
-                                         size_t size,
-                                         uint32_t set,
-                                         uint32_t binding) {
+VulkanUniformBuffer::VulkanUniformBuffer(VmaAllocator allocator, size_t size) {
     VkBufferCreateInfo bufferCreateInfo = vk::BufferCreateInfo({}, size, vk::BufferUsageFlagBits::eUniformBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::SharingMode::eExclusive);
 
     VmaAllocationCreateInfo allocationCreateInfo{};

@@ -13,19 +13,42 @@ struct AsciiNode {
     vec2 size;
 };
 
-layout (std140, set = 0, binding = 0) uniform AsciiTable {
-    AsciiNode ascii_table[256];
-};
-
 layout (push_constant) uniform PushConstantBlock {
     layout (offset = 8) uint string[MAX_CHARACTERS];
 } push_constants;
 
+layout (std140, set = 0, binding = 0) uniform AsciiTable {
+    AsciiNode ascii_table[256];
+};
+
+layout (std140, set = 1, binding = 0) uniform Options {
+    vec4 color;
+    float scale;
+    bool center;
+} string_options;
 
 uint map(uint value);
 
+vec2 getStringSize() {
+    float totalWidth = 0.0f;
+    for (int i = 0; i < MAX_CHARACTERS; i++) {
+        uint codepoint = push_constants.string[i];
+        if (codepoint == 0) break;
+        AsciiNode character = ascii_table[map(codepoint)];
+        float width = character.size.x * string_options.scale * 0.6f;
+        totalWidth += width;
+    }
+
+    return vec2(totalWidth, 9.0f * string_options.scale);
+}
+
 void main() {
-    vec2 renderOrigin = gl_in[0].gl_Position.xy;
+    vec2 renderOrigin = vec2(gl_in[0].gl_Position.xy);
+    if (string_options.center) {
+        vec2 stringSize = getStringSize();
+        renderOrigin.x -= stringSize.x / 2.0f;
+        //renderOrigin.y += stringSize.y / 2.0f;
+    }
 
     for (int i = 0; i < MAX_CHARACTERS; i++) {
         uint codepoint = push_constants.string[i];
@@ -35,7 +58,7 @@ void main() {
 
         float whRatio = character.size.y / character.size.x;
 
-        float scale = 0.00528;
+        float scale = string_options.scale;
 
         float width = character.size.x * scale * 0.6f;
         float height = character.size.y * scale;

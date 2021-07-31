@@ -32,7 +32,7 @@ public:
     [[nodiscard]] virtual std::unique_ptr<buffer::VertexBuffer> allocateVertexBuffer(size_t size) = 0;
 
     [[nodiscard]] virtual std::unique_ptr<buffer::IndexBuffer> allocateIndexBuffer(size_t size) = 0;
-    [[nodiscard]] virtual std::unique_ptr<buffer::UniformBuffer> allocateUniformBuffer(const RenderPipeline& pipeline, size_t size) = 0;
+    [[nodiscard]] virtual std::unique_ptr<buffer::UniformBuffer> allocateUniformBuffer(size_t size) = 0;
 
     [[nodiscard]] virtual std::shared_ptr<RenderPipeline> createRenderPipeline(const File& file) = 0;
 
