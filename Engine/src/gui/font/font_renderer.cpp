@@ -24,7 +24,7 @@ struct AsciiTable {
     AsciiVertex data[256];
 };
 
-StringOptions::StringOptions() : color({1.0f, 1.0f, 1.0f, 1.0f}), scale(0.00f), center(false), shadow(false) {}
+StringOptions::StringOptions() : color({1.0f, 1.0f, 1.0f, 1.0f}), scale(0.00428f), center(false), shadow(false) {}
 StringOptions::StringOptions(float r, float g, float b, float a, bool center, bool shadow, float scale) : color({r, g, b, a}), scale(scale), center(center), shadow(shadow) {}
 
 FontRenderer::FontRenderer(render::RenderContext& context, const File& glyphSizesPath, const Directory& resourceDirectory) : m_Owner(&context) {
