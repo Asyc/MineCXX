@@ -17,6 +17,8 @@
 #include "engine/vulkan/device/vulkan_device.hpp"
 #include "engine/window.hpp"
 
+#include "engine/render/viewport.hpp"
+
 namespace engine::vulkan::render {
 
 using namespace ::engine::render;
@@ -24,8 +26,9 @@ using namespace ::engine::render;
 class VulkanRenderContext : public RenderContext {
 public:
     VulkanRenderContext(Window& window, const Directory& resourceDirectory, Swapchain::SwapchainMode modeHint);
-    ~VulkanRenderContext();
-    std::shared_ptr<buffer::Image> createImage(const File& path) override;
+    ~VulkanRenderContext() override;
+
+    std::shared_ptr<buffer::Image> createImage(const File& path, const buffer::Image::SamplerOptions& samplerOptions) override;
 
     [[nodiscard]] std::unique_ptr<buffer::VertexBuffer> allocateVertexBuffer(size_t size) override;
     [[nodiscard]] std::unique_ptr<buffer::IndexBuffer> allocateIndexBuffer(size_t size) override;
@@ -46,6 +49,7 @@ public:
 
     [[nodiscard]] buffer::VulkanTransferManager& getTransferManager() { return m_TransferManager; }
 
+    [[nodiscard]] const ViewportGUI& getViewport() const override { return m_GuiViewport; }
     [[nodiscard]] gui::font::FontRenderer& getFontRenderer() override { return m_FontRenderer; }
 
     [[nodiscard]] const Window& getWindow() const override { return *m_Window; }
@@ -74,6 +78,7 @@ private:
 
     std::unordered_map<std::string, std::weak_ptr<VulkanRenderPipeline>> m_Pipelines;
 
+    ViewportGUI m_GuiViewport;
     gui::font::FontRenderer m_FontRenderer;
 
     ResizeCallback m_ResizeCallback;

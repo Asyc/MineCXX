@@ -9,7 +9,19 @@
 
 namespace engine::vulkan::render::buffer {
 
-VulkanImage::VulkanImage(VulkanTransferManager* transferManager, VmaAllocator allocator, const File& path) {
+using namespace ::engine::render::buffer;
+
+vk::SamplerAddressMode toAddressMode(engine::render::buffer::Image::RepeatMode mode) {
+    switch (mode) {
+        case engine::render::buffer::Image::RepeatMode::REPEAT: return vk::SamplerAddressMode::eRepeat;
+        case engine::render::buffer::Image::RepeatMode::CLAMP_TO_BORDER: return vk::SamplerAddressMode::eClampToBorder;
+        case engine::render::buffer::Image::RepeatMode::CLAMP_TO_EDGE: return vk::SamplerAddressMode::eClampToEdge;
+        default:
+            throw std::runtime_error("enum not found");
+    }
+}
+
+VulkanImage::VulkanImage(VulkanTransferManager* transferManager, VmaAllocator allocator, const File& path, const SamplerOptions& samplerOptions) {
     int width, height, channels;
     stbi_set_flip_vertically_on_load(false);
 
@@ -76,12 +88,11 @@ VulkanImage::VulkanImage(VulkanTransferManager* transferManager, VmaAllocator al
 
     vk::SamplerCreateInfo samplerCreateInfo(
         {},
-        vk::Filter::eNearest,
-        vk::Filter::eNearest,
+        samplerOptions.minFilter == Filter::NEAREST ? vk::Filter::eNearest : vk::Filter::eLinear,
+        samplerOptions.magFilter == Filter::NEAREST ? vk::Filter::eNearest : vk::Filter::eLinear,
         vk::SamplerMipmapMode::eNearest,
-        vk::SamplerAddressMode::eRepeat,
-        vk::SamplerAddressMode::eRepeat,
-        vk::SamplerAddressMode::eRepeat
+        toAddressMode(samplerOptions.repeatX),
+        toAddressMode(samplerOptions.repeatY)
     );
 
     m_Sampler = device.createSamplerUnique(samplerCreateInfo);

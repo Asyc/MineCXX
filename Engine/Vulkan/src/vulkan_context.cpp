@@ -149,6 +149,7 @@ VulkanRenderContext::VulkanRenderContext(Window& window, const Directory& resour
       m_Swapchain(modeHint, *m_Surface, m_PhysicalDevice, &m_Device, m_Device.getQueueManager()),
       m_TransferManager(*m_Instance, m_PhysicalDevice, &m_Device, m_Device.getQueueManager().getGraphicsQueueFamily().index),
       m_Pipelines(),
+      m_GuiViewport(*this),
       m_FontRenderer(*this, File(resourceDirectory.getPath() + "font/glyph_sizes.bin"), Directory(resourceDirectory.getPath() + "/textures/font")) {
 
 #ifdef MCE_DBG
@@ -174,8 +175,8 @@ VulkanRenderContext::~VulkanRenderContext() {
     s_ThreadCommandPoolMap.clear();
 }
 
-std::shared_ptr<buffer::Image> VulkanRenderContext::createImage(const File& path) {
-    return std::make_shared<buffer::VulkanImage>(&m_TransferManager, m_MemoryAllocator.get(), path);
+std::shared_ptr<buffer::Image> VulkanRenderContext::createImage(const File& path, const buffer::Image::SamplerOptions& samplerOptions) {
+    return std::make_shared<buffer::VulkanImage>(&m_TransferManager, m_MemoryAllocator.get(), path, samplerOptions);
 }
 
 std::unique_ptr<command::CommandPool> VulkanRenderContext::createCommandPool() const {

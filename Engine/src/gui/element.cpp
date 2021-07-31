@@ -2,6 +2,7 @@
 
 #include <array>
 
+#include "engine/render/viewport.hpp"
 #include "engine/window.hpp"
 
 namespace engine::gui {
@@ -9,7 +10,9 @@ namespace engine::gui {
 ElementImage::ElementImage(engine::render::RenderContext& context, std::shared_ptr<engine::render::buffer::Image> image, float x, float y, float width, float height, const ImageRegion& region, const Options& options) : m_Image(std::move(image)) {
     m_Pipeline = context.createRenderPipeline(File("assets/shaders/gui/image"));
     m_UniformDescriptorSet = m_Pipeline->allocateDescriptorSet(0);
-    m_UniformDescriptorSet->bind(0, *m_Image);
+
+    m_UniformDescriptorSet->bind(0, *context.getViewport().getUniformBuffer());
+    m_UniformDescriptorSet->bind(1, *m_Image);
 
     struct Vertex {
         struct {
@@ -55,10 +58,15 @@ void ElementImage::draw(render::command::IDrawableCommandBuffer& buffer) {
 }
 
 ElementButton::ElementButton(render::RenderContext& context, float x, float y, float w, float h) : m_Context(&context) {
-    m_Image = context.createImage(NamespaceFile("minecraft", "textures/gui/widgets.png"));
+    using engine::render::buffer::Image;
+    Image::SamplerOptions samplerOptions(Image::Filter::NEAREST, Image::Filter::NEAREST, Image::RepeatMode::CLAMP_TO_EDGE, Image::RepeatMode::CLAMP_TO_BORDER);
+
+
+    m_Image = context.createImage(NamespaceFile("minecraft", "textures/gui/widgets.png"), samplerOptions);
     m_Pipeline = context.createRenderPipeline(File("assets/shaders/gui/button"));
     m_UniformDescriptorSet = m_Pipeline->allocateDescriptorSet(0);
-    m_UniformDescriptorSet->bind(0, *m_Image);
+    m_UniformDescriptorSet->bind(0, *context.getViewport().getUniformBuffer());
+    m_UniformDescriptorSet->bind(1, *m_Image);
 
     struct Vertex{
         float x, y;
@@ -83,10 +91,11 @@ ElementButton::ElementButton(render::RenderContext& context, float x, float y, f
 
     float pixelUnitX = 1.0f / static_cast<float>(m_Image->getWidth());
     float pixelUnitY = 1.0f / static_cast<float>(m_Image->getHeight());
-    float tX = pixelUnitX * static_cast<float>(0.35f);
-    float tY = pixelUnitY * static_cast<float>(66);
-    float tWidth = pixelUnitX * static_cast<float>(199.45f);
-    float tHeight = pixelUnitY * static_cast<float>(20);
+    float tX = pixelUnitX * static_cast<float>(0.0f);
+    float tY = pixelUnitY * static_cast<float>(66.0f);
+    float tWidth = pixelUnitX * static_cast<float>(200.0f);
+    float tHeight = pixelUnitY * static_cast<float>(20.0f);
+
 
     m_TextureData.standard[0] = {tX, tY};
     m_TextureData.standard[1] = {tX, tY + tHeight};
@@ -107,23 +116,10 @@ void ElementButton::draw(render::command::IDrawableCommandBuffer& buffer) {
     buffer.bindVertexBuffer(*m_VertexBuffer);
     buffer.bindIndexBuffer(*m_IndexBuffer);
 
-    auto [mouseX, mouseY] = m_Context->getWindow().getCursorPosition();
-    auto [windowWidth, windowHeight] = m_Context->getSwapchain().getSize();
 
-    float normalizedMouseX = static_cast<float>(mouseX) / static_cast<float>(windowWidth);
-    float normalizedMouseY = static_cast<float>(mouseY) / static_cast<float>(windowHeight);
-
-    float viewportX = -1.0f;
-    float viewportWidth = 2.0f;
-
-    float viewportY = 1.0f;
-    float viewportHeight = 2.0f;
-
-    float viewportMouseX = viewportX + (viewportWidth * normalizedMouseX);
-    float viewportMouseY = viewportY - (viewportHeight * normalizedMouseY);
-
-    bool xAlign = viewportMouseX >= m_Position.x && viewportMouseX <= m_Position.x + m_Position.w;
-    bool yAlign = viewportMouseY <= m_Position.y && viewportMouseY >= m_Position.y - m_Position.h;
+    auto [mouseX, mouseY] = m_Context->getViewport().getMousePosition();
+    bool xAlign = mouseX >= m_Position.x && mouseX <= m_Position.x + m_Position.w;
+    bool yAlign = mouseY <= m_Position.y && mouseY >= m_Position.y - m_Position.h;
 
     const auto* pushConstantData = xAlign && yAlign ? m_TextureData.hover : m_TextureData.standard;
 

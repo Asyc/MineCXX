@@ -17,7 +17,7 @@ layout (push_constant) uniform PushConstantBlock {
     layout (offset = 8) uint string[MAX_CHARACTERS];
 } push_constants;
 
-layout (std140, set = 0, binding = 0) uniform AsciiTable {
+layout (std140, set = 0, binding = 1) uniform AsciiTable {
     AsciiNode ascii_table[256];
 };
 

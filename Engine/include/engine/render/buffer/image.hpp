@@ -10,12 +10,24 @@ namespace engine::render::buffer {
 
 class Image : public IDescriptorResource {
 public:
-    enum class Filtering {
+    enum class Filter {
         LINEAR,
         NEAREST
     };
 
     enum class RepeatMode {
+        REPEAT,
+        CLAMP_TO_BORDER,
+        CLAMP_TO_EDGE
+    };
+
+    struct SamplerOptions {
+        Filter minFilter, magFilter;
+        RepeatMode repeatX, repeatY;
+
+        SamplerOptions(Filter minFilter, Filter magFilter, RepeatMode repeatX, RepeatMode repeatY) : minFilter(minFilter), magFilter(magFilter), repeatX(repeatX), repeatY(repeatY) {}
+        SamplerOptions() : SamplerOptions(Filter::NEAREST, Filter::NEAREST, RepeatMode::REPEAT, RepeatMode::REPEAT) {}
+
 
     };
 

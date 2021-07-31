@@ -21,13 +21,18 @@ class Window;
 
 namespace engine::render {
 
+class ViewportGUI;
+
 class RenderContext {
 public:
     using ResizeCallback = std::function<void(uint32_t, uint32_t)>;
 
     virtual ~RenderContext() = default;
 
-    [[nodiscard]] virtual std::shared_ptr<buffer::Image> createImage(const File& path) = 0;
+    [[nodiscard]] virtual std::shared_ptr<buffer::Image> createImage(const File& path, const buffer::Image::SamplerOptions& samplerOptions) = 0;
+    [[nodiscard]] virtual std::shared_ptr<buffer::Image> createImage(const File& path) {
+        return createImage(path, buffer::Image::SamplerOptions());
+    }
 
     [[nodiscard]] virtual std::unique_ptr<buffer::VertexBuffer> allocateVertexBuffer(size_t size) = 0;
 
@@ -41,6 +46,8 @@ public:
 
     [[nodiscard]] virtual Swapchain& getSwapchain() = 0;
     [[nodiscard]] virtual const Swapchain& getSwapchain() const = 0;
+
+    [[nodiscard]] virtual const ViewportGUI& getViewport() const = 0;
 
     [[nodiscard]] virtual gui::font::FontRenderer& getFontRenderer() = 0;
 

@@ -16,7 +16,7 @@ using namespace ::engine::render::buffer;
 
 class VulkanImage : public Image, public IVulkanDescriptorResource {
 public:
-    VulkanImage(VulkanTransferManager* transferManager, VmaAllocator allocator, const File& path);
+    VulkanImage(VulkanTransferManager* transferManager, VmaAllocator allocator, const File& path, const SamplerOptions& samplerOptions);
 
     [[nodiscard]] size_t getWidth() const override { return m_Width; }
     [[nodiscard]] size_t getHeight() const override { return m_Height; }

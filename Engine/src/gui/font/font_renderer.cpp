@@ -5,6 +5,7 @@
 #include "engine/gui/font/ascii_font.hpp"
 #include "engine/log.hpp"
 #include "engine/render/render_context.hpp"
+#include "engine/render/viewport.hpp"
 
 namespace engine::gui::font {
 
@@ -67,11 +68,14 @@ FontRenderer::FontRenderer(render::RenderContext& context, const File& glyphSize
     m_AsciiTableUniformBuffer->write(0, &table, sizeof(AsciiTable));
 
     m_UniformDescriptorSetCached = m_CachedPipeline->allocateDescriptorSet(0);
+    m_UniformDescriptorSetCached->bind(0, *context.getViewport().getUniformBuffer());
+    m_UniformDescriptorSetCached->bind(1, *m_AsciiTableUniformBuffer);
+    m_UniformDescriptorSetCached->bind(2, *m_AsciiImage);
+
     m_UniformDescriptorSetDynamic = m_DynamicPipeline->allocateDescriptorSet(0);
-    m_UniformDescriptorSetCached->bind(0, *m_AsciiTableUniformBuffer);
-    m_UniformDescriptorSetCached->bind(1, *m_AsciiImage);
-    m_UniformDescriptorSetDynamic->bind(0, *m_AsciiTableUniformBuffer);
-    m_UniformDescriptorSetDynamic->bind(1, *m_AsciiImage);
+    m_UniformDescriptorSetDynamic->bind(0, *context.getViewport().getUniformBuffer());
+    m_UniformDescriptorSetDynamic->bind(1, *m_AsciiTableUniformBuffer);
+    m_UniformDescriptorSetDynamic->bind(2, *m_AsciiImage);
 }
 
 void FontRenderer::drawCached(render::command::IDrawableCommandBuffer& commandBuffer, const FontRenderer::String& string, float x, float y, const StringOptions& renderOptions) {
