@@ -34,7 +34,7 @@ public:
     [[nodiscard]] uint32_t getCurrentFrameIndex() const override;
     [[nodiscard]] uint32_t getFrameCount() const override;
 
-    [[nodiscard]] std::tuple<uint32_t, uint32_t> getSize() const override;
+    [[nodiscard]] std::pair<uint32_t, uint32_t> getSize() const override;
 
     [[nodiscard]] vk::RenderPass getRenderPass() const;
     [[nodiscard]] vk::Framebuffer getCurrentFrame() const;

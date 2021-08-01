@@ -117,18 +117,23 @@ void VulkanSwapchain::nextImage() {
     auto& currentFlight = m_RenderFlights[m_CurrentFlight++];
     if (m_CurrentFlight == m_RenderFlights.size()) m_CurrentFlight = 0;
 
+    if (m_SwapchainExtent.width == 0 || m_SwapchainExtent.height == 0) return;
+
     currentFlight.boundImage->present(m_GraphicsQueue, *m_Swapchain);
 
     setupImage();
 }
 
 void VulkanSwapchain::submitCommandBuffer(const DirectCommandBuffer& buffer) {
-    auto* vulkanPtr = dynamic_cast<const command::VulkanDirectCommandBuffer*>(&buffer);
+    if (m_SwapchainExtent.width == 0 || m_SwapchainExtent.height == 0) return;
 
+    auto* vulkanPtr = dynamic_cast<const command::VulkanDirectCommandBuffer*>(&buffer);
     m_RenderFlights[m_CurrentFlight].submitCommandBuffer(m_Swapchain.getOwner(), vulkanPtr->getCommandBufferHandle(), vulkanPtr->getFence());
 }
 
 void VulkanSwapchain::submitCommandBuffer(const IndirectCommandBuffer& buffer) {
+    if (m_SwapchainExtent.width == 0 || m_SwapchainExtent.height == 0) return;
+
     auto* vulkanPtr = dynamic_cast<const command::VulkanIndirectCommandBuffer*>(&buffer);
     m_RenderFlights[m_CurrentFlight].submitCommandBuffer(m_Swapchain.getOwner(), vulkanPtr->getCommandBufferHandle(), vulkanPtr->getFence());
 }
@@ -138,6 +143,7 @@ void VulkanSwapchain::onResize(uint32_t width, uint32_t height) {
 
     m_SwapchainExtent.width = width;
     m_SwapchainExtent.height = height;
+    if (m_SwapchainExtent.width == 0 || m_SwapchainExtent.height == 0) return;
 
     createSwapchain();
 
@@ -161,7 +167,7 @@ uint32_t VulkanSwapchain::getFrameCount() const {
     return m_RenderFlights.size();
 }
 
-std::tuple<uint32_t, uint32_t> VulkanSwapchain::getSize() const {
+std::pair<uint32_t, uint32_t> VulkanSwapchain::getSize() const {
     return {m_SwapchainExtent.width, m_SwapchainExtent.height};
 }
 

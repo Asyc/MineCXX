@@ -2,6 +2,8 @@
 
 #include <array>
 
+#include "engine/window.hpp"
+
 using namespace engine;
 using namespace engine::gui;
 
@@ -63,5 +65,10 @@ MainMenu::MainMenu(engine::render::RenderContext& context) {
 
     button = std::make_unique<gui::ElementButton>(context, leftBound + w + blank, y, w, h);
     button->setText(u"Quit Game");
+    button->setButtonCallback([&context](){
+        context.getWindow().setCloseFlag(true);
+    });
+
+
     pushElement(std::move(button));
 }

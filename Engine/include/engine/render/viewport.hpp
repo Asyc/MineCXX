@@ -1,14 +1,16 @@
 #ifndef MINECRAFTCXX_CLIENT_ENGINE_INCLUDE_ENGINE_RENDER_VIEWPORT_HPP_
 #define MINECRAFTCXX_CLIENT_ENGINE_INCLUDE_ENGINE_RENDER_VIEWPORT_HPP_
 
+#include <memory>
 #include <tuple>
 
 #include <glm/mat4x4.hpp>
 
-#include "engine/render/render_context.hpp"
 #include "engine/render/buffer/uniform_buffer.hpp"
 
 namespace engine::render {
+
+class RenderContext;
 
 class ViewportGUI {
 public:

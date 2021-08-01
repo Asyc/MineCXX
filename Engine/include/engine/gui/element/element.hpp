@@ -11,6 +11,9 @@ public:
     virtual ~Element() = default;
 
     virtual void draw(engine::render::command::IDrawableCommandBuffer& buffer) = 0;
+
+    virtual void onClick(input::MouseButton button, input::MouseButtonAction action, float x, float y) {}
+    virtual bool isInside(float x, float y) { return false; }
 };
 
 class ElementImage : public Element {
@@ -47,10 +50,16 @@ private:
 
 class ElementButton : public Element {
 public:
+    using ButtonCallback = std::function<void()>;
+
     ElementButton(engine::render::RenderContext& context, float x, float y, float w, float h);
 
     void draw(engine::render::command::IDrawableCommandBuffer& buffer) override;
 
+    void onClick(input::MouseButton button, input::MouseButtonAction action, float x, float y) override;
+    bool isInside(float x, float y) override;
+
+    void setButtonCallback(ButtonCallback callback) {m_Callback = std::move(callback);}
     void setText(std::u16string text) {m_Text = std::move(text);}
 
     [[nodiscard]] float getX() const { return m_Position.x; }
@@ -67,6 +76,8 @@ private:
         float x, y;
         float w, h;
     } m_Position;
+
+    ButtonCallback m_Callback;
     std::u16string m_Text;
 
     struct TexturePositionData{

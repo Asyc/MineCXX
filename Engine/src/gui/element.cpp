@@ -116,12 +116,8 @@ void ElementButton::draw(render::command::IDrawableCommandBuffer& buffer) {
     buffer.bindVertexBuffer(*m_VertexBuffer);
     buffer.bindIndexBuffer(*m_IndexBuffer);
 
-
     auto [mouseX, mouseY] = m_Context->getViewport().getMousePosition();
-    bool xAlign = mouseX >= m_Position.x && mouseX <= m_Position.x + m_Position.w;
-    bool yAlign = mouseY <= m_Position.y && mouseY >= m_Position.y - m_Position.h;
-
-    const auto* pushConstantData = xAlign && yAlign ? m_TextureData.hover : m_TextureData.standard;
+    const auto* pushConstantData = isInside(mouseX, mouseY) ? m_TextureData.hover : m_TextureData.standard;
 
     buffer.pushConstants(render::command::PushConstantUsage::VERTEX, 0, pushConstantData, sizeof(TexturePositionData::Vertex) * 4);
     buffer.drawIndexed(1, 6);
@@ -134,6 +130,16 @@ void ElementButton::draw(render::command::IDrawableCommandBuffer& buffer) {
 
         m_Context->getFontRenderer().drawDynamic(buffer, m_Text, x, y, stringOptions);
     }
+}
+
+void ElementButton::onClick(input::MouseButton button, input::MouseButtonAction action, float x, float y) {
+    if (m_Callback != nullptr) std::invoke(m_Callback);
+}
+
+bool ElementButton::isInside(float x, float y) {
+    bool xAlign = x >= m_Position.x && x <= m_Position.x + m_Position.w;
+    bool yAlign = y <= m_Position.y && y >= m_Position.y - m_Position.h;
+    return xAlign && yAlign;
 }
 
 }

@@ -33,7 +33,7 @@ public:
     [[nodiscard]] virtual uint32_t getCurrentFrameIndex() const = 0;
     [[nodiscard]] virtual uint32_t getFrameCount() const = 0;
 
-    [[nodiscard]] virtual std::tuple<uint32_t, uint32_t> getSize() const = 0;
+    [[nodiscard]] virtual std::pair<uint32_t, uint32_t> getSize() const = 0;
 
     static std::string_view toString(SwapchainMode mode) {
         std::string_view string;

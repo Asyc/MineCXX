@@ -85,6 +85,10 @@ std::unique_ptr<render::RenderContext> Window::createRenderContext(render::Swapc
     return std::move(ptr);
 }
 
+void Window::setCloseFlag(bool flag) {
+    glfwSetWindowShouldClose(m_Window.get(), flag);
+}
+
 bool Window::shouldClose() const {
     return glfwWindowShouldClose(m_Window.get());
 }

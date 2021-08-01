@@ -149,8 +149,10 @@ VulkanRenderContext::VulkanRenderContext(Window& window, const Directory& resour
       m_Swapchain(modeHint, *m_Surface, m_PhysicalDevice, &m_Device, m_Device.getQueueManager()),
       m_TransferManager(*m_Instance, m_PhysicalDevice, &m_Device, m_Device.getQueueManager().getGraphicsQueueFamily().index),
       m_Pipelines(),
+      m_ResizeCallback(nullptr),
       m_GuiViewport(*this),
-      m_FontRenderer(*this, File(resourceDirectory.getPath() + "font/glyph_sizes.bin"), Directory(resourceDirectory.getPath() + "/textures/font")) {
+      m_FontRenderer(*this, File(resourceDirectory.getPath() + "font/glyph_sizes.bin"), Directory(resourceDirectory.getPath() + "/textures/font")),
+      m_MouseCallback(nullptr) {
 
 #ifdef MCE_DBG
     VkInstance instance = *m_Instance;
@@ -221,7 +223,17 @@ std::shared_ptr<RenderPipeline> VulkanRenderContext::createRenderPipeline(const 
 }
 
 void VulkanRenderContext::mouseButtonCallback(gui::input::MouseButton button, gui::input::MouseButtonAction action, double x, double y) {
-    LOG_INFO("Button: {}, Action: {}, [{},{}]", button, action, x, y);
+    if (m_MouseCallback != nullptr) {
+        std::invoke(m_MouseCallback, button, action);
+    }
+}
+
+void VulkanRenderContext::setResizeCallback(RenderContext::ResizeCallback callback) {
+    m_ResizeCallback = std::move(callback);
+}
+
+void VulkanRenderContext::setMouseCallback(RenderContext::MouseCallback callback) {
+    m_MouseCallback = std::move(callback);
 }
 
 }   //namespace engine::render::vulkan

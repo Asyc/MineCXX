@@ -26,6 +26,7 @@ public:
 
     std::unique_ptr<render::RenderContext> createRenderContext(render::Swapchain::SwapchainMode modeHint);
 
+    void setCloseFlag(bool flag);
     [[nodiscard]] bool shouldClose() const;
 
     [[nodiscard]] std::pair<size_t, size_t> getCursorPosition() const;

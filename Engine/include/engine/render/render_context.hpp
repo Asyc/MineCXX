@@ -14,6 +14,7 @@
 
 #include "pipeline.hpp"
 #include "swapchain.hpp"
+#include "viewport.hpp"
 
 namespace engine {
 class Window;
@@ -26,6 +27,7 @@ class ViewportGUI;
 class RenderContext {
 public:
     using ResizeCallback = std::function<void(uint32_t, uint32_t)>;
+    using MouseCallback = engine::gui::input::MouseButtonCallback;
 
     virtual ~RenderContext() = default;
 
@@ -51,9 +53,11 @@ public:
 
     [[nodiscard]] virtual gui::font::FontRenderer& getFontRenderer() = 0;
 
+    [[nodiscard]] virtual Window& getWindow() = 0;
     [[nodiscard]] virtual const Window& getWindow() const = 0;
 
     virtual void setResizeCallback(ResizeCallback callback) = 0;
+    virtual void setMouseCallback(MouseCallback callback) = 0;
 
     // Callback functions
     virtual void mouseButtonCallback(gui::input::MouseButton button, gui::input::MouseButtonAction action, double x, double y) = 0;

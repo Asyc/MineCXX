@@ -20,6 +20,7 @@ public:
     virtual ~Gui() = default;
 
     void draw(engine::render::command::IDrawableCommandBuffer& buffer);
+    void onClick(input::MouseButton button, input::MouseButtonAction action, float x, float y);
 protected:
     Gui() = default;
 

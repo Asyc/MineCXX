@@ -23,7 +23,7 @@ public:
     void update();
 
     void onResize(uint32_t width, uint32_t height);
-    void onMouseAction(input::MouseButton button, input::MouseButtonAction action, float x, float y);
+    void onMouseAction(input::MouseButton button, input::MouseButtonAction action);
 private:
     render::RenderContext* m_Context;
 

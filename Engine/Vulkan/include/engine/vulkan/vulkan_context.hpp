@@ -52,11 +52,14 @@ public:
     [[nodiscard]] const ViewportGUI& getViewport() const override { return m_GuiViewport; }
     [[nodiscard]] gui::font::FontRenderer& getFontRenderer() override { return m_FontRenderer; }
 
+    [[nodiscard]] Window& getWindow() override { return *m_Window; }
     [[nodiscard]] const Window& getWindow() const override { return *m_Window; }
 
-    void setResizeCallback(ResizeCallback callback) override { m_ResizeCallback = std::move(callback); }
+    void setResizeCallback(ResizeCallback callback) override;
+    void setMouseCallback(MouseCallback callback) override;
 
     [[nodiscard]] const ResizeCallback& getResizeCallback() { return m_ResizeCallback; }
+    [[nodiscard]] const MouseCallback& getMouseCallback() { return m_MouseCallback; }
 private:
     vk::UniqueInstance m_Instance;
 #ifdef MCE_DBG
@@ -78,10 +81,11 @@ private:
 
     std::unordered_map<std::string, std::weak_ptr<VulkanRenderPipeline>> m_Pipelines;
 
+    ResizeCallback m_ResizeCallback;   // ViewportGUI depends on this, needs to be initialized first
     ViewportGUI m_GuiViewport;
     gui::font::FontRenderer m_FontRenderer;
 
-    ResizeCallback m_ResizeCallback;
+    MouseCallback m_MouseCallback;
 
     static thread_local std::unordered_map<VulkanRenderContext*, command::VulkanCommandPool> s_ThreadCommandPoolMap;
 };
