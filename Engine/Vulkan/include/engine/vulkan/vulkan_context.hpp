@@ -75,8 +75,6 @@ private:
     render::VulkanSwapchain m_Swapchain;
     buffer::VulkanTransferManager m_TransferManager;
 
-    vk::UniqueDescriptorPool m_DescriptorPool;
-
     std::unordered_map<std::string, std::weak_ptr<VulkanRenderPipeline>> m_Pipelines;
 
     std::vector<ResizeCallback> m_ResizeCallbacks;

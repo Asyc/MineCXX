@@ -164,11 +164,6 @@ VulkanRenderContext::VulkanRenderContext(Window& window, const Directory& resour
         vkDestroyDebugReportCallbackEXT(instance, debugReportCallback, nullptr);
     }};
 #endif
-    std::array<vk::DescriptorPoolSize, 1> poolSizes = {
-        vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, 1)
-    };
-
-    m_DescriptorPool = m_Device.getDevice().createDescriptorPoolUnique(vk::DescriptorPoolCreateInfo({}, 4, poolSizes.size(), poolSizes.data()));
 }
 
 VulkanRenderContext::~VulkanRenderContext() {
