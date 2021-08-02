@@ -14,6 +14,8 @@ public:
 
     virtual void onClick(input::MouseButton button, input::MouseButtonAction action, float x, float y) {}
     virtual bool isInside(float x, float y) { return false; }
+
+    virtual void onResize(uint32_t width, uint32_t height) {}
 };
 
 class ElementImage : public Element {
@@ -27,6 +29,8 @@ public:
         struct {
             float r = 1.0f, g = 1.0f, b = 1.0f, a = 1.0f;
         } color;
+
+        uint32_t viewportAdjust = true;
     };
 
     ElementImage(engine::render::RenderContext& context,

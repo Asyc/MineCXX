@@ -10,7 +10,17 @@ layout (set = 0, binding = 0) uniform Viewport {
     mat4 projection_matrix;
 } viewport;
 
+layout (push_constant) uniform PushConstantBlock {
+    layout (offset = 16) bool viewportAdjust; // Fragment shader consumes 0-16
+} push_constants;
+
 void main() {
     vs_TexPos = texPos;
-    gl_Position = viewport.projection_matrix * vec4(pos, 0.0f, 1.0f);
+
+    vec4 position = vec4(pos, 0.0f, 1.0f);
+    if (push_constants.viewportAdjust) {
+        position = viewport.projection_matrix * position;
+    }
+
+    gl_Position = position;
 }

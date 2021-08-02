@@ -35,11 +35,11 @@ vec2 getStringSize() {
         uint codepoint = push_constants.string[i];
         if (codepoint == 0) break;
         AsciiNode character = ascii_table[map(codepoint)];
-        float width = character.size.x * string_options.scale * 0.6f;
+        float width = character.size.x * string_options.scale * 0.5f;
         totalWidth += width;
     }
 
-    return vec2(totalWidth, 9.0f * string_options.scale);
+    return vec2(totalWidth, 8.0f * string_options.scale);
 }
 
 void main() {
@@ -47,7 +47,7 @@ void main() {
     if (string_options.center) {
         vec2 stringSize = getStringSize();
         renderOrigin.x -= stringSize.x / 2.0f;
-        //renderOrigin.y += stringSize.y / 2.0f;
+        //renderOrigin.y -= stringSize.y / 4.0f;
     }
 
     for (int i = 0; i < MAX_CHARACTERS; i++) {
@@ -60,7 +60,7 @@ void main() {
 
         float scale = string_options.scale;
 
-        float width = character.size.x * scale * 0.6f;
+        float width = character.size.x * scale * 0.5f;
         float height = character.size.y * scale;
 
         float texPosX = character.texPos.x;

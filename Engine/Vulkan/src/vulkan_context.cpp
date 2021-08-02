@@ -149,10 +149,8 @@ VulkanRenderContext::VulkanRenderContext(Window& window, const Directory& resour
       m_Swapchain(modeHint, *m_Surface, m_PhysicalDevice, &m_Device, m_Device.getQueueManager()),
       m_TransferManager(*m_Instance, m_PhysicalDevice, &m_Device, m_Device.getQueueManager().getGraphicsQueueFamily().index),
       m_Pipelines(),
-      m_ResizeCallback(nullptr),
       m_GuiViewport(*this),
-      m_FontRenderer(*this, File(resourceDirectory.getPath() + "font/glyph_sizes.bin"), Directory(resourceDirectory.getPath() + "/textures/font")),
-      m_MouseCallback(nullptr) {
+      m_FontRenderer(*this, File(resourceDirectory.getPath() + "font/glyph_sizes.bin"), Directory(resourceDirectory.getPath() + "/textures/font")) {
 
 #ifdef MCE_DBG
     VkInstance instance = *m_Instance;
@@ -222,18 +220,23 @@ std::shared_ptr<RenderPipeline> VulkanRenderContext::createRenderPipeline(const 
     return std::shared_ptr<RenderPipeline>{it->second};
 }
 
+void VulkanRenderContext::addResizeCallback(RenderContext::ResizeCallback callback) {
+    m_ResizeCallbacks.emplace_back(std::move(callback));
+}
+
+void VulkanRenderContext::addMouseCallback(RenderContext::MouseCallback callback) {
+    m_MouseCallbacks.emplace_back(std::move(callback));
+}
+
 void VulkanRenderContext::mouseButtonCallback(gui::input::MouseButton button, gui::input::MouseButtonAction action, double x, double y) {
-    if (m_MouseCallback != nullptr) {
-        std::invoke(m_MouseCallback, button, action);
+    for (const auto& callback : m_MouseCallbacks) {
+        std::invoke(callback, button, action);
     }
 }
-
-void VulkanRenderContext::setResizeCallback(RenderContext::ResizeCallback callback) {
-    m_ResizeCallback = std::move(callback);
-}
-
-void VulkanRenderContext::setMouseCallback(RenderContext::MouseCallback callback) {
-    m_MouseCallback = std::move(callback);
+void VulkanRenderContext::windowResizeCallback(uint32_t width, uint32_t height) {
+    for (const auto& callback : m_ResizeCallbacks) {
+        std::invoke(callback, width, height);
+    }
 }
 
 }   //namespace engine::render::vulkan

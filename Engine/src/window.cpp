@@ -5,7 +5,10 @@
 
 #include "engine/gui/input.hpp"
 #include "engine/log.hpp"
+
+#ifdef MCE_VK
 #include "engine/vulkan/vulkan_context.hpp"
+#endif
 
 namespace engine {
 
@@ -31,7 +34,12 @@ Window::Window(int32_t width, int32_t height, const std::string_view& title) {
 
 std::unique_ptr<render::RenderContext> Window::createRenderContext(render::Swapchain::SwapchainMode modeHint) {
     //todo : PUT ENUM FOR RENDER APIS
+#ifdef MCE_VK
     auto ptr = std::make_unique<vulkan::render::VulkanRenderContext>(*this, Directory("assets/minecraft"), modeHint);
+#else
+    std::unique_ptr<render::RenderContext> ptr = nullptr;
+    throw std::runtime_error("no render api");
+#endif
 
     auto currentMode = ptr->getSwapchain().getSwapchainMode();
     const auto& supportedModes = ptr->getSwapchain().getSupportedSwapchainModes();
@@ -47,14 +55,12 @@ std::unique_ptr<render::RenderContext> Window::createRenderContext(render::Swapc
 
     glfwSetWindowUserPointer(m_Window.get(), ptr.get());
     glfwSetWindowSizeCallback(m_Window.get(), [](GLFWwindow* handle, int width, int height) {
-        auto* ref = reinterpret_cast<vulkan::render::VulkanRenderContext*>(glfwGetWindowUserPointer(handle));
-        ref->getSwapchain().onResize(width, height);
-        if (ref->getResizeCallback() != nullptr)
-            std::invoke(ref->getResizeCallback(), width, height);
+        auto* ref = reinterpret_cast<vulkan::render::RenderContext*>(glfwGetWindowUserPointer(handle));
+        ref->windowResizeCallback(static_cast<uint32_t>(width), static_cast<uint32_t>(height));
     });
 
     glfwSetMouseButtonCallback(m_Window.get(), [](GLFWwindow* handle, int button, int action, int modifier) {
-        auto* ref = reinterpret_cast<vulkan::render::VulkanRenderContext*>(glfwGetWindowUserPointer(handle));
+        auto* ref = reinterpret_cast<vulkan::render::RenderContext*>(glfwGetWindowUserPointer(handle));
 
         engine::gui::input::MouseButton buttonFlag;
         switch (button) {

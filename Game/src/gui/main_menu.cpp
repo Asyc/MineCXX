@@ -15,11 +15,12 @@ MainMenu::MainMenu(engine::render::RenderContext& context) {
 
     auto[windowWidth, windowHeight] = context.getSwapchain().getSize();
     auto[backgroundWidth, backgroundHeight] = backgroundImage->getSize();
-    float horizontalCount = static_cast<float>(windowWidth) / static_cast<float>(backgroundWidth) * 3;
-    float verticalCount = static_cast<float>(windowHeight) / static_cast<float>(backgroundHeight) * 3;
+    float horizontalCount = static_cast<float>(windowWidth) / static_cast<float>(backgroundWidth) * 4;
+    float verticalCount = static_cast<float>(windowHeight) / static_cast<float>(backgroundHeight) * 4;
 
-    float x = 15.0f / 255.0f;
-    gui::ElementImage::Options options = {x, x, x, 1.0f};
+    float x = 1.0f / 3.9f;
+    //float x = 15.0f / 255.0f;
+    gui::ElementImage::Options options = {x, x, x, x, false};
 
     pushElement(std::make_unique<gui::ElementImage>(context, std::move(backgroundImage), -1.f, 1.0f, 2.0f, 2.0f, ElementImage::ImageRegion{0.0f, 0.0f, horizontalCount, verticalCount}, options));
 

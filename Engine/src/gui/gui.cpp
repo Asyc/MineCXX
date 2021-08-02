@@ -18,4 +18,10 @@ void Gui::onClick(input::MouseButton button, input::MouseButtonAction action, fl
     }
 }
 
+void Gui::onResize(uint32_t width, uint32_t height) {
+    for (auto& element : m_Elements) {
+        element->onResize(width, height);
+    }
+}
+
 }

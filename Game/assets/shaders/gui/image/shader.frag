@@ -5,8 +5,8 @@ layout (location = 0) out vec4 fs_Color;
 
 layout (set = 0, binding = 1) uniform sampler2D imageSampler;
 
-layout (std140, push_constant) uniform Options {
-    vec4 color;
+layout (push_constant) uniform Options {
+    layout (offset = 0) vec4 color;
 } push_constants;
 
 void main() {

@@ -47,13 +47,17 @@ ElementImage::ElementImage(engine::render::RenderContext& context, std::shared_p
     m_Options = options;
 }
 
+
+
 void ElementImage::draw(render::command::IDrawableCommandBuffer& buffer) {
     buffer.bindPipeline(*m_Pipeline);
-    buffer.pushConstants(render::command::PushConstantUsage::FRAGMENT, 0, &m_Options, sizeof(Options));
+    buffer.pushConstants(render::command::PushConstantUsage::VERTEX, 16, &m_Options.viewportAdjust, 4);
+    buffer.pushConstants(render::command::PushConstantUsage::FRAGMENT, 0, &m_Options, 16);
 
     buffer.bindUniformDescriptor(*m_UniformDescriptorSet);
     buffer.bindVertexBuffer(*m_VertexBuffer);
     buffer.bindIndexBuffer(*m_IndexBuffer);
+
     buffer.drawIndexed(1, 6);
 }
 

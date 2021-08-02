@@ -37,7 +37,7 @@ float getStringWidth() {
         if (codepoint == 0) break;
         AsciiNode character = ascii_table[map(codepoint)];
         float scale = 0.00528;
-        float width = character.size.x * string_options.scale * 0.6f;
+        float width = character.size.x * string_options.scale * 0.7f;
         totalWidth += width;
     }
 
@@ -60,7 +60,7 @@ void main() {
 
         float scale = string_options.scale;
 
-        float width = character.size.x * scale * 0.6f;
+        float width = character.size.x * scale * 0.7f;
         float height = character.size.y * scale;
 
         float texPosX = character.texPos.x;

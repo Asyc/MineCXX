@@ -42,8 +42,6 @@ public:
     [[nodiscard]] Swapchain& getSwapchain() override { return m_Swapchain; }
     [[nodiscard]] const Swapchain& getSwapchain() const override { return m_Swapchain; }
 
-    void mouseButtonCallback(gui::input::MouseButton button, gui::input::MouseButtonAction action, double x, double y) override;
-
     [[nodiscard]] VulkanSwapchain& getSwapchainVulkan() { return m_Swapchain; }
     [[nodiscard]] device::VulkanDevice& getDevice() { return m_Device; }
 
@@ -55,11 +53,11 @@ public:
     [[nodiscard]] Window& getWindow() override { return *m_Window; }
     [[nodiscard]] const Window& getWindow() const override { return *m_Window; }
 
-    void setResizeCallback(ResizeCallback callback) override;
-    void setMouseCallback(MouseCallback callback) override;
+    void addResizeCallback(ResizeCallback callback) override;
+    void addMouseCallback(MouseCallback callback) override;
 
-    [[nodiscard]] const ResizeCallback& getResizeCallback() { return m_ResizeCallback; }
-    [[nodiscard]] const MouseCallback& getMouseCallback() { return m_MouseCallback; }
+    void mouseButtonCallback(gui::input::MouseButton button, gui::input::MouseButtonAction action, double x, double y) override;
+    void windowResizeCallback(uint32_t width, uint32_t height) override;
 private:
     vk::UniqueInstance m_Instance;
 #ifdef MCE_DBG
@@ -81,11 +79,11 @@ private:
 
     std::unordered_map<std::string, std::weak_ptr<VulkanRenderPipeline>> m_Pipelines;
 
-    ResizeCallback m_ResizeCallback;   // ViewportGUI depends on this, needs to be initialized first
+    std::vector<ResizeCallback> m_ResizeCallbacks;
+    std::vector<MouseCallback> m_MouseCallbacks;
+
     ViewportGUI m_GuiViewport;
     gui::font::FontRenderer m_FontRenderer;
-
-    MouseCallback m_MouseCallback;
 
     static thread_local std::unordered_map<VulkanRenderContext*, command::VulkanCommandPool> s_ThreadCommandPoolMap;
 };

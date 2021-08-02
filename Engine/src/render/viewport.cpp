@@ -8,21 +8,32 @@
 
 namespace engine::render {
 
+struct ViewportBuffer {
+    glm::mat4x4 projectionMatrix;
+    float scaleFactor;
+    float _padding[3];
+};
+
 ViewportGUI::ViewportGUI(RenderContext& context) : m_Owner(&context) {
-    m_Viewport = glm::vec4(-1.0f, 1.0f, -1.0f, 1.0f);
-    m_Matrix = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f);
+    m_ViewportBuffer = context.allocateUniformBuffer(sizeof(ViewportBuffer));
 
-    m_ViewportBuffer = std::shared_ptr<buffer::UniformBuffer>(context.allocateUniformBuffer(sizeof(glm::mat4)));
-    m_ViewportBuffer->write(0, &m_Matrix, sizeof(glm::mat4));
+    RenderContext::ResizeCallback callback = [this](uint32_t w, uint32_t h){
+        float scalefac = 100.0f / 500.0f;
+        float width = static_cast<float>(w);
+        float height = static_cast<float>(h);
 
-    m_Owner->setResizeCallback([this](uint32_t width, uint32_t height){
-        /*float aspectRatio = 1080.0f / 1920.0f;
         m_Viewport = glm::vec4(-1.0f, 1.0f, -1.0f, 1.0f);
-        m_Matrix = glm::ortho(-1.0f, 1.0f, -1.0f * aspectRatio, 1.0f * aspectRatio);
+        m_Matrix = glm::ortho(-width/scalefac, width/scalefac, -height/scalefac, height/scalefac);
 
-        m_ViewportBuffer->write(0, &m_Matrix, sizeof(glm::mat4));*/
-        LOG_INFO("Resize Callback: [{}, {}]", width, height);
-    });
+        m_Matrix = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f);
+        ViewportBuffer buffer{m_Matrix, scalefac};
+
+        m_ViewportBuffer->write(0, &buffer, sizeof(ViewportBuffer));
+    };
+
+    auto [width, height] = context.getSwapchain().getSize();
+    std::invoke(callback, width, height);
+    m_Owner->addResizeCallback(std::move(callback));
 }
 
 std::pair<float, float> ViewportGUI::getMousePosition() const {

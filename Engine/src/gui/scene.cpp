@@ -6,7 +6,7 @@
 namespace engine::gui {
 
 Scene::Scene(render::RenderContext& context) : m_Context(&context), m_Gui() {
-    m_Context->setMouseCallback([this](input::MouseButton button, input::MouseButtonAction action) { this->onMouseAction(button, action); });
+    m_Context->addMouseCallback([this](input::MouseButton button, input::MouseButtonAction action) { this->onMouseAction(button, action); });
     m_CommandBuffer = context.getThreadCommandPool().allocateDirectCommandBuffer();
 }
 

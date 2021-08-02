@@ -25,7 +25,7 @@ struct AsciiTable {
     AsciiVertex data[256];
 };
 
-StringOptions::StringOptions() : color({1.0f, 1.0f, 1.0f, 1.0f}), scale(0.00428f), center(false), shadow(false) {}
+StringOptions::StringOptions() : StringOptions(1.0f, 1.0f, 1.0f, 1.0f, false, false) {}
 StringOptions::StringOptions(float r, float g, float b, float a, bool center, bool shadow, float scale) : color({r, g, b, a}), scale(scale), center(center), shadow(shadow) {}
 
 FontRenderer::FontRenderer(render::RenderContext& context, const File& glyphSizesPath, const Directory& resourceDirectory) : m_Owner(&context) {
@@ -40,7 +40,8 @@ FontRenderer::FontRenderer(render::RenderContext& context, const File& glyphSize
 
     File asciiImage(resourceDirectory.getPath() + "/ascii.png");
 
-    m_AsciiImage = context.createImage(asciiImage);
+    static render::buffer::Image::SamplerOptions samplerOptions(render::buffer::Image::Filter::NEAREST, render::buffer::Image::Filter::NEAREST);
+    m_AsciiImage = context.createImage(asciiImage, samplerOptions);
     auto[width, height] = m_AsciiImage->getSize();
     MCE_LOG_DEBUG("ASCII Font Sheet Size: {}x{}", width, height);
 
@@ -148,8 +149,8 @@ void FontRenderer::drawCached(render::command::IDrawableCommandBuffer& commandBu
 void FontRenderer::drawDynamic(render::command::IDrawableCommandBuffer& commandBuffer, const FontRenderer::StringView& string, float x, float y, const StringOptions& renderOptions) {
     if (renderOptions.shadow) {
         static StringOptions shadowOptions(15.0f / 255.0f, 15.0f / 255.0f, 15.0f / 255.0f, 1.0f, renderOptions.center);
-        constexpr float positionOffsetX = 0.0040f;
-        constexpr float positionOffsetY = 0.0035f;
+        constexpr float positionOffsetX = 0.0020f;
+        constexpr float positionOffsetY = 0.0040f;
 
         drawDynamic(commandBuffer, string, x + positionOffsetX, y - positionOffsetY, shadowOptions);
     }

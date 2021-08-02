@@ -56,11 +56,12 @@ public:
     [[nodiscard]] virtual Window& getWindow() = 0;
     [[nodiscard]] virtual const Window& getWindow() const = 0;
 
-    virtual void setResizeCallback(ResizeCallback callback) = 0;
-    virtual void setMouseCallback(MouseCallback callback) = 0;
+    virtual void addResizeCallback(ResizeCallback callback) = 0;
+    virtual void addMouseCallback(MouseCallback callback) = 0;
 
     // Callback functions
     virtual void mouseButtonCallback(gui::input::MouseButton button, gui::input::MouseButtonAction action, double x, double y) = 0;
+    virtual void windowResizeCallback(uint32_t width, uint32_t height) = 0;
 protected:
     RenderContext() = default;
 };

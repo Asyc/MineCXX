@@ -18,7 +18,7 @@ void tickFps();
 const std::u16string& getFpsString();
 
 void app_main() {
-    Window window(1920, 1080, "Window");
+    Window window(1280, 720, "Window");
 
     auto context = window.createRenderContext(Swapchain::SwapchainMode::TRIPLE_BUFFER);
     auto pipeline = context->createRenderPipeline(engine::File("assets/shaders/basic"));

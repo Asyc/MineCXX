@@ -9,14 +9,12 @@ layout (std140, push_constant) uniform PushConstantBlock {
     vec2 texPos[4];
 } push_constants;
 
-layout (set = 0, binding = 0) uniform Viewport {
+layout (std140, set = 0, binding = 0) uniform Viewport {
     mat4 projection_matrix;
+    float scale_factor;
 } viewport;
 
 void main() {
     vs_TexPos = push_constants.texPos[gl_VertexIndex];
-
-    // Align black outline
-
-    gl_Position = viewport.projection_matrix * vec4(pos, 0.0f, 1.0f);
+    gl_Position = viewport.projection_matrix * vec4(pos.xy, 0.0f, 1.0f);
 }

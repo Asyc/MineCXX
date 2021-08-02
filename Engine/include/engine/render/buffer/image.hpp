@@ -25,10 +25,7 @@ public:
         Filter minFilter, magFilter;
         RepeatMode repeatX, repeatY;
 
-        SamplerOptions(Filter minFilter, Filter magFilter, RepeatMode repeatX, RepeatMode repeatY) : minFilter(minFilter), magFilter(magFilter), repeatX(repeatX), repeatY(repeatY) {}
-        SamplerOptions() : SamplerOptions(Filter::NEAREST, Filter::NEAREST, RepeatMode::REPEAT, RepeatMode::REPEAT) {}
-
-
+        SamplerOptions(Filter minFilter = Filter::NEAREST, Filter magFilter = Filter::LINEAR, RepeatMode repeatX = RepeatMode::REPEAT, RepeatMode repeatY = RepeatMode::REPEAT) : minFilter(minFilter), magFilter(magFilter), repeatX(repeatX), repeatY(repeatY) {}
     };
 
     ~Image() override = default;
