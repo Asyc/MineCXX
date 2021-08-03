@@ -18,14 +18,14 @@ ViewportGUI::ViewportGUI(RenderContext& context) : m_Owner(&context) {
     m_ViewportBuffer = context.allocateUniformBuffer(sizeof(ViewportBuffer));
 
     RenderContext::ResizeCallback callback = [this](uint32_t w, uint32_t h){
-        float scalefac = 100.0f / 500.0f;
-        float width = static_cast<float>(w);
-        float height = static_cast<float>(h);
+        float scalefac = 030.f;
+        auto width = static_cast<float>(w);
+        auto height = static_cast<float>(h);
 
         m_Viewport = glm::vec4(-1.0f, 1.0f, -1.0f, 1.0f);
         m_Matrix = glm::ortho(-width/scalefac, width/scalefac, -height/scalefac, height/scalefac);
 
-        m_Matrix = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f);
+        //m_Matrix = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f);
         ViewportBuffer buffer{m_Matrix, scalefac};
 
         m_ViewportBuffer->write(0, &buffer, sizeof(ViewportBuffer));

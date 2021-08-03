@@ -65,7 +65,6 @@ ElementButton::ElementButton(render::RenderContext& context, float x, float y, f
     using engine::render::buffer::Image;
     Image::SamplerOptions samplerOptions(Image::Filter::NEAREST, Image::Filter::NEAREST, Image::RepeatMode::CLAMP_TO_EDGE, Image::RepeatMode::CLAMP_TO_BORDER);
 
-
     m_Image = context.createImage(NamespaceFile("minecraft", "textures/gui/widgets.png"), samplerOptions);
     m_Pipeline = context.createRenderPipeline(File("assets/shaders/gui/button"));
     m_UniformDescriptorSet = m_Pipeline->allocateDescriptorSet(0);
@@ -99,7 +98,6 @@ ElementButton::ElementButton(render::RenderContext& context, float x, float y, f
     float tY = pixelUnitY * static_cast<float>(66.0f);
     float tWidth = pixelUnitX * static_cast<float>(200.0f);
     float tHeight = pixelUnitY * static_cast<float>(20.0f);
-
 
     m_TextureData.standard[0] = {tX, tY};
     m_TextureData.standard[1] = {tX, tY + tHeight};

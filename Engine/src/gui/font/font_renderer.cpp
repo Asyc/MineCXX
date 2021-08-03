@@ -174,7 +174,7 @@ void FontRenderer::drawDynamic(render::command::IDrawableCommandBuffer& commandB
         commandBuffer.bindUniformDescriptor(*it->second.uniformDescriptor);
     }
 
-    std::array<float, 2> data = {x, y};
+    std::array<float, 2> data = {x / 1920.0f, y / 1080.0f};
     commandBuffer.pushConstants(render::command::PushConstantUsage::VERTEX, 0, data.data(), data.size() * sizeof(float));
 
     size_t drawCalls = std::ceil(string.size() / MAX_CHARACTERS);

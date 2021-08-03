@@ -17,6 +17,11 @@ layout (push_constant) uniform PushConstantBlock {
     layout (offset = 8) uint string[MAX_CHARACTERS];
 } push_constants;
 
+layout (set = 0, binding = 0) uniform Viewport {
+    mat4 projectionMatrix;
+    float scaleFactor;
+} viewport;
+
 layout (std140, set = 0, binding = 1) uniform AsciiTable {
     AsciiNode ascii_table[256];
 };
@@ -58,10 +63,8 @@ void main() {
 
         float whRatio = character.size.y / character.size.x;
 
-        float scale = string_options.scale;
-
-        float width = character.size.x * scale * 0.5f;
-        float height = character.size.y * scale;
+        float width = character.size.x * 0.5f;
+        float height = character.size.y;
 
         float texPosX = character.texPos.x;
         float texPosY = character.texPos.y;
@@ -69,27 +72,27 @@ void main() {
         float texPosWidth = character.texPos.z;
         float texPosHeight = character.texPos.w;
 
-        gl_Position = vec4(renderOrigin, 0.0f, 1.0f);// Top-Left
+        gl_Position = viewport.projectionMatrix * vec4(renderOrigin, 0.0f, 1.0f);// Top-Left
         gs_TexPos = vec2(texPosX, texPosY);
         EmitVertex();
 
-        gl_Position = vec4(renderOrigin.x, renderOrigin.y - height, 0.0f, 1.0f);// Bottom-Left
+        gl_Position = viewport.projectionMatrix * vec4(renderOrigin.x, renderOrigin.y - height, 0.0f, 1.0f);// Bottom-Left
         gs_TexPos = vec2(texPosX, texPosY + texPosHeight);
         EmitVertex();
 
-        gl_Position = vec4(renderOrigin.x + width, renderOrigin.y - height, 0.0f, 1.0f);// Bottom Right
+        gl_Position = viewport.projectionMatrix * vec4(renderOrigin.x + width, renderOrigin.y - height, 0.0f, 1.0f);// Bottom Right
         gs_TexPos = vec2(texPosX + texPosWidth, texPosY + texPosHeight);
         EmitVertex();
 
-        gl_Position = vec4(renderOrigin, 0.0f, 1.0f);// Top-Left
+        gl_Position = viewport.projectionMatrix * vec4(renderOrigin, 0.0f, 1.0f);// Top-Left
         gs_TexPos = vec2(texPosX, texPosY);
         EmitVertex();
 
-        gl_Position = vec4(renderOrigin.x + width, renderOrigin.y, 0.0f, 1.0f);// Top Right
+        gl_Position = viewport.projectionMatrix * vec4(renderOrigin.x + width, renderOrigin.y, 0.0f, 1.0f);// Top Right
         gs_TexPos = vec2(texPosX + texPosWidth, texPosY);
         EmitVertex();
 
-        gl_Position = vec4(renderOrigin.x + width, renderOrigin.y - height, 0.0f, 1.0f);// Bottom Right
+        gl_Position = viewport.projectionMatrix * vec4(renderOrigin.x + width, renderOrigin.y - height, 0.0f, 1.0f);// Bottom Right
         gs_TexPos = vec2(texPosX + texPosWidth, texPosY + texPosHeight);
         EmitVertex();
 

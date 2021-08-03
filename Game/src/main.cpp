@@ -18,17 +18,14 @@ void tickFps();
 const std::u16string& getFpsString();
 
 void app_main() {
+
     Window window(1280, 720, "Window");
 
     auto context = window.createRenderContext(Swapchain::SwapchainMode::TRIPLE_BUFFER);
-    auto pipeline = context->createRenderPipeline(engine::File("assets/shaders/basic"));
     auto pool = context->createCommandPool();
-
-    auto texture = context->createImage(engine::File(R"(C:\Users\Asyc\Downloads\hippo.jpg)"));
-    auto uniformDescriptorSet = pipeline->allocateDescriptorSet(0);
-    uniformDescriptorSet->bind(0, *texture);
-
     auto font = pool->allocateDirectCommandBuffer();
+
+    
 
     engine::gui::Scene scene(*context);
     scene.setGui<MainMenu>();
@@ -46,7 +43,7 @@ void app_main() {
         // Submission
         context->getSwapchain().submitCommandBuffer(*font);
         context->getSwapchain().nextImage();
-
+        
         tickFps();
     }
 }

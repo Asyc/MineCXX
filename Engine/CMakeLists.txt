@@ -20,7 +20,7 @@ set(HEADERS
         include/engine/gui/font/ascii_font.hpp
         include/engine/gui/scene.hpp
         include/engine/gui/element/element.hpp
-        include/engine/render/viewport.hpp)
+        include/engine/render/viewport.hpp include/engine/math.hpp)
 
 set(SOURCES
         src/engine.cpp
@@ -37,7 +37,7 @@ set(SOURCES
         include/engine/render/descriptor.hpp
         src/gui/scene.cpp
         src/gui/element.cpp
-        src/render/viewport.cpp)
+        src/render/viewport.cpp include/engine/event/event.hpp include/engine/event/event.cpp)
 
 add_library(libengine STATIC ${HEADERS} ${SOURCES})
 

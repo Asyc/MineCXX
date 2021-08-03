@@ -10,11 +10,13 @@ layout (std140, push_constant) uniform PushConstantBlock {
 } push_constants;
 
 layout (std140, set = 0, binding = 0) uniform Viewport {
-    mat4 projection_matrix;
-    float scale_factor;
+    mat4 projectionMatrix;
+    float scaleFactor;
 } viewport;
 
 void main() {
     vs_TexPos = push_constants.texPos[gl_VertexIndex];
-    gl_Position = viewport.projection_matrix * vec4(pos.xy, 0.0f, 1.0f);
+
+    vec3 scaledPosition = vec3(pos, 0.0f) * vec3(viewport.scaleFactor);
+    gl_Position = vec4(pos, 0.0f, 1.0f);
 }

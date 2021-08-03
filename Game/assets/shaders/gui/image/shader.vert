@@ -6,8 +6,9 @@ layout (location = 1) in vec2 texPos;
 
 layout (location = 0) out vec2 vs_TexPos;
 
-layout (set = 0, binding = 0) uniform Viewport {
+layout (std140, set = 0, binding = 0) uniform Viewport {
     mat4 projection_matrix;
+    float scaleFactor;
 } viewport;
 
 layout (push_constant) uniform PushConstantBlock {
@@ -19,6 +20,7 @@ void main() {
 
     vec4 position = vec4(pos, 0.0f, 1.0f);
     if (push_constants.viewportAdjust) {
+        position.xy *= viewport.scaleFactor;
         position = viewport.projection_matrix * position;
     }
 
