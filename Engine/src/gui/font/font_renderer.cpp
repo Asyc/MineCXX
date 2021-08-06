@@ -61,10 +61,10 @@ FontRenderer::FontRenderer(render::RenderContext& context, const File& glyphSize
         float ty = pixelUnitY * static_cast<float>(pixelY);
 
         float tWidth = pixelUnitX * static_cast<float>(node.width);
-        float tHeight = pixelUnitY * static_cast<float>(FONT_HEIGHT);
+        float tHeight = pixelUnitY * static_cast<float>(7.5);
 
         auto horizontalWidth = static_cast<float>(node.width) * scale;
-        table.data[resolveIndex(node.value)] = AsciiVertex{{tx, ty, tWidth, tHeight}, {horizontalWidth, FONT_HEIGHT * scale}};    // Top-Left
+        table.data[resolveIndex(node.value)] = AsciiVertex{{tx, ty, tWidth, tHeight}, {horizontalWidth, 8 * scale}};    // Top-Left
     }
 
     m_AsciiTableUniformBuffer->write(0, &table, sizeof(AsciiTable));
@@ -83,7 +83,7 @@ FontRenderer::FontRenderer(render::RenderContext& context, const File& glyphSize
 void FontRenderer::drawCached(render::command::IDrawableCommandBuffer& commandBuffer, const FontRenderer::String& string, float x, float y, const StringOptions& renderOptions) {
     constexpr size_t MAX_CHARACTERS = 18;   // Due to total output components available in the geometry shader.
     if (renderOptions.shadow) {
-        static StringOptions shadowOptions(15.0f / 255.0f, 15.0f / 255.0f, 15.0f / 255.0f, 1.0f, renderOptions.center);
+        static StringOptions shadowOptions(56.0f / 255.0f, 56.0f / 255.0f, 56.0f / 255.0f, 1.0f, renderOptions.center);
         constexpr float positionOffsetX = 0.0040f;
         constexpr float positionOffsetY = 0.0035f;
 
@@ -150,8 +150,8 @@ void FontRenderer::drawCached(render::command::IDrawableCommandBuffer& commandBu
 void FontRenderer::drawDynamic(render::command::IDrawableCommandBuffer& commandBuffer, const FontRenderer::StringView& string, float x, float y, const StringOptions& renderOptions) {
     if (renderOptions.shadow) {
         static StringOptions shadowOptions(15.0f / 255.0f, 15.0f / 255.0f, 15.0f / 255.0f, 1.0f, renderOptions.center);
-        constexpr float positionOffsetX = 0.20f * 30.0f;
-        constexpr float positionOffsetY = 0.15f * 30.0f;
+        constexpr float positionOffsetX = 0.006;
+        constexpr float positionOffsetY = 0.005;
 
         drawDynamic(commandBuffer, string, x + positionOffsetX, y - positionOffsetY, shadowOptions);
     }

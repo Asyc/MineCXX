@@ -128,7 +128,9 @@ void ElementButton::draw(render::command::IDrawableCommandBuffer& buffer) {
         float x = m_Position.w / 2.0f + m_Position.x;
         float y = m_Position.y - m_Position.h / 4.0f;
 
-        engine::gui::font::StringOptions stringOptions(1.0f, 1.0f, 1.0f, 1.0f, true, true);
+        float color = 224.0f / 255.0f;
+
+        engine::gui::font::StringOptions stringOptions(color, color, color, 1.0f, true, true);
 
         m_Context->getFontRenderer().drawDynamic(buffer, m_Text, x, y, stringOptions);
     }
