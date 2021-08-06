@@ -20,6 +20,11 @@ public:
 
     [[nodiscard]] const std::shared_ptr<buffer::UniformBuffer>& getUniformBuffer() const { return m_ViewportBuffer; }
     [[nodiscard]] const glm::mat4& getMatrix() const { return m_Matrix; }
+
+    float getLeft() const { return m_Viewport.x; }
+    float getRight() const { return m_Viewport.y; }
+    float getBottom() const { return m_Viewport.z; }
+    float getTop() const { return m_Viewport.w; }
 private:
     RenderContext* m_Owner;
 
@@ -27,6 +32,8 @@ private:
 
     glm::mat4 m_Matrix;
     glm::vec4 m_Viewport;
+
+    float m_ScaleFactor;
 };
 
 }

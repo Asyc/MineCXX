@@ -24,13 +24,12 @@ MainMenu::MainMenu(engine::render::RenderContext& context) {
 
     pushElement(std::make_unique<gui::ElementImage>(context, std::move(backgroundImage), -1.f, 1.0f, 2.0f, 2.0f, ElementImage::ImageRegion{0.0f, 0.0f, horizontalCount, verticalCount}, options));
 
-    float width = 0.4f, height = 0.2f;
-    pushElement(std::make_unique<gui::ElementImage>(context, image, -0.4f, 0.8f, width, height, ElementImage::ImageRegion{0.0f, 0.0f, 155.0f, 45.0f}));
-    pushElement(std::make_unique<gui::ElementImage>(context, image, 0.0f, 0.8f, width, height, ElementImage::ImageRegion{0.0f, 45.0f, 119.0f, 45.0f}));
+    float width = 0.6f, height = 0.2f;
+    pushElement(std::make_unique<gui::ElementImage>(context, image, -width, 0.7f, width, height, ElementImage::ImageRegion{0.0f, 0.0f, 155.0f, 45.0f}));
+    pushElement(std::make_unique<gui::ElementImage>(context, image, 0.0f, 0.7f, width, height, ElementImage::ImageRegion{0.0f, 45.0f, 119.0f, 45.0f}));
 
     float ratio = 20.0f / 200.0f;
     float w = 0.8f, h = ratio * w;
-    w = 0.5f;
 
     float y = 0.3f;
     float buttonOffset = h / 5.f;

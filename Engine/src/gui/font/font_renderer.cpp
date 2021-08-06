@@ -51,19 +51,20 @@ FontRenderer::FontRenderer(render::RenderContext& context, const File& glyphSize
     AsciiTable table{};
 
     for (const auto& node : ASCII_CHAR_SIZES) {
+        constexpr float scale = 0.00428f;
+        constexpr float FONT_HEIGHT = 8;
+
         size_t pixelX = node.x * 8;
         size_t pixelY = node.y * 8;
 
         float tx = pixelUnitX * static_cast<float>(pixelX);
         float ty = pixelUnitY * static_cast<float>(pixelY);
 
-        constexpr float FONT_HEIGHT = 8;
-
         float tWidth = pixelUnitX * static_cast<float>(node.width);
         float tHeight = pixelUnitY * static_cast<float>(FONT_HEIGHT);
 
-        auto horizontalWidth = static_cast<float>(node.width);
-        table.data[resolveIndex(node.value)] = AsciiVertex{{tx, ty, tWidth, tHeight}, {horizontalWidth, FONT_HEIGHT}};    // Top-Left
+        auto horizontalWidth = static_cast<float>(node.width) * scale;
+        table.data[resolveIndex(node.value)] = AsciiVertex{{tx, ty, tWidth, tHeight}, {horizontalWidth, FONT_HEIGHT * scale}};    // Top-Left
     }
 
     m_AsciiTableUniformBuffer->write(0, &table, sizeof(AsciiTable));
@@ -149,8 +150,8 @@ void FontRenderer::drawCached(render::command::IDrawableCommandBuffer& commandBu
 void FontRenderer::drawDynamic(render::command::IDrawableCommandBuffer& commandBuffer, const FontRenderer::StringView& string, float x, float y, const StringOptions& renderOptions) {
     if (renderOptions.shadow) {
         static StringOptions shadowOptions(15.0f / 255.0f, 15.0f / 255.0f, 15.0f / 255.0f, 1.0f, renderOptions.center);
-        constexpr float positionOffsetX = 0.0020f;
-        constexpr float positionOffsetY = 0.0040f;
+        constexpr float positionOffsetX = 0.20f * 30.0f;
+        constexpr float positionOffsetY = 0.15f * 30.0f;
 
         drawDynamic(commandBuffer, string, x + positionOffsetX, y - positionOffsetY, shadowOptions);
     }
@@ -174,7 +175,7 @@ void FontRenderer::drawDynamic(render::command::IDrawableCommandBuffer& commandB
         commandBuffer.bindUniformDescriptor(*it->second.uniformDescriptor);
     }
 
-    std::array<float, 2> data = {x / 1920.0f, y / 1080.0f};
+    std::array<float, 2> data = {x, y};
     commandBuffer.pushConstants(render::command::PushConstantUsage::VERTEX, 0, data.data(), data.size() * sizeof(float));
 
     size_t drawCalls = std::ceil(string.size() / MAX_CHARACTERS);

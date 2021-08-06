@@ -11,9 +11,10 @@
 #include "engine/render/command/command_buffer.hpp"
 
 namespace engine::gui::font {
+
 struct StringOptions {
     StringOptions();
-    StringOptions(float r, float g, float b, float a, bool center = false, bool shadow = false, float scale = 0.00428f);
+    StringOptions(float r, float g, float b, float a, bool center = false, bool shadow = false, float scale = 1.0f);
 
     struct {
         float r, g, b, a;
@@ -21,7 +22,7 @@ struct StringOptions {
 
     float scale;
     uint32_t center;
-    uint32_t shadow;    // // This field should not be sent to GPU, shadow handled with a double draw
+    uint32_t shadow;
     float _padding;
 
     bool operator==(const StringOptions& rhs) const {

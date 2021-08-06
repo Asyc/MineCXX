@@ -82,28 +82,31 @@ vk::UniqueInstance createInstance() {
         vk::ValidationFeatureEnableEXT::eDebugPrintf
     };
 
-    vk::StructureChain<vk::InstanceCreateInfo, vk::DebugUtilsMessengerCreateInfoEXT, vk::ValidationFeaturesEXT> structureChain{
-        instanceCreateInfo,
-        vk::DebugUtilsMessengerCreateInfoEXT({}, vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning, vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral, debugCallback, nullptr),
-        vk::ValidationFeaturesEXT(enabledValidationFeatures.size(), enabledValidationFeatures.data()),
-    };
-
     g_VulkanLogFile = std::make_shared<spdlog::sinks::basic_file_sink_mt>("logs/vulkan_latest.log");
     g_VulkanLogger = engine::logging::createLoggerDetached("Vulkan");
     g_VulkanLogger->sinks().push_back(g_VulkanLogFile);
 
-    vk::UniqueInstance instance = vk::createInstanceUnique(structureChain.get<vk::InstanceCreateInfo>());
-    VkInstance vulkanInstance = *instance;
-
-    vk::DebugUtilsMessageSeverityFlagsEXT severityFlags = vk::DebugUtilsMessageSeverityFlagBitsEXT::eError | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning;
+    vk::DebugUtilsMessageSeverityFlagsEXT severityFlags = vk::DebugUtilsMessageSeverityFlagBitsEXT::eError | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo;
     vk::DebugUtilsMessageTypeFlagsEXT typeFlags = vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation;
     VkDebugUtilsMessengerCreateInfoEXT createInfoExt = vk::DebugUtilsMessengerCreateInfoEXT({}, severityFlags, vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral, debugCallback, nullptr);
+
+    vk::StructureChain<vk::InstanceCreateInfo, vk::ValidationFeaturesEXT, vk::DebugUtilsMessengerCreateInfoEXT> structureChain{
+        instanceCreateInfo,
+        vk::ValidationFeaturesEXT(enabledValidationFeatures.size(), enabledValidationFeatures.data()),
+        vk::DebugUtilsMessengerCreateInfoEXT(createInfoExt),
+    };
+    vk::UniqueInstance instance = vk::createInstanceUnique(structureChain.get<vk::InstanceCreateInfo>());
+    VkInstance vulkanInstance = *instance;
 
     auto vkCreateDebugUtilsMessengerEXT = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(vulkanInstance, "vkCreateDebugUtilsMessengerEXT");
     vkCreateDebugUtilsMessengerEXT(vulkanInstance, &createInfoExt, nullptr, &g_DebugMessenger);
 
-    vk::DebugReportFlagsEXT
-        debugReportFlags = vk::DebugReportFlagBitsEXT::eWarning | vk::DebugReportFlagBitsEXT::ePerformanceWarning | vk::DebugReportFlagBitsEXT::eError | vk::DebugReportFlagBitsEXT::eDebug;
+    vk::DebugReportFlagsEXT debugReportFlags =
+        vk::DebugReportFlagBitsEXT::eWarning |
+        vk::DebugReportFlagBitsEXT::ePerformanceWarning |
+        vk::DebugReportFlagBitsEXT::eError |
+        vk::DebugReportFlagBitsEXT::eDebug |
+        vk::DebugReportFlagBitsEXT::eInformation;
     VkDebugReportCallbackCreateInfoEXT debugReportCallbackCreateInfo = vk::DebugReportCallbackCreateInfoEXT(debugReportFlags, vulkanDebugCallback, nullptr);
 
     auto vkCreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT) vkGetInstanceProcAddr(vulkanInstance, "vkCreateDebugReportCallbackEXT");

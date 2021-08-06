@@ -1,6 +1,7 @@
 #ifndef MINECRAFTCXX_CLIENT_ENGINE_INCLUDE_ENGINE_EVENT_EVENT_HPP_
 #define MINECRAFTCXX_CLIENT_ENGINE_INCLUDE_ENGINE_EVENT_EVENT_HPP_
 
+#include <functional>
 #include <memory>
 
 namespace engine {
@@ -20,23 +21,19 @@ private:
 };
 
 template <typename T>
-class _EventRegistry {
-
-};
-
-template <typename T>
-class EventConsumer {
+class EventRegistry {
 public:
-    virtual void consumeEvent(T& event) = 0;
+
 };
 
 class EventDispatcher {
 public:
     template <typename T>
-    void registerConsumer(const EventConsumer<T>) {}
+    void registerCallback(std::function<Event<T>> consumer) {}
 
     template <typename T>
     void dispatch(T& event);
+private:
 };
 
 }

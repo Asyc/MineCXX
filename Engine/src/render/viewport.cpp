@@ -18,16 +18,15 @@ ViewportGUI::ViewportGUI(RenderContext& context) : m_Owner(&context) {
     m_ViewportBuffer = context.allocateUniformBuffer(sizeof(ViewportBuffer));
 
     RenderContext::ResizeCallback callback = [this](uint32_t w, uint32_t h){
-        float scalefac = 030.f;
+        m_ScaleFactor = 30.0f;
+
         auto width = static_cast<float>(w);
         auto height = static_cast<float>(h);
 
-        m_Viewport = glm::vec4(-1.0f, 1.0f, -1.0f, 1.0f);
-        m_Matrix = glm::ortho(-width/scalefac, width/scalefac, -height/scalefac, height/scalefac);
+        m_Viewport = glm::vec4(-width/m_ScaleFactor, width/m_ScaleFactor, -height/m_ScaleFactor, height/m_ScaleFactor);
+        m_Matrix = glm::ortho(-width/m_ScaleFactor, width/m_ScaleFactor, -height/m_ScaleFactor, height/m_ScaleFactor);
 
-        //m_Matrix = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f);
-        ViewportBuffer buffer{m_Matrix, scalefac};
-
+        ViewportBuffer buffer{m_Matrix, m_ScaleFactor};
         m_ViewportBuffer->write(0, &buffer, sizeof(ViewportBuffer));
     };
 
@@ -51,6 +50,9 @@ std::pair<float, float> ViewportGUI::getMousePosition() const {
 
     float viewportMouseX = viewportX + (viewportWidth * normalizedMouseX);
     float viewportMouseY = viewportY - (viewportHeight * normalizedMouseY); // Mouse Coordinates go top-down
+
+    viewportMouseX /= m_ScaleFactor;
+    viewportMouseY /= m_ScaleFactor;
 
     return {viewportMouseX, viewportMouseY};
 }

@@ -36,24 +36,37 @@ uint map(uint value);
 
 vec2 getStringSize() {
     float totalWidth = 0.0f;
+    float maxHeight = 0.0f;
+
     for (int i = 0; i < MAX_CHARACTERS; i++) {
         uint codepoint = push_constants.string[i];
         if (codepoint == 0) break;
+
         AsciiNode character = ascii_table[map(codepoint)];
-        float width = character.size.x * string_options.scale * 0.5f;
+        float width = character.size.x;
         totalWidth += width;
+
+        maxHeight = max(maxHeight, character.size.y);
     }
 
-    return vec2(totalWidth, 8.0f * string_options.scale);
+    return vec2(totalWidth, maxHeight) * vec2(string_options.scale);
+}
+
+void emitVertexData(vec2 pos, vec2 texPos) {
+    vec2 offsetPos = vec2(gl_in[0].gl_Position.x + pos.x, gl_in[0].gl_Position.y + pos.y);
+
+    gl_Position = viewport.projectionMatrix * vec4(offsetPos * vec2(viewport.scaleFactor), 0.0f, 1.0f);
+    gs_TexPos = texPos;
+    EmitVertex();
 }
 
 void main() {
-    vec2 renderOrigin = vec2(gl_in[0].gl_Position.xy);
+    vec2 renderOrigin = vec2(0.0f);
     if (string_options.center) {
         vec2 stringSize = getStringSize();
-        renderOrigin.x -= stringSize.x / 2.0f;
-        //renderOrigin.y -= stringSize.y / 4.0f;
+        renderOrigin.x -= stringSize.x / 2;
     }
+
 
     for (int i = 0; i < MAX_CHARACTERS; i++) {
         uint codepoint = push_constants.string[i];
@@ -61,10 +74,8 @@ void main() {
 
         AsciiNode character = ascii_table[map(codepoint)];
 
-        float whRatio = character.size.y / character.size.x;
-
-        float width = character.size.x * 0.5f;
-        float height = character.size.y;
+        float width = character.size.x * string_options.scale;
+        float height = character.size.y * string_options.scale;
 
         float texPosX = character.texPos.x;
         float texPosY = character.texPos.y;
@@ -72,29 +83,12 @@ void main() {
         float texPosWidth = character.texPos.z;
         float texPosHeight = character.texPos.w;
 
-        gl_Position = viewport.projectionMatrix * vec4(renderOrigin, 0.0f, 1.0f);// Top-Left
-        gs_TexPos = vec2(texPosX, texPosY);
-        EmitVertex();
-
-        gl_Position = viewport.projectionMatrix * vec4(renderOrigin.x, renderOrigin.y - height, 0.0f, 1.0f);// Bottom-Left
-        gs_TexPos = vec2(texPosX, texPosY + texPosHeight);
-        EmitVertex();
-
-        gl_Position = viewport.projectionMatrix * vec4(renderOrigin.x + width, renderOrigin.y - height, 0.0f, 1.0f);// Bottom Right
-        gs_TexPos = vec2(texPosX + texPosWidth, texPosY + texPosHeight);
-        EmitVertex();
-
-        gl_Position = viewport.projectionMatrix * vec4(renderOrigin, 0.0f, 1.0f);// Top-Left
-        gs_TexPos = vec2(texPosX, texPosY);
-        EmitVertex();
-
-        gl_Position = viewport.projectionMatrix * vec4(renderOrigin.x + width, renderOrigin.y, 0.0f, 1.0f);// Top Right
-        gs_TexPos = vec2(texPosX + texPosWidth, texPosY);
-        EmitVertex();
-
-        gl_Position = viewport.projectionMatrix * vec4(renderOrigin.x + width, renderOrigin.y - height, 0.0f, 1.0f);// Bottom Right
-        gs_TexPos = vec2(texPosX + texPosWidth, texPosY + texPosHeight);
-        EmitVertex();
+        emitVertexData(renderOrigin, character.texPos.xy);                                                                                 // Top-Left
+        emitVertexData(vec2(renderOrigin.x, renderOrigin.y - height), vec2(texPosX, texPosY + texPosHeight));                           // Bottom-Left
+        emitVertexData(vec2(renderOrigin.x + width, renderOrigin.y - height), vec2(texPosX + texPosWidth, texPosY + texPosHeight));     // Bottom-Right
+        emitVertexData(renderOrigin, character.texPos.xy);                                                                                 // Top-Left
+        emitVertexData(vec2(renderOrigin.x + width, renderOrigin.y), vec2(texPosX + texPosWidth, texPosY));                             // Top-Right
+        emitVertexData(vec2(renderOrigin.x + width, renderOrigin.y - height), vec2(texPosX + texPosWidth, texPosY + texPosHeight));     // Bottom-Right
 
         EndPrimitive();
         renderOrigin.x += width;

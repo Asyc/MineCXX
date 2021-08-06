@@ -18,5 +18,5 @@ void main() {
     vs_TexPos = push_constants.texPos[gl_VertexIndex];
 
     vec3 scaledPosition = vec3(pos, 0.0f) * vec3(viewport.scaleFactor);
-    gl_Position = vec4(pos, 0.0f, 1.0f);
+    gl_Position = viewport.projectionMatrix * vec4(scaledPosition, 1.0f);
 }

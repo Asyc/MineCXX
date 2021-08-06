@@ -256,8 +256,6 @@ VulkanProgram::VulkanProgram(vk::Device device, const std::string_view& program)
     parseShader(fragmentSPV, setBindingTable, pushConstantRanges);
     if (hasGeometry) parseShader(geometrySPV, setBindingTable, pushConstantRanges);
 
-
-
     size_t setIndex = 0;
     for (auto& bindings : setBindingTable) {
         uint32_t maxBinding = -1;
