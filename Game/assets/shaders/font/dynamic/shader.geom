@@ -83,12 +83,12 @@ void main() {
         float texPosWidth = character.texPos.z;
         float texPosHeight = character.texPos.w;
 
-        emitVertexData(renderOrigin, character.texPos.xy);                                                                                 // Top-Left
-        emitVertexData(vec2(renderOrigin.x, renderOrigin.y - height), vec2(texPosX, texPosY + texPosHeight));                           // Bottom-Left
-        emitVertexData(vec2(renderOrigin.x + width, renderOrigin.y - height), vec2(texPosX + texPosWidth, texPosY + texPosHeight));     // Bottom-Right
-        emitVertexData(renderOrigin, character.texPos.xy);                                                                                 // Top-Left
-        emitVertexData(vec2(renderOrigin.x + width, renderOrigin.y), vec2(texPosX + texPosWidth, texPosY));                             // Top-Right
-        emitVertexData(vec2(renderOrigin.x + width, renderOrigin.y - height), vec2(texPosX + texPosWidth, texPosY + texPosHeight));     // Bottom-Right
+        emitVertexData(renderOrigin, character.texPos.xy);// Top-Left
+        emitVertexData(vec2(renderOrigin.x, renderOrigin.y - height), vec2(texPosX, texPosY + texPosHeight));// Bottom-Left
+        emitVertexData(vec2(renderOrigin.x + width, renderOrigin.y - height), vec2(texPosX + texPosWidth, texPosY + texPosHeight));// Bottom-Right
+        emitVertexData(renderOrigin, character.texPos.xy);// Top-Left
+        emitVertexData(vec2(renderOrigin.x + width, renderOrigin.y), vec2(texPosX + texPosWidth, texPosY));// Top-Right
+        emitVertexData(vec2(renderOrigin.x + width, renderOrigin.y - height), vec2(texPosX + texPosWidth, texPosY + texPosHeight));// Bottom-Right
 
         EndPrimitive();
         renderOrigin.x += width;

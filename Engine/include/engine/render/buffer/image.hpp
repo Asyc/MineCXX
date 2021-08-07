@@ -9,33 +9,34 @@
 namespace engine::render::buffer {
 
 class Image : public IDescriptorResource {
-public:
-    enum class Filter {
-        LINEAR,
-        NEAREST
-    };
+ public:
+  enum class Filter {
+    LINEAR,
+    NEAREST
+  };
 
-    enum class RepeatMode {
-        REPEAT,
-        CLAMP_TO_BORDER,
-        CLAMP_TO_EDGE
-    };
+  enum class RepeatMode {
+    REPEAT,
+    CLAMP_TO_BORDER,
+    CLAMP_TO_EDGE
+  };
 
-    struct SamplerOptions {
-        Filter minFilter, magFilter;
-        RepeatMode repeatX, repeatY;
+  struct SamplerOptions {
+    Filter minFilter, magFilter;
+    RepeatMode repeatX, repeatY;
 
-        SamplerOptions(Filter minFilter = Filter::NEAREST, Filter magFilter = Filter::LINEAR, RepeatMode repeatX = RepeatMode::REPEAT, RepeatMode repeatY = RepeatMode::REPEAT) : minFilter(minFilter), magFilter(magFilter), repeatX(repeatX), repeatY(repeatY) {}
-    };
+    SamplerOptions(Filter minFilter = Filter::NEAREST, Filter magFilter = Filter::LINEAR, RepeatMode repeatX = RepeatMode::REPEAT, RepeatMode repeatY = RepeatMode::REPEAT)
+        : minFilter(minFilter), magFilter(magFilter), repeatX(repeatX), repeatY(repeatY) {}
+  };
 
-    ~Image() override = default;
+  ~Image() override = default;
 
-    [[nodiscard]] virtual size_t getWidth() const = 0;
-    [[nodiscard]] virtual size_t getHeight() const = 0;
+  [[nodiscard]] virtual size_t getWidth() const = 0;
+  [[nodiscard]] virtual size_t getHeight() const = 0;
 
-    [[nodiscard]] std::pair<size_t, size_t> getSize() const { return {getWidth(), getHeight()}; }
-protected:
-    Image() = default;
+  [[nodiscard]] std::pair<size_t, size_t> getSize() const { return {getWidth(), getHeight()}; }
+ protected:
+  Image() = default;
 };
 
 }

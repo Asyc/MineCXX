@@ -15,24 +15,27 @@ namespace engine::vulkan::render::buffer {
 using namespace ::engine::render::buffer;
 
 class VulkanImage : public Image, public IVulkanDescriptorResource {
-public:
-    VulkanImage(VulkanTransferManager* transferManager, VmaAllocator allocator, const File& path, const SamplerOptions& samplerOptions);
+ public:
+  VulkanImage(VulkanTransferManager* transferManager, VmaAllocator allocator, const File& path, const SamplerOptions& samplerOptions);
+  VulkanImage(VulkanTransferManager* transferManager, VmaAllocator allocator, void* buffer, uint32_t width, uint32_t height, const SamplerOptions& samplerOptions);
 
-    [[nodiscard]] size_t getWidth() const override { return m_Width; }
-    [[nodiscard]] size_t getHeight() const override { return m_Height; }
+  [[nodiscard]] size_t getWidth() const override { return m_Width; }
+  [[nodiscard]] size_t getHeight() const override { return m_Height; }
 
-    [[nodiscard]] vk::DescriptorType getDescriptorType() const override { return vk::DescriptorType::eCombinedImageSampler; }
-    [[nodiscard]] vk::Sampler getSampler() const override { return *m_Sampler; }
-    [[nodiscard]] vk::ImageView getImageView() const override { return *m_ImageView; }
-private:
-    vk::Image m_Image;
-    size_t m_Width, m_Height;
+  [[nodiscard]] vk::DescriptorType getDescriptorType() const override { return vk::DescriptorType::eCombinedImageSampler; }
+  [[nodiscard]] vk::Sampler getSampler() const override { return *m_Sampler; }
+  [[nodiscard]] vk::ImageView getImageView() const override { return *m_ImageView; }
+ private:
+  friend void createImage(VmaAllocator allocator, VulkanTransferManager* transferManager, VulkanImage* handle, const void* buffer, const SamplerOptions& samplerOptions);
 
-    std::unique_ptr<VmaAllocation_T, std::function<void(VmaAllocation)>> m_Allocation;
-    vk::UniqueDescriptorSet m_DescriptorSet;
+  vk::Image m_Image;
+  size_t m_Width, m_Height;
 
-    vk::UniqueImageView m_ImageView;
-    vk::UniqueSampler m_Sampler;
+  std::unique_ptr<VmaAllocation_T, std::function<void(VmaAllocation)>> m_Allocation;
+  vk::UniqueDescriptorSet m_DescriptorSet;
+
+  vk::UniqueImageView m_ImageView;
+  vk::UniqueSampler m_Sampler;
 };
 
 }   // namespace engine::render::vulkan

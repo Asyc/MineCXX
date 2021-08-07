@@ -15,18 +15,18 @@ namespace engine::vulkan::render::buffer {
 using namespace ::engine::render::buffer;
 
 class VulkanIndexBuffer : public IndexBuffer {
-public:
-    VulkanIndexBuffer(VulkanTransferManager* transferManager, VmaAllocator allocator, size_t size);
+ public:
+  VulkanIndexBuffer(VulkanTransferManager* transferManager, VmaAllocator allocator, size_t size);
 
-    void write(size_t offset, const uint32_t* ptr, size_t length) override;
+  void write(size_t offset, const uint32_t* ptr, size_t length) override;
 
-    [[nodiscard]] vk::Buffer getBuffer() const;
-private:
-    vk::Buffer m_Buffer;
-    std::unique_ptr<VmaAllocation_T, std::function<void(VmaAllocation)>> m_Allocation;
-    VmaAllocationInfo m_AllocationInfo;
+  [[nodiscard]] vk::Buffer getBuffer() const;
+ private:
+  vk::Buffer m_Buffer;
+  std::unique_ptr<VmaAllocation_T, std::function<void(VmaAllocation)>> m_Allocation;
+  VmaAllocationInfo m_AllocationInfo;
 
-    VulkanTransferManager* m_TransferManager;
+  VulkanTransferManager* m_TransferManager;
 };
 
 }   // namespace engine::vulkan::render::buffer

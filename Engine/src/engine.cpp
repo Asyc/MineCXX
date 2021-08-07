@@ -18,18 +18,18 @@ void initAsciiIndexes();
 }
 
 void init() {
-    gui::font::initAsciiIndexes();
+  gui::font::initAsciiIndexes();
 
-    logging::setupLogging();
+  logging::setupLogging();
 
-    glfwInit();
+  glfwInit();
 
 }
 
 void terminate() {
-    glfwTerminate();
+  glfwTerminate();
 
-    logging::terminateLogging();
+  logging::terminateLogging();
 }
 
 }   // namespace engine

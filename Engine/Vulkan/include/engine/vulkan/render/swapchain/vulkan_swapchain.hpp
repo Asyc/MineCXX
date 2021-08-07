@@ -17,54 +17,54 @@ using namespace ::engine::render;
 using namespace ::engine::render::command;
 
 class VulkanSwapchain : public Swapchain {
-public:
-    VulkanSwapchain(SwapchainMode modeHint, vk::SurfaceKHR surface, vk::PhysicalDevice, device::VulkanDevice* device, const device::VulkanQueueManager& queueManager);
-    ~VulkanSwapchain() override;
+ public:
+  VulkanSwapchain(SwapchainMode modeHint, vk::SurfaceKHR surface, vk::PhysicalDevice, device::VulkanDevice* device, const device::VulkanQueueManager& queueManager);
+  ~VulkanSwapchain() override;
 
-    void nextImage() override;
+  void nextImage() override;
 
-    void submitCommandBuffer(const DirectCommandBuffer& buffer) override;
-    void submitCommandBuffer(const IndirectCommandBuffer& buffer) override;
+  void submitCommandBuffer(const DirectCommandBuffer& buffer) override;
+  void submitCommandBuffer(const IndirectCommandBuffer& buffer) override;
 
-    void onResize(uint32_t width, uint32_t height) override;
+  void onResize(uint32_t width, uint32_t height) override;
 
-    [[nodiscard]] SwapchainMode getSwapchainMode() const override;
-    [[nodiscard]] const std::set<SwapchainMode>& getSupportedSwapchainModes() const override;
+  [[nodiscard]] SwapchainMode getSwapchainMode() const override;
+  [[nodiscard]] const std::set<SwapchainMode>& getSupportedSwapchainModes() const override;
 
-    [[nodiscard]] uint32_t getCurrentFrameIndex() const override;
-    [[nodiscard]] uint32_t getFrameCount() const override;
+  [[nodiscard]] uint32_t getCurrentFrameIndex() const override;
+  [[nodiscard]] uint32_t getFrameCount() const override;
 
-    [[nodiscard]] std::pair<uint32_t, uint32_t> getSize() const override;
+  [[nodiscard]] std::pair<uint32_t, uint32_t> getSize() const override;
 
-    [[nodiscard]] vk::RenderPass getRenderPass() const;
-    [[nodiscard]] vk::Framebuffer getCurrentFrame() const;
+  [[nodiscard]] vk::RenderPass getRenderPass() const;
+  [[nodiscard]] vk::Framebuffer getCurrentFrame() const;
 
-    [[nodiscard]] vk::Extent2D getExtent() const;
+  [[nodiscard]] vk::Extent2D getExtent() const;
 
-private:
-    void createSwapchain();
-    void setupImage();
+ private:
+  void createSwapchain();
+  void setupImage();
 
-    SwapchainMode m_Mode;
-    std::set<SwapchainMode> m_SupportedModes;
+  SwapchainMode m_Mode;
+  std::set<SwapchainMode> m_SupportedModes;
 
-    device::VulkanDevice* m_Owner;
-    vk::SurfaceKHR m_Surface;
-    vk::Queue m_GraphicsQueue;
+  device::VulkanDevice* m_Owner;
+  vk::SurfaceKHR m_Surface;
+  vk::Queue m_GraphicsQueue;
 
-    vk::PresentModeKHR m_PresentMode;
-    vk::SurfaceFormatKHR m_SwapchainFormat;
-    vk::Extent2D m_SwapchainExtent;
-    uint32_t m_SwapchainImageCountMin;
+  vk::PresentModeKHR m_PresentMode;
+  vk::SurfaceFormatKHR m_SwapchainFormat;
+  vk::Extent2D m_SwapchainExtent;
+  uint32_t m_SwapchainImageCountMin;
 
-    vk::UniqueRenderPass m_RenderPass;
-    vk::UniqueCommandPool m_CommandPool;
+  vk::UniqueRenderPass m_RenderPass;
+  vk::UniqueCommandPool m_CommandPool;
 
-    vk::UniqueSwapchainKHR m_Swapchain;
+  vk::UniqueSwapchainKHR m_Swapchain;
 
-    std::vector<Image> m_SwapchainImages;
-    std::vector<ImageFlight> m_RenderFlights;
-    size_t m_CurrentFlight;
+  std::vector<Image> m_SwapchainImages;
+  std::vector<ImageFlight> m_RenderFlights;
+  size_t m_CurrentFlight;
 };
 
 }   // namespace engine::vulkan::render

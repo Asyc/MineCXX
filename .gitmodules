@@ -25,3 +25,6 @@
 [submodule "vendors/glm"]
 	path = vendors/glm
 	url = https://github.com/g-truc/glm.git
+[submodule "vendors/rectpack"]
+	path = vendors/rectpack
+	url = git@github.com:TeamHypersomnia/rectpack2D.git

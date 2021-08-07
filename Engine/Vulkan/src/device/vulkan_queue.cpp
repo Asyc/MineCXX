@@ -13,13 +13,13 @@ VulkanQueueManager::VulkanQueueManager(render::VulkanRenderContext* context, con
       m_PresentQueue(m_Context->getDevice().getDevice().getQueue(present.index, 0)) {}
 
 void VulkanQueueManager::submitTransfer(uint32_t count, const vk::SubmitInfo* submitInfo, vk::Fence fence) {
-    m_TransferQueue.submit(count, submitInfo, fence);
+  m_TransferQueue.submit(count, submitInfo, fence);
 }
 
 void VulkanQueueManager::submitGraphics(uint32_t count, const vk::SubmitInfo* submitInfo, vk::Fence fence) {
-    m_Context->getTransferManager().submit(false);
-    m_TransferQueue.waitIdle(); //todo : revise
-    m_GraphicsQueue.submit(count, submitInfo, fence);
+  m_Context->getTransferManager().submit(false);
+  m_TransferQueue.waitIdle(); //todo : revise
+  m_GraphicsQueue.submit(count, submitInfo, fence);
 }
 
 }   // namespace engine::vulkan::device

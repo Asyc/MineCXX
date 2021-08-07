@@ -8,12 +8,12 @@
 namespace engine::render::buffer {
 
 class UniformBuffer : public IDescriptorResource {
-public:
-    virtual ~UniformBuffer() = default;
+ public:
+  virtual ~UniformBuffer() = default;
 
-    virtual void write(size_t offset, const void* ptr, size_t length) = 0;
-protected:
-    UniformBuffer() = default;
+  virtual void write(size_t offset, const void* ptr, size_t length) = 0;
+ protected:
+  UniformBuffer() = default;
 };
 
 }

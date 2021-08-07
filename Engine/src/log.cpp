@@ -19,64 +19,64 @@ spdlog::sink_ptr g_Stdout;
 spdlog::sink_ptr g_LogFile;
 
 std::shared_ptr<spdlog::logger> createLogger(const std::string_view& name) {
-    std::array<spdlog::sink_ptr, 2> sinks = {g_Stdout, g_LogFile};
-    auto logger = std::make_shared<spdlog::async_logger>(
-        std::string(name),
-        sinks.begin(),
-        sinks.end(),
-        spdlog::thread_pool(),
-        spdlog::async_overflow_policy::block
-    );
+  std::array<spdlog::sink_ptr, 2> sinks = {g_Stdout, g_LogFile};
+  auto logger = std::make_shared<spdlog::async_logger>(
+      std::string(name),
+      sinks.begin(),
+      sinks.end(),
+      spdlog::thread_pool(),
+      spdlog::async_overflow_policy::block
+  );
 
-    spdlog::register_logger(logger);
+  spdlog::register_logger(logger);
 
 #ifdef MCE_DBG
-    logger->set_level(spdlog::level::debug);
+  logger->set_level(spdlog::level::debug);
 #endif
 
-    return std::move(logger);
+  return std::move(logger);
 }
 
 std::shared_ptr<spdlog::logger> createLoggerDetached(const std::string_view& name) {
-    std::array<spdlog::sink_ptr, 1> sinks = {g_Stdout};
-    auto logger = std::make_shared<spdlog::async_logger>(
-        std::string(name),
-        sinks.begin(),
-        sinks.end(),
-        spdlog::thread_pool(),
-        spdlog::async_overflow_policy::block
-    );
+  std::array<spdlog::sink_ptr, 1> sinks = {g_Stdout};
+  auto logger = std::make_shared<spdlog::async_logger>(
+      std::string(name),
+      sinks.begin(),
+      sinks.end(),
+      spdlog::thread_pool(),
+      spdlog::async_overflow_policy::block
+  );
 
-    spdlog::register_logger(logger);
+  spdlog::register_logger(logger);
 
 #ifdef MCE_DBG
-    logger->set_level(spdlog::level::debug);
+  logger->set_level(spdlog::level::debug);
 #endif
 
-    return std::move(logger);
+  return std::move(logger);
 }
 
 void setupLogging() {
-    File file("logs/latest.log");
-    if (file.exists()) file.deleteFile();
+  File file("logs/latest.log");
+  if (file.exists()) file.deleteFile();
 
-    spdlog::init_thread_pool(8192, 2);
-    spdlog::flush_every(std::chrono::seconds(1));
+  spdlog::init_thread_pool(8192, 2);
+  spdlog::flush_every(std::chrono::seconds(1));
 
-    g_Stdout = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+  g_Stdout = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
 
-    g_LogFile = std::make_shared<spdlog::sinks::basic_file_sink_mt>("logs/latest.log");
+  g_LogFile = std::make_shared<spdlog::sinks::basic_file_sink_mt>("logs/latest.log");
 
-    g_EngineLogger = createLogger("Engine");
-    g_GameLogger = createLogger("Game");
+  g_EngineLogger = createLogger("Engine");
+  g_GameLogger = createLogger("Game");
 }
 
 void terminateLogging() {
-    g_Stdout.reset();
-    g_LogFile.reset();
+  g_Stdout.reset();
+  g_LogFile.reset();
 
-    spdlog::drop_all();
-    spdlog::shutdown();
+  spdlog::drop_all();
+  spdlog::shutdown();
 }
 
 }   // namespace engine::logging

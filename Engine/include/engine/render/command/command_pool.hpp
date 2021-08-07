@@ -8,14 +8,14 @@
 namespace engine::render::command {
 
 class CommandPool {
-public:
-    virtual ~CommandPool() = default;
+ public:
+  virtual ~CommandPool() = default;
 
-    virtual std::unique_ptr<DirectCommandBuffer> allocateDirectCommandBuffer() = 0;
-    virtual std::unique_ptr<IndirectCommandBuffer> allocateIndirectCommandBuffer() = 0;
+  virtual std::unique_ptr<DirectCommandBuffer> allocateDirectCommandBuffer() = 0;
+  virtual std::unique_ptr<IndirectCommandBuffer> allocateIndirectCommandBuffer() = 0;
 
-    virtual std::unique_ptr<CommandList> allocateCommandList() = 0;
-    virtual std::unique_ptr<ImmutableCommandList> allocateCommandListImmutable() = 0;
+  virtual std::unique_ptr<CommandList> allocateCommandList() = 0;
+  virtual std::unique_ptr<ImmutableCommandList> allocateCommandListImmutable() = 0;
 };
 
 }   // namespace engine::render::command

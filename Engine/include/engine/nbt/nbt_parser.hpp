@@ -13,13 +13,13 @@ enum class NbtType {
 };
 
 class NbtNode {
-public:
-    NbtNode(NbtType type);
+ public:
+  NbtNode(NbtType type);
 
-    void setType(NbtType type);
+  void setType(NbtType type);
 
-private:
-    NbtType m_Type;
+ private:
+  NbtType m_Type;
 };
 
 class NbtParser {

@@ -20,7 +20,15 @@ set(HEADERS
         include/engine/gui/font/ascii_font.hpp
         include/engine/gui/scene.hpp
         include/engine/gui/element/element.hpp
-        include/engine/render/viewport.hpp include/engine/math.hpp)
+        include/engine/render/viewport.hpp
+        include/engine/math.hpp
+        include/engine/image/packer.hpp
+        include/engine/nbt/nbt_type.hpp
+        include/engine/gui/font/font_renderer.hpp
+        include/engine/render/descriptor.hpp
+        include/engine/event/event.hpp
+        include/engine/event/event.cpp
+        )
 
 set(SOURCES
         src/engine.cpp
@@ -30,14 +38,12 @@ set(SOURCES
         src/pipeline.cpp
         src/file.cpp
         src/gui/gui.cpp
-        include/engine/nbt/nbt_type.hpp
-        include/engine/gui/font/font_renderer.hpp
         src/gui/font/font_renderer.cpp
         src/gui/font/ascii_font.cpp
-        include/engine/render/descriptor.hpp
         src/gui/scene.cpp
         src/gui/element.cpp
-        src/render/viewport.cpp include/engine/event/event.hpp include/engine/event/event.cpp)
+        src/render/viewport.cpp
+        src/image/packer.cpp)
 
 add_library(libengine STATIC ${HEADERS} ${SOURCES})
 
@@ -56,6 +62,6 @@ endif ()
 target_include_directories(libengine PUBLIC include)
 target_include_directories(libengine PRIVATE src)
 
-target_link_libraries(libengine PRIVATE glfw)
+target_link_libraries(libengine PRIVATE glfw rectpack2D)
 target_link_libraries(libengine PUBLIC rapidjson spdlog glm)
 

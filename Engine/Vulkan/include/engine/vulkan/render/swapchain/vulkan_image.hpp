@@ -11,49 +11,49 @@
 namespace engine::vulkan::render {
 
 struct Image {
-    Image(device::VulkanDevice* device,
-          vk::Image image,
-          uint32_t imageIndex,
-          vk::Format format,
-          vk::Extent2D extent,
-          vk::RenderPass renderPass,
-          vk::CommandPool commandPool);
-    Image(Image&& rhs) = default;
-    ~Image();
+  Image(device::VulkanDevice* device,
+        vk::Image image,
+        uint32_t imageIndex,
+        vk::Format format,
+        vk::Extent2D extent,
+        vk::RenderPass renderPass,
+        vk::CommandPool commandPool);
+  Image(Image&& rhs) = default;
+  ~Image();
 
-    void wait();
-    void setup(vk::Queue queue, vk::Semaphore imageAvailableSemaphore);
-    void present(vk::Queue queue, vk::SwapchainKHR swapchain);
+  void wait();
+  void setup(vk::Queue queue, vk::Semaphore imageAvailableSemaphore);
+  void present(vk::Queue queue, vk::SwapchainKHR swapchain);
 
-    vk::Semaphore getSemaphore();
+  vk::Semaphore getSemaphore();
 
-    device::VulkanDevice* owner;
+  device::VulkanDevice* owner;
 
-    uint32_t imageIndex;
+  uint32_t imageIndex;
 
-    vk::UniqueImageView imageView;
-    vk::UniqueFramebuffer framebuffer;
+  vk::UniqueImageView imageView;
+  vk::UniqueFramebuffer framebuffer;
 
-    std::vector<vk::Semaphore> semaphores;
-    size_t activeSemaphoreCount;
+  std::vector<vk::Semaphore> semaphores;
+  size_t activeSemaphoreCount;
 
-    vk::UniqueCommandBuffer clearScreenCommandBuffer;
+  vk::UniqueCommandBuffer clearScreenCommandBuffer;
 
-    vk::UniqueSemaphore clearScreenSemaphore;
-    vk::UniqueFence clearScreenFence;
+  vk::UniqueSemaphore clearScreenSemaphore;
+  vk::UniqueFence clearScreenFence;
 
-    vk::UniqueCommandBuffer presentFormatCommandBuffer;
+  vk::UniqueCommandBuffer presentFormatCommandBuffer;
 
-    vk::UniqueSemaphore imageCompleteSemaphore;
-    vk::UniqueFence imageCompleteFence;
+  vk::UniqueSemaphore imageCompleteSemaphore;
+  vk::UniqueFence imageCompleteFence;
 };
 
 struct ImageFlight {
-    explicit ImageFlight(vk::Device device);
-    void submitCommandBuffer(vk::Device device, vk::CommandBuffer buffer, vk::Fence fence) const;
+  explicit ImageFlight(vk::Device device);
+  void submitCommandBuffer(vk::Device device, vk::CommandBuffer buffer, vk::Fence fence) const;
 
-    Image* boundImage;
-    vk::UniqueSemaphore imageReadySemaphore;
+  Image* boundImage;
+  vk::UniqueSemaphore imageReadySemaphore;
 };
 
 }   // namespace engine::vulkan::render

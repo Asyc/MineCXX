@@ -10,25 +10,25 @@
 namespace engine::gui {
 
 enum class MouseButton : int {
-    LEFT,
-    RIGHT,
-    MIDDLE
+  LEFT,
+  RIGHT,
+  MIDDLE
 };
 
 class Gui {
-public:
-    virtual ~Gui() = default;
+ public:
+  virtual ~Gui() = default;
 
-    void draw(engine::render::command::IDrawableCommandBuffer& buffer);
+  void draw(engine::render::command::IDrawableCommandBuffer& buffer);
 
-    void onClick(input::MouseButton button, input::MouseButtonAction action, float x, float y);
-    void onResize(uint32_t width, uint32_t height);
-protected:
-    Gui() = default;
+  void onClick(input::MouseButton button, input::MouseButtonAction action, float x, float y);
+  void onResize(uint32_t width, uint32_t height);
+ protected:
+  Gui() = default;
 
-    void pushElement(std::unique_ptr<Element> element);
+  void pushElement(std::unique_ptr<Element> element);
 
-    std::vector<std::unique_ptr<Element>> m_Elements;
+  std::vector<std::unique_ptr<Element>> m_Elements;
 };
 
 }

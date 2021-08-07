@@ -7,14 +7,14 @@
 namespace engine::gui::input {
 
 enum class MouseButton {
-    LEFT,
-    RIGHT,
-    MIDDLE
+  LEFT,
+  RIGHT,
+  MIDDLE
 };
 
 enum class MouseButtonAction {
-    PRESS,
-    RELEASE
+  PRESS,
+  RELEASE
 };
 
 using MouseButtonCallback = std::function<void(MouseButton button, MouseButtonAction action)>;

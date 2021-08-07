@@ -10,46 +10,46 @@
 namespace engine::render {
 
 class Program {
-public:
-    virtual ~Program() = default;
+ public:
+  virtual ~Program() = default;
 
-    struct ProgramConfig {
-        struct VulkanConfig {
-            struct InputConfig {
-                std::string topology;
+  struct ProgramConfig {
+    struct VulkanConfig {
+      struct InputConfig {
+        std::string topology;
 
-                struct Buffer {
-                    uint32_t binding;
-                    uint32_t stride;
-                };
+        struct Buffer {
+          uint32_t binding;
+          uint32_t stride;
+        };
 
-                struct Attribute {
-                    uint32_t binding;
-                    uint32_t location;
-                    std::string type;
-                    uint32_t offset;
-                };
+        struct Attribute {
+          uint32_t binding;
+          uint32_t location;
+          std::string type;
+          uint32_t offset;
+        };
 
-                std::vector<Buffer> bufferAttributes;
-                std::vector<Attribute> inputAttributes;
-            } input;
+        std::vector<Buffer> bufferAttributes;
+        std::vector<Attribute> inputAttributes;
+      } input;
 
-            std::string vertexPath;
-            std::string geometryPath;
-            std::string fragmentPath;
-        } vulkan;
-    } programConfig;
+      std::string vertexPath;
+      std::string geometryPath;
+      std::string fragmentPath;
+    } vulkan;
+  } programConfig;
 
-    explicit Program(const File& pipelineConfiguration);
+  explicit Program(const File& pipelineConfiguration);
 };
 
 class RenderPipeline {
-public:
-    virtual ~RenderPipeline() = default;
+ public:
+  virtual ~RenderPipeline() = default;
 
-    virtual std::unique_ptr<UniformDescriptor> allocateDescriptorSet(uint32_t set) = 0;
-protected:
-    RenderPipeline() = default;
+  virtual std::unique_ptr<UniformDescriptor> allocateDescriptorSet(uint32_t set) = 0;
+ protected:
+  RenderPipeline() = default;
 };
 
 }   // namespace engine::render

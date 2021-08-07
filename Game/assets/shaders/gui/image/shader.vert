@@ -12,7 +12,7 @@ layout (std140, set = 0, binding = 0) uniform Viewport {
 } viewport;
 
 layout (push_constant) uniform PushConstantBlock {
-    layout (offset = 16) bool viewportAdjust; // Fragment shader consumes 0-16
+    layout (offset = 16) bool viewportAdjust;// Fragment shader consumes 0-16
 } push_constants;
 
 void main() {

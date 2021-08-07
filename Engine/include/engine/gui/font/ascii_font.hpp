@@ -17,18 +17,18 @@ extern std::unique_ptr<std::unordered_map<char16_t, uint8_t>> ASCII_INDEXES;
 uint8_t map(int8_t value);
 
 struct CharNode {
-    uint16_t value;
-    size_t x, y;
-    size_t width;
+  uint16_t value;
+  size_t x, y;
+  size_t width;
 };
 
 inline uint8_t resolveIndex(char16_t character) {
-    auto it = ASCII_INDEXES->find(character);
-    if (it == ASCII_INDEXES->end()) {
-        throw std::runtime_error("index out of range");
-    }
+  auto it = ASCII_INDEXES->find(character);
+  if (it == ASCII_INDEXES->end()) {
+    throw std::runtime_error("index out of range");
+  }
 
-    return it->second;
+  return it->second;
 }
 
 }   // namespace engine::font::font

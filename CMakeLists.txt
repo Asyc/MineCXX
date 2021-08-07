@@ -14,6 +14,9 @@ add_subdirectory(vendors/spdlog)
 add_library(rapidjson INTERFACE)
 target_include_directories(rapidjson INTERFACE vendors/rapidjson/include)
 
+add_library(rectpack2D INTERFACE)
+target_include_directories(rectpack2D INTERFACE vendors/rectpack/src)
+
 add_library(stb INTERFACE)
 target_include_directories(stb INTERFACE vendors/stb)
 

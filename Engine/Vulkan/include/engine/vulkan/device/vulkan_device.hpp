@@ -16,18 +16,18 @@ class VulkanRenderContext;
 namespace engine::vulkan::device {
 
 class VulkanDevice {
-public:
-    VulkanDevice(render::VulkanRenderContext* context, vk::Instance owner, vk::PhysicalDevice device, vk::SurfaceKHR surface);
+ public:
+  VulkanDevice(render::VulkanRenderContext* context, vk::Instance owner, vk::PhysicalDevice device, vk::SurfaceKHR surface);
 
-    [[nodiscard]] vk::Device getDevice() const {
-        return *m_Device;
-    }
+  [[nodiscard]] vk::Device getDevice() const {
+    return *m_Device;
+  }
 
-    VulkanQueueManager& getQueueManager() { return m_QueueManager; }
-    [[nodiscard]] const VulkanQueueManager& getQueueManager() const { return m_QueueManager; };
-private:
-    vk::UniqueDevice m_Device;
-    VulkanQueueManager m_QueueManager;
+  VulkanQueueManager& getQueueManager() { return m_QueueManager; }
+  [[nodiscard]] const VulkanQueueManager& getQueueManager() const { return m_QueueManager; };
+ private:
+  vk::UniqueDevice m_Device;
+  VulkanQueueManager m_QueueManager;
 };
 
 }

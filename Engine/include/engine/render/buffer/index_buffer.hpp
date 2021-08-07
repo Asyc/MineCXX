@@ -6,12 +6,12 @@
 namespace engine::render::buffer {
 
 class IndexBuffer {
-public:
-    virtual ~IndexBuffer() = default;
+ public:
+  virtual ~IndexBuffer() = default;
 
-    virtual void write(size_t offset, const uint32_t* ptr, size_t length) = 0;
-protected:
-    IndexBuffer() = default;
+  virtual void write(size_t offset, const uint32_t* ptr, size_t length) = 0;
+ protected:
+  IndexBuffer() = default;
 };
 
 }   // namespace engine::render::buffer

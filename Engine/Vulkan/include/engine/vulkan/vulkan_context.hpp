@@ -24,66 +24,67 @@ namespace engine::vulkan::render {
 using namespace ::engine::render;
 
 class VulkanRenderContext : public RenderContext {
-public:
-    VulkanRenderContext(Window& window, const Directory& resourceDirectory, Swapchain::SwapchainMode modeHint);
-    ~VulkanRenderContext() override;
+ public:
+  VulkanRenderContext(Window& window, const Directory& resourceDirectory, Swapchain::SwapchainMode modeHint);
+  ~VulkanRenderContext() override;
 
-    std::shared_ptr<buffer::Image> createImage(const File& path, const buffer::Image::SamplerOptions& samplerOptions) override;
+  std::shared_ptr<buffer::Image> createImage(const File& path, const buffer::Image::SamplerOptions& samplerOptions) override;
+  std::shared_ptr<buffer::Image> createImage(void* buffer, uint32_t width, uint32_t height, const buffer::Image::SamplerOptions& samplerOptions) override;
 
-    [[nodiscard]] std::unique_ptr<buffer::VertexBuffer> allocateVertexBuffer(size_t size) override;
-    [[nodiscard]] std::unique_ptr<buffer::IndexBuffer> allocateIndexBuffer(size_t size) override;
-    [[nodiscard]] std::unique_ptr<buffer::UniformBuffer> allocateUniformBuffer(size_t size) override;
+  [[nodiscard]] std::unique_ptr<buffer::VertexBuffer> allocateVertexBuffer(size_t size) override;
+  [[nodiscard]] std::unique_ptr<buffer::IndexBuffer> allocateIndexBuffer(size_t size) override;
+  [[nodiscard]] std::unique_ptr<buffer::UniformBuffer> allocateUniformBuffer(size_t size) override;
 
-    [[nodiscard]] std::shared_ptr<RenderPipeline> createRenderPipeline(const File& file) override;
+  [[nodiscard]] std::shared_ptr<RenderPipeline> createRenderPipeline(const File& file) override;
 
-    [[nodiscard]] std::unique_ptr<command::CommandPool> createCommandPool() const override;
-    [[nodiscard]] command::CommandPool& getThreadCommandPool() override;
+  [[nodiscard]] std::unique_ptr<command::CommandPool> createCommandPool() const override;
+  [[nodiscard]] command::CommandPool& getThreadCommandPool() override;
 
-    [[nodiscard]] Swapchain& getSwapchain() override { return m_Swapchain; }
-    [[nodiscard]] const Swapchain& getSwapchain() const override { return m_Swapchain; }
+  [[nodiscard]] Swapchain& getSwapchain() override { return m_Swapchain; }
+  [[nodiscard]] const Swapchain& getSwapchain() const override { return m_Swapchain; }
 
-    [[nodiscard]] VulkanSwapchain& getSwapchainVulkan() { return m_Swapchain; }
-    [[nodiscard]] device::VulkanDevice& getDevice() { return m_Device; }
+  [[nodiscard]] VulkanSwapchain& getSwapchainVulkan() { return m_Swapchain; }
+  [[nodiscard]] device::VulkanDevice& getDevice() { return m_Device; }
 
-    [[nodiscard]] buffer::VulkanTransferManager& getTransferManager() { return m_TransferManager; }
+  [[nodiscard]] buffer::VulkanTransferManager& getTransferManager() { return m_TransferManager; }
 
-    [[nodiscard]] const ViewportGUI& getViewport() const override { return m_GuiViewport; }
-    [[nodiscard]] gui::font::FontRenderer& getFontRenderer() override { return m_FontRenderer; }
+  [[nodiscard]] const ViewportGUI& getViewport() const override { return m_GuiViewport; }
+  [[nodiscard]] gui::font::FontRenderer& getFontRenderer() override { return m_FontRenderer; }
 
-    [[nodiscard]] Window& getWindow() override { return *m_Window; }
-    [[nodiscard]] const Window& getWindow() const override { return *m_Window; }
+  [[nodiscard]] Window& getWindow() override { return *m_Window; }
+  [[nodiscard]] const Window& getWindow() const override { return *m_Window; }
 
-    void addResizeCallback(ResizeCallback callback) override;
-    void addMouseCallback(MouseCallback callback) override;
+  void addResizeCallback(ResizeCallback callback) override;
+  void addMouseCallback(MouseCallback callback) override;
 
-    void mouseButtonCallback(gui::input::MouseButton button, gui::input::MouseButtonAction action, double x, double y) override;
-    void windowResizeCallback(uint32_t width, uint32_t height) override;
-private:
-    vk::UniqueInstance m_Instance;
+  void mouseButtonCallback(gui::input::MouseButton button, gui::input::MouseButtonAction action, double x, double y) override;
+  void windowResizeCallback(uint32_t width, uint32_t height) override;
+ private:
+  vk::UniqueInstance m_Instance;
 #ifdef MCE_DBG
-    std::unique_ptr<VkDebugUtilsMessengerEXT_T, std::function<void(VkDebugUtilsMessengerEXT)>> m_DebugMessenger;
-    std::unique_ptr<VkDebugReportCallbackEXT_T, std::function<void(VkDebugReportCallbackEXT)>> m_DebugReportCallback;
+  std::unique_ptr<VkDebugUtilsMessengerEXT_T, std::function<void(VkDebugUtilsMessengerEXT)>> m_DebugMessenger;
+  std::unique_ptr<VkDebugReportCallbackEXT_T, std::function<void(VkDebugReportCallbackEXT)>> m_DebugReportCallback;
 #endif
-    Window* m_Window;
+  Window* m_Window;
 
-    vk::UniqueSurfaceKHR m_Surface;
-    vk::PhysicalDevice m_PhysicalDevice;
+  vk::UniqueSurfaceKHR m_Surface;
+  vk::PhysicalDevice m_PhysicalDevice;
 
-    device::VulkanDevice m_Device;
-    std::unique_ptr<VmaAllocator_T, std::function<void(VmaAllocator)>> m_MemoryAllocator;
+  device::VulkanDevice m_Device;
+  std::unique_ptr<VmaAllocator_T, std::function<void(VmaAllocator)>> m_MemoryAllocator;
 
-    render::VulkanSwapchain m_Swapchain;
-    buffer::VulkanTransferManager m_TransferManager;
+  render::VulkanSwapchain m_Swapchain;
+  buffer::VulkanTransferManager m_TransferManager;
 
-    std::unordered_map<std::string, std::weak_ptr<VulkanRenderPipeline>> m_Pipelines;
+  std::unordered_map<std::string, std::weak_ptr<VulkanRenderPipeline>> m_Pipelines;
 
-    std::vector<ResizeCallback> m_ResizeCallbacks;
-    std::vector<MouseCallback> m_MouseCallbacks;
+  std::vector<ResizeCallback> m_ResizeCallbacks;
+  std::vector<MouseCallback> m_MouseCallbacks;
 
-    ViewportGUI m_GuiViewport;
-    gui::font::FontRenderer m_FontRenderer;
+  ViewportGUI m_GuiViewport;
+  gui::font::FontRenderer m_FontRenderer;
 
-    static thread_local std::unordered_map<VulkanRenderContext*, command::VulkanCommandPool> s_ThreadCommandPoolMap;
+  static thread_local std::unordered_map<VulkanRenderContext*, command::VulkanCommandPool> s_ThreadCommandPoolMap;
 };
 
 }   // namespace engine::render::vulkan

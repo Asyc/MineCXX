@@ -10,30 +10,30 @@ namespace render {
 class RenderContext;
 }
 
-template <typename T>
+template<typename T>
 class Event {
-public:
-    Event(render::RenderContext& context);
+ public:
+  Event(render::RenderContext& context);
 
-    render::RenderContext& getContext() { return *m_Owner; }
-private:
-    render::RenderContext* m_Owner;
+  render::RenderContext& getContext() { return *m_Owner; }
+ private:
+  render::RenderContext* m_Owner;
 };
 
-template <typename T>
+template<typename T>
 class EventRegistry {
-public:
+ public:
 
 };
 
 class EventDispatcher {
-public:
-    template <typename T>
-    void registerCallback(std::function<Event<T>> consumer) {}
+ public:
+  template<typename T>
+  void registerCallback(std::function<Event<T>> consumer) {}
 
-    template <typename T>
-    void dispatch(T& event);
-private:
+  template<typename T>
+  void dispatch(T& event);
+ private:
 };
 
 }
