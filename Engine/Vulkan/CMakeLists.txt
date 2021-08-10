@@ -14,7 +14,7 @@ set(HEADERS
         include/engine/vulkan/render/buffer/vulkan_uniform_buffer.hpp
         include/engine/vulkan/device/vulkan_device.hpp
         include/engine/vulkan/render/vulkan_descriptor.hpp
-        )
+        include/engine/vulkan/render/buffer/vulkan_storage_buffer.hpp)
 
 set(SOURCES
         src/vulkan_context.cpp
@@ -30,7 +30,7 @@ set(SOURCES
         src/render/buffer/vulkan_uniform_buffer.cpp
         src/device/vulkan_device.cpp src/device/vulkan_queue.cpp
         src/render/vulkan_descriptor.cpp
-        )
+        src/render/buffer/vulkan_storage_buffer.cpp)
 
 add_library(libvk ${HEADERS} ${SOURCES})
 target_link_libraries(libvk PUBLIC

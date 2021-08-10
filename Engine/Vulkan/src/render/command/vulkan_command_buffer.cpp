@@ -86,7 +86,7 @@ VulkanSwitchingCommandBuffer::VulkanSwitchingCommandBuffer(vk::Device device, co
   m_Buffers = device.allocateCommandBuffersUnique(allocateInfo);
 
   for (auto& m_Fence : m_Fences) {
-    m_Fence = device.createFenceUnique({});
+    m_Fence = device.createFenceUnique(vk::FenceCreateInfo(vk::FenceCreateFlagBits::eSignaled));
   }
 }
 

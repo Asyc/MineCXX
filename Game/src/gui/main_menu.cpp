@@ -4,6 +4,9 @@
 
 #include "engine/window.hpp"
 
+#include "world/block.hpp"
+#include "world/chunk.hpp"
+
 using namespace engine;
 using namespace engine::gui;
 
@@ -37,8 +40,12 @@ MainMenu::MainMenu(engine::render::RenderContext& context, engine::gui::Scene& s
   auto button = std::make_unique<gui::ElementButton>(context, 0.0f - w / 2, y, w, h);
   float leftBound = button->getX();
   button->setText(u"Singleplayer");
-  button->setButtonCallback([&scene]() {
-    //scene.setGui<>();
+
+  button->setButtonCallback([&]() {
+    std::shared_ptr<mc::Chunk> chunk = std::make_shared<mc::Chunk>(0, 0);
+    chunk->setBlock(0, 0, 0, mc::BlockRegistry::getInstance().getBlock(3));
+    scene.setGui(nullptr);
+    scene.setWorldObject(chunk);
   });
 
   pushElement(std::move(button));
@@ -74,4 +81,7 @@ MainMenu::MainMenu(engine::render::RenderContext& context, engine::gui::Scene& s
   });
 
   pushElement(std::move(button));
+}
+
+MainMenu::~MainMenu() {
 }

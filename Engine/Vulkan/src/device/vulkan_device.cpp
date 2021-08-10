@@ -1,5 +1,7 @@
 #include "engine/vulkan/device/vulkan_device.hpp"
 
+#include <vk_mem_alloc.h>
+
 #include "engine/log.hpp"
 
 namespace engine::vulkan::device {
@@ -67,8 +69,23 @@ inline vk::UniqueDevice createDevice(vk::PhysicalDevice physicalDevice, vk::Surf
   return physicalDevice.createDeviceUnique(deviceCreateInfo);
 }
 
+inline VmaAllocator createAllocator(vk::Instance instance, vk::PhysicalDevice physicalDevice, vk::Device device) {
+  VmaAllocatorCreateInfo allocatorCreateInfo{};
+
+  allocatorCreateInfo.physicalDevice = physicalDevice;
+  allocatorCreateInfo.device = device;
+  allocatorCreateInfo.instance = instance;
+  allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_2;
+
+  VmaAllocator allocator;
+  vmaCreateAllocator(&allocatorCreateInfo, &allocator);
+  return allocator;
+}
+
 VulkanDevice::VulkanDevice(render::VulkanRenderContext* context, vk::Instance owner, vk::PhysicalDevice device, vk::SurfaceKHR surface)
     : m_Device(createDevice(device, surface)),
-      m_QueueManager(context, array[0], array[1]) {}
+      m_QueueManager(context, array[0], array[1]),
+      m_MemoryAllocator(createAllocator(owner, device, *m_Device), [](VmaAllocator allocator) { vmaDestroyAllocator(allocator); }),
+      m_TransferManager(owner, device, this, m_QueueManager.getGraphicsQueueFamily().index) {}
 
 }   // namespace engine::vulkan::device

@@ -6,6 +6,7 @@
 #include "buffer/image.hpp"
 #include "buffer/index_buffer.hpp"
 #include "buffer/uniform_buffer.hpp"
+#include "buffer/storage_buffer.hpp"
 #include "buffer/vertex_buffer.hpp"
 #include "command/command_pool.hpp"
 #include "engine/file.hpp"
@@ -42,6 +43,7 @@ class RenderContext {
 
   [[nodiscard]] virtual std::unique_ptr<buffer::IndexBuffer> allocateIndexBuffer(size_t size) = 0;
   [[nodiscard]] virtual std::unique_ptr<buffer::UniformBuffer> allocateUniformBuffer(size_t size) = 0;
+  [[nodiscard]] virtual std::unique_ptr<buffer::StorageBuffer> allocateStorageBuffer(size_t size) = 0;
 
   [[nodiscard]] virtual std::shared_ptr<RenderPipeline> createRenderPipeline(const File& file) = 0;
 

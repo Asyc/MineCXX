@@ -15,6 +15,8 @@ class VulkanRenderContext;
 
 namespace engine::vulkan::device {
 
+using namespace engine;
+
 class VulkanDevice {
  public:
   VulkanDevice(render::VulkanRenderContext* context, vk::Instance owner, vk::PhysicalDevice device, vk::SurfaceKHR surface);
@@ -25,9 +27,15 @@ class VulkanDevice {
 
   VulkanQueueManager& getQueueManager() { return m_QueueManager; }
   [[nodiscard]] const VulkanQueueManager& getQueueManager() const { return m_QueueManager; };
+
+  [[nodiscard]] VmaAllocator getAllocator() const { return m_MemoryAllocator.get(); }
+  [[nodiscard]] render::buffer::VulkanTransferManager& getTransferManager() { return m_TransferManager; }
  private:
   vk::UniqueDevice m_Device;
   VulkanQueueManager m_QueueManager;
+
+  std::unique_ptr<VmaAllocator_T, std::function<void(VmaAllocator)>> m_MemoryAllocator;
+  render::buffer::VulkanTransferManager m_TransferManager;
 };
 
 }

@@ -11,12 +11,24 @@ Scene::Scene(render::RenderContext& context) : m_Context(&context), m_Gui() {
 }
 
 void Scene::render() {
-  m_Context->getSwapchain().submitCommandBuffer(*m_CommandBuffer);
+  if (m_Gui != nullptr || m_World != nullptr) {
+    m_Context->getSwapchain().submitCommandBuffer(*m_CommandBuffer);
+  }
 }
 
 void Scene::update() {
+  auto now = std::chrono::high_resolution_clock::now();
+  bool tick = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_LastTick).count() >= 50;
+  if (tick) m_LastTick = now;
+
+  if (m_World != nullptr) {
+    if (tick) m_World->tick();
+    m_World->update();
+  }
+
   m_CommandBuffer->begin();
   if (m_Gui != nullptr) m_Gui->draw(*m_CommandBuffer);
+  if (m_World != nullptr) m_World->draw(*m_CommandBuffer);
   m_CommandBuffer->end();
 }
 

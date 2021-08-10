@@ -1,5 +1,7 @@
 #include "engine/vulkan/vulkan_context.hpp"
 
+#include <intrin.h>
+
 #include <chrono>
 #include <vector>
 
@@ -11,6 +13,7 @@
 
 #include "engine/log.hpp"
 #include "engine/vulkan/render/buffer/vulkan_index_buffer.hpp"
+#include "engine/vulkan/render/buffer/vulkan_storage_buffer.hpp"
 
 #ifdef MCE_DBG
 
@@ -37,7 +40,8 @@ VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBits
                                              void* pUserData) {
   switch (messageSeverity) {
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:g_VulkanLogger->error("{}", pCallbackData->pMessage);
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+      g_VulkanLogger->error("{}", pCallbackData->pMessage);
       break;
     default:g_VulkanLogger->debug("{}", pCallbackData->pMessage);
       break;
@@ -130,28 +134,13 @@ vk::PhysicalDevice findPhysicalDevice(const std::vector<vk::PhysicalDevice>& dev
   return physicalDevice;
 }
 
-inline VmaAllocator createAllocator(vk::Instance instance, vk::PhysicalDevice physicalDevice, vk::Device device) {
-  VmaAllocatorCreateInfo allocatorCreateInfo{};
-
-  allocatorCreateInfo.physicalDevice = physicalDevice;
-  allocatorCreateInfo.device = device;
-  allocatorCreateInfo.instance = instance;
-  allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_2;
-
-  VmaAllocator allocator;
-  vmaCreateAllocator(&allocatorCreateInfo, &allocator);
-  return allocator;
-}
-
 VulkanRenderContext::VulkanRenderContext(Window& window, const Directory& resourceDirectory, Swapchain::SwapchainMode modeHint)
     : m_Window(&window),
       m_Instance(createInstance()),
       m_Surface(window.createSurface(*m_Instance)),
       m_PhysicalDevice(findPhysicalDevice(m_Instance->enumeratePhysicalDevices())),
       m_Device(this, *m_Instance, m_PhysicalDevice, *m_Surface),
-      m_MemoryAllocator(createAllocator(*m_Instance, m_PhysicalDevice, m_Device.getDevice()), [](VmaAllocator allocator) { vmaDestroyAllocator(allocator); }),
-      m_Swapchain(modeHint, *m_Surface, m_PhysicalDevice, &m_Device, m_Device.getQueueManager()),
-      m_TransferManager(*m_Instance, m_PhysicalDevice, &m_Device, m_Device.getQueueManager().getGraphicsQueueFamily().index),
+      m_Swapchain(modeHint, *m_Surface, m_PhysicalDevice, &m_Device, m_Device.getAllocator()),
       m_Pipelines(),
       m_GuiViewport(*this),
       m_FontRenderer(*this, File(resourceDirectory.getPath() + "font/glyph_sizes.bin"), Directory(resourceDirectory.getPath() + "/textures/font")) {
@@ -175,11 +164,11 @@ VulkanRenderContext::~VulkanRenderContext() {
 }
 
 std::shared_ptr<buffer::Image> VulkanRenderContext::createImage(const File& path, const buffer::Image::SamplerOptions& samplerOptions) {
-  return std::make_shared<buffer::VulkanImage>(&m_TransferManager, m_MemoryAllocator.get(), path, samplerOptions);
+  return std::make_shared<buffer::VulkanImage>(&m_Device.getTransferManager(), m_Device.getAllocator(), path, samplerOptions);
 }
 
 std::shared_ptr<buffer::Image> VulkanRenderContext::createImage(void* buffer, uint32_t width, uint32_t height, const buffer::Image::SamplerOptions& samplerOptions) {
-  return std::make_shared<buffer::VulkanImage>(&m_TransferManager, m_MemoryAllocator.get(), buffer, width, height, samplerOptions);
+  return std::make_shared<buffer::VulkanImage>(&m_Device.getTransferManager(), m_Device.getAllocator(), buffer, width, height, samplerOptions);
 }
 
 std::unique_ptr<command::CommandPool> VulkanRenderContext::createCommandPool() const {
@@ -197,15 +186,19 @@ command::CommandPool& VulkanRenderContext::getThreadCommandPool() {
 }
 
 std::unique_ptr<buffer::VertexBuffer> VulkanRenderContext::allocateVertexBuffer(size_t size) {
-  return std::make_unique<buffer::VulkanVertexBuffer>(&m_TransferManager, m_MemoryAllocator.get(), size);
+  return std::make_unique<buffer::VulkanVertexBuffer>(&m_Device.getTransferManager(), m_Device.getAllocator(), size);
 }
 
 std::unique_ptr<buffer::IndexBuffer> VulkanRenderContext::allocateIndexBuffer(size_t size) {
-  return std::make_unique<buffer::VulkanIndexBuffer>(&m_TransferManager, m_MemoryAllocator.get(), size);
+  return std::make_unique<buffer::VulkanIndexBuffer>(&m_Device.getTransferManager(), m_Device.getAllocator(), size);
 }
 
 std::unique_ptr<buffer::UniformBuffer> VulkanRenderContext::allocateUniformBuffer(size_t size) {
-  return std::make_unique<buffer::VulkanUniformBuffer>(m_MemoryAllocator.get(), size);
+  return std::make_unique<buffer::VulkanUniformBuffer>(m_Device.getAllocator(), size);
+}
+
+std::unique_ptr<buffer::StorageBuffer> VulkanRenderContext::allocateStorageBuffer(size_t size) {
+  return std::make_unique<buffer::VulkanStorageBuffer>(m_Device.getAllocator(), size);
 }
 
 std::shared_ptr<RenderPipeline> VulkanRenderContext::createRenderPipeline(const File& file) {

@@ -97,6 +97,20 @@ inline void parseShader(const std::vector<char>& shaderBuffer,
     descriptorSetLayouts[set].emplace_back(binding, vk::DescriptorType::eCombinedImageSampler, array, flag, nullptr);
   }
 
+  for (const auto& it : resources.storage_buffers) {
+    const auto& type = compiler.get_type(it.base_type_id);
+
+    uint32_t set = compiler.get_decoration(it.id, spv::DecorationDescriptorSet);
+    uint32_t binding = compiler.get_decoration(it.id, spv::DecorationBinding);
+    uint32_t array = type.array.empty() ? 1 : type.array[0];
+
+    if (descriptorSetLayouts.size() <= set) {
+      descriptorSetLayouts.resize(set + 1);
+    }
+
+    descriptorSetLayouts[set].emplace_back(binding, vk::DescriptorType::eStorageBuffer, array, flag, nullptr);
+  }
+
   uint32_t lowestAccessed = -1, highestAccessed = -1;
 
   //Spec states only 1 push constant buffer per stage

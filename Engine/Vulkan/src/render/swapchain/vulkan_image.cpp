@@ -1,14 +1,58 @@
 #include "engine/vulkan/render/swapchain/vulkan_image.hpp"
 
+#include <vk_mem_alloc.h>
+
 namespace engine::vulkan::render {
 
 Image::Image(device::VulkanDevice* device,
+             VmaAllocator allocator,
              vk::Image image,
              uint32_t imageIndex,
              vk::Format format,
              vk::Extent2D extent,
+             vk::Format depthBufferFormat,
              vk::RenderPass renderPass,
              vk::CommandPool commandPool) : owner(device), imageIndex(imageIndex), activeSemaphoreCount() {
+
+  VkImageCreateInfo depthImageCreateInfo = vk::ImageCreateInfo(
+      {},
+      vk::ImageType::e2D,
+      depthBufferFormat,
+      {extent.width, extent.height, 1},
+      1,
+      1,
+      vk::SampleCountFlagBits::e1,
+      vk::ImageTiling::eOptimal,
+      vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eTransferDst,
+      vk::SharingMode::eExclusive,
+      {},
+      vk::ImageLayout::eUndefined
+  );
+
+  VmaAllocationCreateInfo depthAllocationCreateInfo{};
+  depthAllocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+
+  VkImage imageHandle;
+  VmaAllocation allocationHandle;
+  VmaAllocationInfo allocationInfo;
+  vmaCreateImage(allocator, &depthImageCreateInfo, &depthAllocationCreateInfo, &imageHandle, &allocationHandle, &allocationInfo);
+
+  depthImage = imageHandle;
+  depthAllocation = {allocationHandle, [allocator, imageHandle](VmaAllocation allocation) {
+    vmaDestroyImage(allocator, imageHandle, allocation);
+  }};
+
+  vk::ImageViewCreateInfo depthImageViewCreateInfo(
+      {},
+      imageHandle,
+      vk::ImageViewType::e2D,
+      depthBufferFormat,
+      vk::ComponentMapping{},
+      vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth, 0, 1, 0, 1)
+  );
+
+  depthImageView = device->getDevice().createImageViewUnique(depthImageViewCreateInfo);
+
   vk::ImageViewCreateInfo imageViewCreateInfo(
       {},
       image,
@@ -20,58 +64,110 @@ Image::Image(device::VulkanDevice* device,
 
   imageView = owner->getDevice().createImageViewUnique(imageViewCreateInfo);
 
-  vk::FramebufferCreateInfo framebufferCreateInfo({}, renderPass, 1, &*imageView, extent.width, extent.height, 1);
+  std::array<vk::ImageView, 2> attachments = {
+      *imageView,
+      *depthImageView
+  };
+
+  vk::FramebufferCreateInfo framebufferCreateInfo({}, renderPass, attachments.size(), attachments.data(), extent.width, extent.height, 1);
   framebuffer = owner->getDevice().createFramebufferUnique(framebufferCreateInfo);
 
   vk::CommandBufferAllocateInfo commandBufferAllocateInfo(commandPool, vk::CommandBufferLevel::ePrimary, 2);
   auto buffers = owner->getDevice().allocateCommandBuffersUnique(commandBufferAllocateInfo);
 
-  vk::ImageMemoryBarrier memoryBarrier(
-      {},
-      {},
-      vk::ImageLayout::eUndefined,
-      vk::ImageLayout::eTransferDstOptimal,
-      VK_QUEUE_FAMILY_IGNORED,
-      VK_QUEUE_FAMILY_IGNORED,
-      image,
-      vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1)
-  );
+  std::array<vk::ImageMemoryBarrier, 2> memoryBarriers = {
+      vk::ImageMemoryBarrier(
+          {},
+          vk::AccessFlagBits::eTransferWrite,
+          vk::ImageLayout::eUndefined,
+          vk::ImageLayout::eTransferDstOptimal,
+          VK_QUEUE_FAMILY_IGNORED,
+          VK_QUEUE_FAMILY_IGNORED,
+          image,
+          vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1)
+      ),
+      vk::ImageMemoryBarrier(
+          {},
+          vk::AccessFlagBits::eTransferWrite,
+          vk::ImageLayout::eUndefined,
+          vk::ImageLayout::eTransferDstOptimal,
+          VK_QUEUE_FAMILY_IGNORED,
+          VK_QUEUE_FAMILY_IGNORED,
+          depthImage,
+          vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth, 0, 1, 0, 1)
+      ),
+  };
 
   clearScreenCommandBuffer = std::move(buffers[0]);
   clearScreenCommandBuffer->begin(vk::CommandBufferBeginInfo());
   clearScreenCommandBuffer->pipelineBarrier(
-      vk::PipelineStageFlagBits::eAllCommands,
-      vk::PipelineStageFlagBits::eAllCommands,
+      vk::PipelineStageFlagBits::eTopOfPipe,
+      vk::PipelineStageFlagBits::eTransfer,
       {},
       {},
       {},
       {},
       {},
-      1,
-      &memoryBarrier
+      memoryBarriers.size(),
+      memoryBarriers.data()
   );
 
   vk::ClearColorValue clearColorValue{};
   vk::ImageSubresourceRange subresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1);
   clearScreenCommandBuffer->clearColorImage(image, vk::ImageLayout::eTransferDstOptimal, &clearColorValue, 1, &subresourceRange);
-  memoryBarrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
-  memoryBarrier.newLayout = vk::ImageLayout::eColorAttachmentOptimal;
+
+  vk::ClearDepthStencilValue clearDepthValue(1.0f, 0);
+  vk::ImageSubresourceRange depthSubresourceRange(vk::ImageAspectFlagBits::eDepth, 0, 1, 0, 1);
+  clearScreenCommandBuffer->clearDepthStencilImage(depthImage, vk::ImageLayout::eTransferDstOptimal, &clearDepthValue, 1, &depthSubresourceRange);
+
+  /**
+   *     barrier.srcAccessMask = 0;
+    barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+    sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+   */
+
+  memoryBarriers[0].srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+  memoryBarriers[0].dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+  memoryBarriers[0].oldLayout = vk::ImageLayout::eTransferDstOptimal;
+  memoryBarriers[0].newLayout = vk::ImageLayout::eColorAttachmentOptimal;
+
+  memoryBarriers[1].srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+  memoryBarriers[1].dstAccessMask = vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+  memoryBarriers[1].oldLayout = vk::ImageLayout::eTransferDstOptimal;
+  memoryBarriers[1].newLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+
   clearScreenCommandBuffer->pipelineBarrier(
-      vk::PipelineStageFlagBits::eAllCommands,
-      vk::PipelineStageFlagBits::eAllCommands,
+      vk::PipelineStageFlagBits::eTransfer,
+      vk::PipelineStageFlagBits::eColorAttachmentOutput,
       {},
       {},
       {},
       {},
       {},
       1,
-      &memoryBarrier
+      &memoryBarriers[0]
   );
+
+  clearScreenCommandBuffer->pipelineBarrier(
+      vk::PipelineStageFlagBits::eTransfer,
+      vk::PipelineStageFlagBits::eEarlyFragmentTests,
+      {},
+      {},
+      {},
+      {},
+      {},
+      1,
+      &memoryBarriers[1]
+      );
 
   clearScreenCommandBuffer->end();
 
-  memoryBarrier.oldLayout = vk::ImageLayout::eColorAttachmentOptimal;
-  memoryBarrier.newLayout = vk::ImageLayout::ePresentSrcKHR;
+  memoryBarriers[0].srcAccessMask = {};
+  memoryBarriers[0].dstAccessMask = {};
+  memoryBarriers[0].oldLayout = vk::ImageLayout::eColorAttachmentOptimal;
+  memoryBarriers[0].newLayout = vk::ImageLayout::ePresentSrcKHR;
 
   presentFormatCommandBuffer = std::move(buffers[1]);
   presentFormatCommandBuffer->begin(vk::CommandBufferBeginInfo());
@@ -84,7 +180,7 @@ Image::Image(device::VulkanDevice* device,
       {},
       {},
       1,
-      &memoryBarrier
+      &memoryBarriers[0]
   );
   presentFormatCommandBuffer->end();
 

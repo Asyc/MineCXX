@@ -15,15 +15,28 @@ inline vk::PresentModeKHR mapSwapchainMode(Swapchain::SwapchainMode mode) {
   }
 }
 
+inline vk::Format findSupportedFormat(vk::PhysicalDevice device, const std::vector<vk::Format>& supported, vk::ImageTiling tiling, vk::FormatFeatureFlags features) {
+  for (vk::Format format : supported) {
+    vk::FormatProperties formatProperties = device.getFormatProperties(format);
+
+    if (tiling == vk::ImageTiling::eLinear && (formatProperties.linearTilingFeatures & features) == features) {
+      return format;
+    } else if (tiling == vk::ImageTiling::eOptimal && (formatProperties.optimalTilingFeatures & features) == features) {
+      return format;
+    }
+  }
+
+  throw std::runtime_error("failed to find supported format");
+}
+
 void threadEntry(VulkanSwapchain*);
 
 VulkanSwapchain::VulkanSwapchain(Swapchain::SwapchainMode modeHint,
                                  vk::SurfaceKHR surface,
                                  vk::PhysicalDevice physicalDevice,
                                  device::VulkanDevice* device,
-                                 const device::VulkanQueueManager& queueManager) : m_Owner(device) {
+                                 VmaAllocator allocator) : m_Owner(device), m_Allocator(allocator) {
   vk::SurfaceCapabilitiesKHR capabilities = physicalDevice.getSurfaceCapabilitiesKHR(surface);
-
   bool tripleBuffer = false;
   m_SupportedModes.insert(SwapchainMode::DOUBLE_BUFFER_VSYNC);
   if (capabilities.maxImageCount >= 3) {
@@ -55,7 +68,7 @@ VulkanSwapchain::VulkanSwapchain(Swapchain::SwapchainMode modeHint,
 
   m_Owner = device;
   m_Surface = surface;
-  m_GraphicsQueue = queueManager.getGraphicsQueue();
+  m_GraphicsQueue = device->getQueueManager().getGraphicsQueue();
 
   m_PresentMode = mapSwapchainMode(m_Mode);
   m_SwapchainFormat = selectedFormat;
@@ -64,41 +77,63 @@ VulkanSwapchain::VulkanSwapchain(Swapchain::SwapchainMode modeHint,
   uint32_t imageCount = tripleBuffer ? 3 : 2;
   m_SwapchainImageCountMin = imageCount < capabilities.minImageCount ? capabilities.minImageCount : imageCount;
 
-  vk::AttachmentDescription attachmentDescription(
-      {},
-      m_SwapchainFormat.format,
-      vk::SampleCountFlagBits::e1,
-      vk::AttachmentLoadOp::eLoad,
-      vk::AttachmentStoreOp::eStore,
-      vk::AttachmentLoadOp::eDontCare,
-      vk::AttachmentStoreOp::eDontCare,
-      vk::ImageLayout::eColorAttachmentOptimal,
-      vk::ImageLayout::eColorAttachmentOptimal
-  );
+  m_DepthBufferFormat = findSupportedFormat(physicalDevice,
+                                            {vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint},
+                                            vk::ImageTiling::eOptimal,
+                                            vk::FormatFeatureFlagBits::eDepthStencilAttachment);
+
+  std::array<vk::AttachmentDescription, 2> attachments = {
+      vk::AttachmentDescription(
+          {},
+          m_SwapchainFormat.format,
+          vk::SampleCountFlagBits::e1,
+          vk::AttachmentLoadOp::eLoad,
+          vk::AttachmentStoreOp::eStore,
+          vk::AttachmentLoadOp::eDontCare,
+          vk::AttachmentStoreOp::eDontCare,
+          vk::ImageLayout::eColorAttachmentOptimal,
+          vk::ImageLayout::eColorAttachmentOptimal
+      ),
+      vk::AttachmentDescription(
+          {},
+          m_DepthBufferFormat,
+          vk::SampleCountFlagBits::e1,
+          vk::AttachmentLoadOp::eLoad,
+          vk::AttachmentStoreOp::eStore,
+          vk::AttachmentLoadOp::eDontCare,
+          vk::AttachmentStoreOp::eDontCare,
+          vk::ImageLayout::eDepthStencilAttachmentOptimal,
+          vk::ImageLayout::eDepthStencilAttachmentOptimal
+      )
+  };
 
   vk::AttachmentReference attachmentReference(0, vk::ImageLayout::eColorAttachmentOptimal);
+  vk::AttachmentReference depthAttachmentReference(1, vk::ImageLayout::eDepthStencilAttachmentOptimal);
+
   vk::SubpassDescription subpassDescription(
       {},
       vk::PipelineBindPoint::eGraphics,
       {},
       {},
       1,
-      &attachmentReference
+      &attachmentReference,
+      nullptr,
+      &depthAttachmentReference
   );
 
   vk::SubpassDependency subpassDependency(
       VK_SUBPASS_EXTERNAL,
       0,
-      vk::PipelineStageFlagBits::eColorAttachmentOutput,
-      vk::PipelineStageFlagBits::eColorAttachmentOutput,
+      vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests,
+      vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests,
       {},
-      vk::AccessFlagBits::eColorAttachmentWrite
+      vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentWrite
   );
 
-  vk::RenderPassCreateInfo renderPassCreateInfo({}, 1, &attachmentDescription, 1, &subpassDescription, 1, &subpassDependency);
+  vk::RenderPassCreateInfo renderPassCreateInfo({}, attachments.size(), attachments.data(), 1, &subpassDescription, 1, &subpassDependency);
   m_RenderPass = device->getDevice().createRenderPassUnique(renderPassCreateInfo);
 
-  vk::CommandPoolCreateInfo commandPoolCreateInfo(vk::CommandPoolCreateFlagBits::eResetCommandBuffer, queueManager.getGraphicsQueueFamily().index);
+  vk::CommandPoolCreateInfo commandPoolCreateInfo(vk::CommandPoolCreateFlagBits::eResetCommandBuffer, device->getQueueManager().getGraphicsQueueFamily().index);
   m_CommandPool = device->getDevice().createCommandPoolUnique(commandPoolCreateInfo);
 
   // After finally initializing all relevant class members, we can construct the swapchain
@@ -111,6 +146,14 @@ VulkanSwapchain::VulkanSwapchain(Swapchain::SwapchainMode modeHint,
 
 VulkanSwapchain::~VulkanSwapchain() {
   m_Owner->getDevice().waitIdle();
+
+  for (auto& flight : m_ResourceFlights) {
+    flight.resources.clear();
+  }
+}
+
+void VulkanSwapchain::addResourceFree(std::shared_ptr<void> resource) {
+  m_ResourceFlights[m_CurrentFlight].resources.push_back(std::move(resource));
 }
 
 void VulkanSwapchain::nextImage() {
@@ -202,7 +245,7 @@ void VulkanSwapchain::createSwapchain() {
   m_SwapchainImages.clear();
 
   for (uint32_t i = 0; i < images.size(); i++) {
-    m_SwapchainImages.emplace_back(m_Owner, images[i], i, m_SwapchainFormat.format, m_SwapchainExtent, *m_RenderPass, *m_CommandPool);
+    m_SwapchainImages.emplace_back(m_Owner, m_Allocator, images[i], i, m_SwapchainFormat.format, m_SwapchainExtent, m_DepthBufferFormat, *m_RenderPass, *m_CommandPool);
   }
 
   uint32_t flightCount;
@@ -221,9 +264,13 @@ void VulkanSwapchain::createSwapchain() {
   for (uint32_t i = 0; i < flightCount; i++) {
     m_RenderFlights.emplace_back(m_Owner->getDevice());
   }
+
+  m_ResourceFlights.clear();
+  m_ResourceFlights.resize(m_RenderFlights.size());
 }
 
 void VulkanSwapchain::setupImage() {
+  m_ResourceFlights[m_CurrentFlight].resources.clear();
   auto& currentFlight = m_RenderFlights[m_CurrentFlight];
   if (currentFlight.boundImage != nullptr) currentFlight.boundImage->wait();
 

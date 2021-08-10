@@ -8,6 +8,7 @@
 class MainMenu : public engine::gui::Gui {
  public:
   explicit MainMenu(engine::render::RenderContext& context, engine::gui::Scene& scene);
+  ~MainMenu();
 };
 
 #endif //MINECRAFTCXX_CLIENT_GAME_SRC_GUI_MAIN_MENU_HPP_

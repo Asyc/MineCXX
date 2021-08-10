@@ -4,6 +4,8 @@
 #include "engine/render/swapchain.hpp"
 
 #include <atomic>
+#include <deque>
+#include <mutex>
 #include <vector>
 
 #include "engine/vulkan/render/buffer/vulkan_image.hpp"
@@ -18,8 +20,14 @@ using namespace ::engine::render::command;
 
 class VulkanSwapchain : public Swapchain {
  public:
-  VulkanSwapchain(SwapchainMode modeHint, vk::SurfaceKHR surface, vk::PhysicalDevice, device::VulkanDevice* device, const device::VulkanQueueManager& queueManager);
+  VulkanSwapchain(Swapchain::SwapchainMode modeHint,
+                  vk::SurfaceKHR surface,
+                  vk::PhysicalDevice physicalDevice,
+                  device::VulkanDevice* device,
+                  VmaAllocator allocator);
   ~VulkanSwapchain() override;
+
+  void addResourceFree(std::shared_ptr<void> resource) override;
 
   void nextImage() override;
 
@@ -41,7 +49,12 @@ class VulkanSwapchain : public Swapchain {
 
   [[nodiscard]] vk::Extent2D getExtent() const;
 
+  [[nodiscard]] vk::Format getDepthBufferFormat() const { return m_DepthBufferFormat; }
+
  private:
+  struct ResourceFreeFlight {
+    std::deque<std::shared_ptr<void>> resources;
+  };
   void createSwapchain();
   void setupImage();
 
@@ -49,6 +62,7 @@ class VulkanSwapchain : public Swapchain {
   std::set<SwapchainMode> m_SupportedModes;
 
   device::VulkanDevice* m_Owner;
+  VmaAllocator m_Allocator;
   vk::SurfaceKHR m_Surface;
   vk::Queue m_GraphicsQueue;
 
@@ -56,6 +70,8 @@ class VulkanSwapchain : public Swapchain {
   vk::SurfaceFormatKHR m_SwapchainFormat;
   vk::Extent2D m_SwapchainExtent;
   uint32_t m_SwapchainImageCountMin;
+
+  vk::Format m_DepthBufferFormat;
 
   vk::UniqueRenderPass m_RenderPass;
   vk::UniqueCommandPool m_CommandPool;
@@ -65,6 +81,8 @@ class VulkanSwapchain : public Swapchain {
   std::vector<Image> m_SwapchainImages;
   std::vector<ImageFlight> m_RenderFlights;
   size_t m_CurrentFlight;
+
+  std::vector<ResourceFreeFlight> m_ResourceFlights;
 };
 
 }   // namespace engine::vulkan::render

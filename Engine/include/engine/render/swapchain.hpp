@@ -1,6 +1,7 @@
 #ifndef MINECRAFTCXX_CLIENT_ENGINE_INCLUDE_ENGINE_RENDER_SWAPCHAIN_HPP_
 #define MINECRAFTCXX_CLIENT_ENGINE_INCLUDE_ENGINE_RENDER_SWAPCHAIN_HPP_
 
+#include <memory>
 #include <string_view>
 #include <set>
 #include <tuple>
@@ -19,6 +20,8 @@ class Swapchain {
   };
 
   virtual ~Swapchain() = default;
+
+  virtual void addResourceFree(std::shared_ptr<void> resource) = 0;
 
   virtual void nextImage() = 0;
 

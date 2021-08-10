@@ -5,13 +5,16 @@
 #include <functional>
 
 #include <stb_image.h>
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
 
 #include "engine/render/render_context.hpp"
 
+
 namespace engine::image {
 
-TexturePacker::TexturePacker() : m_Textures() {}
+TexturePacker::TexturePacker(render::RenderContext& context) : m_Context(&context), m_Textures() {}
 
 TexturePacker::Texture* TexturePacker::addImage(const File& path) {
   int width, height, channels;
@@ -46,7 +49,7 @@ std::shared_ptr<render::buffer::Image> TexturePacker::stitch() {
     uint8_t r, g, b, a;
   };
 
-  auto* out = (Component*) malloc(sizeof(Component) * (result_size.w * result_size.h));
+  auto out = std::make_unique<Component[]>(result_size.w * result_size.h);
   const auto outRow = result_size.w;
 
   for (size_t i = 0; i < m_Textures.size(); i++) {
@@ -60,15 +63,16 @@ std::shared_ptr<render::buffer::Image> TexturePacker::stitch() {
     for (size_t x = 0; x < rect.w; x++) {
       size_t adjustedX = rect.x + x;
 
-      for (size_t y = 0; i < rect.h; y++) {
+      for (size_t y = 0; y < rect.h; y++) {
         size_t adjustedY = rect.y + y;
         out[adjustedX + adjustedY * outRow] = src[x + y * row];
       }
     }
   }
 
-  free(out);
-  return m_Context->createImage(out, (uint32_t) result_size.w, (uint32_t) result_size.h, render::buffer::Image::SamplerOptions());
+
+  auto image = m_Context->createImage(out.get(), (uint32_t) result_size.w, (uint32_t) result_size.h, render::buffer::Image::SamplerOptions());
+  return std::move(image);
 }
 
 }  // namespace engine::image

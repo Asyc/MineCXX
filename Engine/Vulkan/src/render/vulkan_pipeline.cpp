@@ -45,6 +45,8 @@ VulkanRenderPipeline::VulkanRenderPipeline(vk::Device device, vk::RenderPass ren
 
   vk::PipelineMultisampleStateCreateInfo multisampleStateCreateInfo({}, vk::SampleCountFlagBits::e1, VK_FALSE);
 
+  vk::PipelineDepthStencilStateCreateInfo depthStencilCreateInfo({}, VK_FALSE);
+
   vk::PipelineColorBlendAttachmentState attachmentState(
       VK_TRUE,
       vk::BlendFactor::eSrcAlpha,
@@ -74,7 +76,7 @@ VulkanRenderPipeline::VulkanRenderPipeline(vk::Device device, vk::RenderPass ren
       &viewportStateCreateInfo,
       &rasterizationStateCreateInfo,
       &multisampleStateCreateInfo,
-      nullptr,
+      &depthStencilCreateInfo,
       &colorBlendStateCreateInfo,
       &dynamicStateCreateInfo,
       program.getPipelineLayout(),

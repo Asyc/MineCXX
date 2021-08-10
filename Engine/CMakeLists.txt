@@ -28,7 +28,7 @@ set(HEADERS
         include/engine/render/descriptor.hpp
         include/engine/event/event.hpp
         include/engine/event/event.cpp
-        )
+        include/engine/render/camera.hpp include/engine/render/buffer/storage_buffer.hpp)
 
 set(SOURCES
         src/engine.cpp

@@ -17,7 +17,7 @@ void VulkanQueueManager::submitTransfer(uint32_t count, const vk::SubmitInfo* su
 }
 
 void VulkanQueueManager::submitGraphics(uint32_t count, const vk::SubmitInfo* submitInfo, vk::Fence fence) {
-  m_Context->getTransferManager().submit(false);
+  m_Context->getDevice().getTransferManager().submit(false);
   m_TransferQueue.waitIdle(); //todo : revise
   m_GraphicsQueue.submit(count, submitInfo, fence);
 }

@@ -16,6 +16,11 @@ class UniformBuffer : public IDescriptorResource {
   UniformBuffer() = default;
 };
 
+class SwitchingUniformBuffer : public UniformBuffer {
+ public:
+  void write(size_t offset, const void* ptr, size_t length) override = 0;
+};
+
 }
 
 #endif //MINECRAFTCXX_CLIENT_ENGINE_INCLUDE_ENGINE_RENDER_BUFFER_UNIFORM_BUFFER_HPP_

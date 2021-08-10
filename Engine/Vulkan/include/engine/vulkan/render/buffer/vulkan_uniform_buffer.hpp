@@ -13,6 +13,10 @@
 
 VK_DEFINE_HANDLE(VmaAllocation)
 
+namespace engine::vulkan::render {
+class VulkanSwapchain;
+}
+
 namespace engine::vulkan::render::buffer {
 
 using namespace ::engine::render::buffer;
@@ -31,6 +35,27 @@ class VulkanUniformBuffer : public UniformBuffer, public IVulkanDescriptorResour
   vk::UniqueDescriptorSet m_DescriptorSet;
 
   void* m_MappedPtr;
+};
+
+class VulkanSwitchingUniformBuffer : public UniformBuffer, public IVulkanDescriptorResource {
+ public:
+  VulkanSwitchingUniformBuffer(VmaAllocator allocator, size_t size);
+
+  void write(size_t offset, const void* ptr, size_t length) override;
+
+  [[nodiscard]] vk::DescriptorType getDescriptorType() const override { return vk::DescriptorType::eUniformBuffer; }
+  [[nodiscard]] vk::Buffer getBuffer() const override;
+ protected:
+  VulkanSwapchain* m_Swapchain;
+
+  struct Buffer {
+    vk::Buffer buffer;
+    std::unique_ptr<VmaAllocation_T, std::function<void(VmaAllocation)>> m_Allocation;
+    vk::UniqueDescriptorSet m_DescriptorSet;
+    void* m_MappedPtr;
+  };
+
+  std::vector<Buffer> m_Stages;
 };
 
 }

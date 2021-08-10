@@ -205,4 +205,28 @@ void VulkanTransferManager::addTaskImage(VulkanTransferBufferUnique src, vk::Ima
   currentFlight.pendingRelease.emplace_back(std::move(src));
 }
 
+void VulkanTransferManager::setupDepthBufferImage(vk::Image dst) {
+  auto& currentFlight = m_Flights[m_FlightIndex];
+
+  m_CommandPool.getOwner().waitForFences(1, &*currentFlight.fence, VK_FALSE, UINT64_MAX);
+  if (currentFlight.empty) {
+    if (!currentFlight.pendingRelease.empty()) currentFlight.pendingRelease.clear();
+    currentFlight.buffer->begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
+    currentFlight.empty = false;
+  }
+
+  vk::ImageMemoryBarrier memoryBarrier(
+      {},
+      vk::AccessFlagBits::eTransferWrite,
+      vk::ImageLayout::eUndefined,
+      vk::ImageLayout::eDepthStencilAttachmentOptimal,
+      VK_QUEUE_FAMILY_IGNORED,
+      VK_QUEUE_FAMILY_IGNORED,
+      dst,
+      vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth, 0, 1, 0, 1)
+  );
+
+  currentFlight.buffer->pipelineBarrier(vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eTransfer, {}, 0, nullptr, 0, nullptr, 1, &memoryBarrier);
+}
+
 }   // namespace engine::vulkan::render::buffer

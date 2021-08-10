@@ -101,6 +101,8 @@ class VulkanTransferManager {
   void addTask(VulkanTransferBufferUnique src, vk::Buffer dst, size_t srcOffset, size_t dstOffset, size_t length);
   void addTaskImage(VulkanTransferBufferUnique src, vk::Image dst, vk::BufferImageCopy imageCopy);
 
+  void setupDepthBufferImage(vk::Image dst);
+
   VulkanTransferPool& getTransferPool() {
     return m_TransferPool;
   }

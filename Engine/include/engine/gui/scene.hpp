@@ -1,12 +1,14 @@
 #ifndef MINECRAFTCXX_CLIENT_ENGINE_INCLUDE_ENGINE_GUI_SCENE_HPP_
 #define MINECRAFTCXX_CLIENT_ENGINE_INCLUDE_ENGINE_GUI_SCENE_HPP_
 
+#include <chrono>
 #include <memory>
 
 #include "gui.hpp"
 #include "input.hpp"
 
 #include "engine/render/render_context.hpp"
+#include "engine/world_object.hpp"
 
 namespace engine::gui {
 
@@ -14,10 +16,20 @@ class Scene {
  public:
   explicit Scene(render::RenderContext& context);
 
-  void setGui(std::unique_ptr<Gui> gui) { m_Gui = std::move(gui); }
+  void setGui(std::unique_ptr<Gui> gui) {
+    m_Gui = std::move(gui);
+  }
 
+  void setGui(std::nullptr_t) {
+    if (m_Gui != nullptr) {
+      m_Context->getSwapchain().addResourceFree(std::shared_ptr<Gui>(std::move(m_Gui)));
+      m_Gui = nullptr;
+    }
+  }
   template<typename T>
   typename std::enable_if<std::is_base_of<Gui, T>::value>::type setGui() { setGui(std::make_unique<T>(*m_Context, *this)); }
+
+  void setWorldObject(std::shared_ptr<WorldObject> world) { m_World = std::move(world); }
 
   void render();
   void update();
@@ -29,6 +41,10 @@ class Scene {
 
   std::unique_ptr<Gui> m_Gui;
   std::unique_ptr<render::command::DirectCommandBuffer> m_CommandBuffer;
+
+  std::shared_ptr<WorldObject> m_World;
+
+  std::chrono::high_resolution_clock::time_point m_LastTick;
 };
 
 }

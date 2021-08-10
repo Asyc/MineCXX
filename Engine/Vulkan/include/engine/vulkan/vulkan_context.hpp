@@ -34,6 +34,7 @@ class VulkanRenderContext : public RenderContext {
   [[nodiscard]] std::unique_ptr<buffer::VertexBuffer> allocateVertexBuffer(size_t size) override;
   [[nodiscard]] std::unique_ptr<buffer::IndexBuffer> allocateIndexBuffer(size_t size) override;
   [[nodiscard]] std::unique_ptr<buffer::UniformBuffer> allocateUniformBuffer(size_t size) override;
+  [[nodiscard]] std::unique_ptr<buffer::StorageBuffer> allocateStorageBuffer(size_t size) override;
 
   [[nodiscard]] std::shared_ptr<RenderPipeline> createRenderPipeline(const File& file) override;
 
@@ -45,8 +46,6 @@ class VulkanRenderContext : public RenderContext {
 
   [[nodiscard]] VulkanSwapchain& getSwapchainVulkan() { return m_Swapchain; }
   [[nodiscard]] device::VulkanDevice& getDevice() { return m_Device; }
-
-  [[nodiscard]] buffer::VulkanTransferManager& getTransferManager() { return m_TransferManager; }
 
   [[nodiscard]] const ViewportGUI& getViewport() const override { return m_GuiViewport; }
   [[nodiscard]] gui::font::FontRenderer& getFontRenderer() override { return m_FontRenderer; }
@@ -71,10 +70,8 @@ class VulkanRenderContext : public RenderContext {
   vk::PhysicalDevice m_PhysicalDevice;
 
   device::VulkanDevice m_Device;
-  std::unique_ptr<VmaAllocator_T, std::function<void(VmaAllocator)>> m_MemoryAllocator;
 
   render::VulkanSwapchain m_Swapchain;
-  buffer::VulkanTransferManager m_TransferManager;
 
   std::unordered_map<std::string, std::weak_ptr<VulkanRenderPipeline>> m_Pipelines;
 

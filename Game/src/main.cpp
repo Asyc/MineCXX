@@ -6,13 +6,21 @@
 
 #include "gui/main_menu.hpp"
 
+#include "world/chunk.hpp"
+
 using engine::Window;
 using engine::render::Swapchain;
+
+engine::render::RenderContext* g_RenderContext;
 
 void app_main() {
   Window window(1280, 720, "Window");
 
   auto context = window.createRenderContext(Swapchain::SwapchainMode::TRIPLE_BUFFER);
+
+  mc::BlockRegistry::initializeBlockRegistry(*context);
+  g_RenderContext = context.get();
+
   auto pool = context->createCommandPool();
   auto font = pool->allocateDirectCommandBuffer();
 

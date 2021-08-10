@@ -21,7 +21,7 @@ class TexturePacker {
     uint32_t width, height;
   };
 
-  TexturePacker();
+  TexturePacker(render::RenderContext& context);
 
   Texture* addImage(const File& path);
 
