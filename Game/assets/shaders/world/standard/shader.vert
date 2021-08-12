@@ -1,4 +1,5 @@
 #version 450 core
+#extension GL_EXT_debug_printf : enable
 
 layout (location = 0) in vec3 pos;
 layout (location = 1) in vec2 texPos;
@@ -15,19 +16,18 @@ layout (set = 0, binding = 0) uniform Viewport {
 } viewport;
 
 struct ChunkBlockData {
-    vec3 position;
-    int blockId;
+    vec4 positionBlockID;
 };
 
 struct BlockData {
     vec4 atlasPosition;
 };
 
-layout (set = 0, binding = 1) uniform BlockIdMap {
+layout (std140, set = 0, binding = 1) uniform BlockIdMap {
     BlockData idMap[256];
 } blockRegistry;
 
-layout (set = 0, binding = 2) readonly buffer SSBO {
+layout (std140, set = 0, binding = 2) readonly buffer SSBO {
     ChunkBlockData blocks[16 * 256 * 16];
 } worldData;
 
@@ -38,9 +38,12 @@ float map(float value, float min1, float max1, float min2, float max2) {
 void main() {
     ChunkBlockData blockRenderData = worldData.blocks[gl_InstanceIndex];
 
-    vec4 atlasPosition = blockRegistry.idMap[blockRenderData.blockId].atlasPosition;
+    int blockId = floatBitsToInt(blockRenderData.positionBlockID.w);
+
+    vec4 atlasPosition = blockRegistry.idMap[blockId].atlasPosition;
+
     vec2 interpolatedTextureUV = atlasPosition.xy + (atlasPosition.zw * texPos);
-    vec3 translatedPosition = blockRenderData.position + pos;
+    vec3 translatedPosition = blockRenderData.positionBlockID.xyz + pos;
 
     vs_TexPos = interpolatedTextureUV;
 

@@ -22,6 +22,7 @@ class TexturePacker {
   };
 
   TexturePacker(render::RenderContext& context);
+  ~TexturePacker();
 
   Texture* addImage(const File& path);
 
@@ -29,7 +30,7 @@ class TexturePacker {
   std::shared_ptr<render::buffer::Image> stitch();
  private:
   render::RenderContext* m_Context;
-  std::vector<Texture> m_Textures;
+  std::list<Texture> m_Textures;
 };
 
 }

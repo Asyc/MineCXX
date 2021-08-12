@@ -77,7 +77,6 @@ void Camera::onMouseMove(double x, double y) {
 
   UniformBufferData data{m_ProjectionMatrix, matrix};
   m_Buffer->write(0, &data, sizeof(data));
-  LOG_INFO("Pitch: {}", m_Pitch);
 }
 
 void Camera::setEnabled(bool enabled) {

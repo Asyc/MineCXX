@@ -82,8 +82,7 @@ struct BlockData {
 
 void Chunk::tick() {
   if (m_UniformDescriptor != nullptr) return;
-  m_StorageBuffer = g_RenderContext->allocateStorageBuffer(sizeof(int32_t) + sizeof(BlockData) * 16 * 256 * 16);
-
+  m_StorageBuffer = g_RenderContext->allocateStorageBuffer(sizeof(BlockData) * 16 * 256 * 16);
   m_UniformDescriptor = m_Pipeline->allocateDescriptorSet(0);
   m_UniformDescriptor->bind(0, *g_RenderContext->getCamera().getBuffer());
   m_UniformDescriptor->bind(1, *mc::BlockRegistry::getInstance().getBlockRegistryBuffer());
@@ -91,19 +90,24 @@ void Chunk::tick() {
 
   int32_t count = 0;
 
+  auto buffer = std::make_unique<BlockData[]>(16 * 256 * 16);
+
   for (size_t x = 0; x < 16; x++) {
     for (size_t y = 0; y < 256; y++) {
       for (size_t z = 0; z < 16; z++) {
         auto& block = m_BlockData[x][y][z];
         if (block.blockType != nullptr) {
-          size_t index = count++;
-          BlockData data{glm::vec3(x, y, z), (int32_t) block.blockType->getId()};
-          m_StorageBuffer->write(count * sizeof(BlockData), &data, sizeof(BlockData));
+          auto fx = static_cast<float>(x);
+          auto fy = static_cast<float>(y);
+          auto fz = static_cast<float>(z);
+          BlockData data{glm::vec4(fx, fy, fz, 0.0f), (int32_t) block.blockType->getId()};
+          buffer[count++] = data;
         }
       }
     }
   }
 
+  m_StorageBuffer->write(0, buffer.get(), sizeof(BlockData) * count);
   m_UniformDescriptor->bind(2, *m_StorageBuffer);
   m_BlockCount = count;
 }

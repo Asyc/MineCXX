@@ -44,8 +44,8 @@ MainMenu::MainMenu(engine::render::RenderContext& context, engine::gui::Scene& s
   button->setButtonCallback([&]() {
     std::shared_ptr<mc::Chunk> chunk = std::make_shared<mc::Chunk>(0, 0);
     chunk->setBlock(0, 0, 0, mc::BlockRegistry::getInstance().getBlock(3));
-    chunk->setBlock(0, 2, 0, mc::BlockRegistry::getInstance().getBlock(3));
-    chunk->setBlock(0, 0, 2, mc::BlockRegistry::getInstance().getBlock(3));
+    chunk->setBlock(0, 3, 0, mc::BlockRegistry::getInstance().getBlock(2));
+    chunk->setBlock(3, 0, 2, mc::BlockRegistry::getInstance().getBlock(1));
 
     scene.setGui(nullptr);
     scene.setWorldObject(chunk);

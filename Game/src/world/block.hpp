@@ -55,6 +55,21 @@ class Block {
   glm::vec4 m_AtlasPosition;
 };
 
+class BlockAir : public Block {
+ public:
+  BlockAir() : Block(0, engine::NamespaceFile("", "")) {}
+};
+
+class BlockStone : public Block {
+ public:
+  BlockStone() : Block(1, engine::NamespaceFile("minecraft", "textures/blocks/stone.png")) {}
+};
+
+class BlockGrass : public Block {
+ public:
+  BlockGrass() : Block(2, engine::NamespaceFile("minecraft", "textures/blocks/dirt.png")) {}
+};
+
 class BlockDirt : public Block {
  public:
   BlockDirt() : Block(3, engine::NamespaceFile("minecraft", "textures/blocks/dirt.png")) {}
