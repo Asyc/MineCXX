@@ -22,3 +22,6 @@ Game/assets/minecraft/
 .vs/
 out/
 CMakeSettings.json
+
+# Resource Atlas
+atlas.png

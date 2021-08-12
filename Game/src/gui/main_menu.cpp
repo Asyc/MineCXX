@@ -45,7 +45,16 @@ MainMenu::MainMenu(engine::render::RenderContext& context, engine::gui::Scene& s
     std::shared_ptr<mc::Chunk> chunk = std::make_shared<mc::Chunk>(0, 0);
     auto block = mc::BlockRegistry::getInstance().getBlock(3);
 
-    chunk->setBlock(5, 0, 0, block);
+    chunk->setBlock(2, 0, 0, block);
+    chunk->setBlock(3, 0, 0, block);
+    chunk->setBlock(4, 0, 0, block);
+
+
+    chunk->setBlock(3, 1, 0, block);
+    chunk->setBlock(3, 2, 0, block);
+    chunk->setBlock(3, 3, 0, block);
+    chunk->setBlock(3, 4, 0, block);
+    chunk->setBlock(3, 5, 0, block);
 
 
     scene.setGui(nullptr);
