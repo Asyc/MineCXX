@@ -119,7 +119,7 @@ inline void parseShader(const std::vector<char>& shaderBuffer,
 
     for (uint32_t i = 0; i < type.member_types.size(); i++) {
       uint32_t offset = compiler.get_member_decoration(it.base_type_id, i, spv::DecorationOffset);
-      uint32_t memberSize = compiler.get_declared_struct_member_size(type, i);
+      uint32_t memberSize = static_cast<uint32_t>(compiler.get_declared_struct_member_size(type, i));
 
       if (lowestAccessed == -1 || offset < lowestAccessed) lowestAccessed = offset;
       uint32_t lastIndex = offset + memberSize;
@@ -298,14 +298,14 @@ VulkanProgram::VulkanProgram(vk::Device device, const std::string_view& program)
   std::vector<vk::UniqueDescriptorSetLayout> descriptorSets(setBindingTable.size());
   uint32_t index = 0;
   for (const auto& bindings : setBindingTable) {
-    vk::DescriptorSetLayoutCreateInfo createInfo({}, bindings.size(), bindings.data());
+    vk::DescriptorSetLayoutCreateInfo createInfo({}, static_cast<uint32_t>(bindings.size()), bindings.data());
     descriptorSets[index++] = device.createDescriptorSetLayoutUnique(createInfo);
   }
 
   auto* buffer = (vk::DescriptorSetLayout*) alloca(sizeof(vk::DescriptorSet) * descriptorSets.size());
   for (size_t i = 0; i < descriptorSets.size(); i++) buffer[i] = *descriptorSets[i];
 
-  vk::PipelineLayoutCreateInfo layoutCreateInfo({}, descriptorSets.size(), buffer, pushConstantRanges.size(), pushConstantRanges.data());
+  vk::PipelineLayoutCreateInfo layoutCreateInfo({}, static_cast<uint32_t>(descriptorSets.size()), buffer, static_cast<uint32_t>(pushConstantRanges.size()), pushConstantRanges.data());
   m_PipelineLayout = device.createPipelineLayoutUnique(layoutCreateInfo);
   m_DescriptorSetLayoutTable = std::move(descriptorSets);
 }

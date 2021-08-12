@@ -62,7 +62,7 @@ void VulkanDrawableCommandBuffer::drawIndexed(uint32_t instanceCount, uint32_t i
   getCommandBufferHandle().drawIndexed(indexCount, instanceCount, 0, 0, 0);
 }
 
-void VulkanDrawableCommandBuffer::pushConstants(PushConstantUsage usage, uint32_t offset, const void* data, uint32_t length) {
+void VulkanDrawableCommandBuffer::pushConstants(PushConstantUsage usage, uint32_t offset, const void* data, size_t length) {
   using IntEnum = std::underlying_type<PushConstantUsage>::type;
   auto value = static_cast<IntEnum>(usage);
 
@@ -77,7 +77,7 @@ void VulkanDrawableCommandBuffer::pushConstants(PushConstantUsage usage, uint32_
     stageFlags |= vk::ShaderStageFlagBits::eFragment;
   }
 
-  getCommandBufferHandle().pushConstants(m_CurrentLayout, stageFlags, offset, length, data);
+  getCommandBufferHandle().pushConstants(m_CurrentLayout, stageFlags, offset, static_cast<uint32_t>(length), data);
 }
 
 VulkanSwitchingCommandBuffer::VulkanSwitchingCommandBuffer(vk::Device device, const VulkanSwapchain* swapchain, vk::CommandPool pool, vk::CommandBufferLevel level)

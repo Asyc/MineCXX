@@ -53,14 +53,14 @@ inline vk::UniqueDevice createDevice(vk::PhysicalDevice physicalDevice, vk::Surf
       queuesCreateInfo.data(),
       0,
       nullptr,
-      deviceExtensions.size(),
+      static_cast<uint32_t>(deviceExtensions.size()),
       deviceExtensions.data(),
       &features
   );
 
 #if defined(MCE_DBG)
   std::array<const char*, 2> debugExtensions{VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME};
-  deviceCreateInfo.enabledExtensionCount = debugExtensions.size();
+  deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(debugExtensions.size());
   deviceCreateInfo.ppEnabledExtensionNames = debugExtensions.data();
 #endif
 

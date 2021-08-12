@@ -37,6 +37,8 @@ class Program {
       std::string vertexPath;
       std::string geometryPath;
       std::string fragmentPath;
+      bool depthTest;
+      bool depthWrite;
     } vulkan;
   } programConfig;
 

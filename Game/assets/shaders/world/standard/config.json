@@ -2,6 +2,8 @@
   "vulkan": {
     "vertexPath": "shader.vert.spv",
     "fragmentPath": "shader.frag.spv",
+    "depthTest": true,
+    "depthWrite": true,
     "input": {
       "topology": "eTriangleList",
       "buffers": [

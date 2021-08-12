@@ -62,25 +62,9 @@ std::unique_ptr<render::RenderContext> Window::createRenderContext(render::Swapc
   glfwSetMouseButtonCallback(m_Window.get(), [](GLFWwindow* handle, int button, int action, int modifier) {
     auto* ref = reinterpret_cast<vulkan::render::RenderContext*>(glfwGetWindowUserPointer(handle));
 
-    engine::gui::input::MouseButton buttonFlag;
-    switch (button) {
-      case GLFW_MOUSE_BUTTON_LEFT:buttonFlag = gui::input::MouseButton::LEFT;
-        break;
-      case GLFW_MOUSE_BUTTON_RIGHT:buttonFlag = gui::input::MouseButton::RIGHT;
-        break;
-      case GLFW_MOUSE_BUTTON_MIDDLE:buttonFlag = gui::input::MouseButton::MIDDLE;
-        break;
-      default: return;
-    }
-
-    engine::gui::input::MouseButtonAction actionFlag;
-    switch (action) {
-      case GLFW_PRESS:actionFlag = gui::input::MouseButtonAction::PRESS;
-        break;
-      case GLFW_RELEASE:actionFlag = gui::input::MouseButtonAction::RELEASE;
-        break;
-      default:return;
-    }
+    auto buttonFlag = static_cast<engine::gui::input::MouseButton>(button);
+    auto actionFlag = static_cast<engine::gui::input::MouseButtonAction>(action);
+    auto modifierFlag = static_cast<engine::gui::input::Modifier>(modifier);
 
     double x, y;
     glfwGetCursorPos(handle, &x, &y);
@@ -88,11 +72,21 @@ std::unique_ptr<render::RenderContext> Window::createRenderContext(render::Swapc
     ref->mouseButtonCallback(buttonFlag, actionFlag, x, y);
   });
 
+  glfwSetCursorPosCallback(m_Window.get(), [](GLFWwindow* handle, double x, double y){
+    auto* ref = reinterpret_cast<vulkan::render::RenderContext*>(glfwGetWindowUserPointer(handle));
+    ref->mousePositionCallback(x, y);
+  });
+
   return std::move(ptr);
 }
 
 void Window::setCloseFlag(bool flag) {
   glfwSetWindowShouldClose(m_Window.get(), flag);
+}
+
+void Window::setCursorDisabledFlag(bool flag) {
+  int mask = flag ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL;
+  glfwSetInputMode(m_Window.get(), GLFW_CURSOR, mask);
 }
 
 bool Window::shouldClose() const {

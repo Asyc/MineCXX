@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "engine/engine.hpp"
 #include "engine/file.hpp"
 #include "engine/window.hpp"
@@ -16,7 +18,7 @@ engine::render::RenderContext* g_RenderContext;
 void app_main() {
   Window window(1280, 720, "Window");
 
-  auto context = window.createRenderContext(Swapchain::SwapchainMode::TRIPLE_BUFFER);
+  auto context = window.createRenderContext(Swapchain::SwapchainMode::DOUBLE_BUFFER_VSYNC);
 
   mc::BlockRegistry::initializeBlockRegistry(*context);
   g_RenderContext = context.get();

@@ -1,9 +1,10 @@
 #ifndef MINECRAFTCXX_CLIENT_ENGINE_INCLUDE_ENGINE_MATH_HPP_
 #define MINECRAFTCXX_CLIENT_ENGINE_INCLUDE_ENGINE_MATH_HPP_
 
-#include <glm/glm.hpp>
 
-namespace engine {
-}
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #endif //MINECRAFTCXX_CLIENT_ENGINE_INCLUDE_ENGINE_MATH_HPP_

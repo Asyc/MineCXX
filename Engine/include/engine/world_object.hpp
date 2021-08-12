@@ -9,13 +9,14 @@ using render::command::IDrawableCommandBuffer;
 
 class WorldObject {
  public:
-
   virtual ~WorldObject() = default;
 
   /**
    * Called every frame
+   *
+   * @param deltaTicks A value between (0.0 - 1.0) that represents the time passed since the last tick, in ticks.
    */
-  virtual void update() = 0;  // Called each frame
+  virtual void update(float deltaTicks) = 0;  // Called each frame
 
   /**
    * Called every (1/20) of a second

@@ -29,15 +29,18 @@ class Scene {
   template<typename T>
   typename std::enable_if<std::is_base_of<Gui, T>::value>::type setGui() { setGui(std::make_unique<T>(*m_Context, *this)); }
 
-  void setWorldObject(std::shared_ptr<WorldObject> world) { m_World = std::move(world); }
+  void setWorldObject(std::shared_ptr<WorldObject> world) { m_World = std::move(world); m_Context->getCamera().setEnabled(true); }
 
   void render();
   void update();
 
   void onResize(uint32_t width, uint32_t height);
   void onMouseAction(input::MouseButton button, input::MouseButtonAction action);
+  void onMouseMove(double x, double y);
  private:
   render::RenderContext* m_Context;
+
+  double m_MouseX, m_MouseY;
 
   std::unique_ptr<Gui> m_Gui;
   std::unique_ptr<render::command::DirectCommandBuffer> m_CommandBuffer;

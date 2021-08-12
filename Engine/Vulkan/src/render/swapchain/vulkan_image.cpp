@@ -69,7 +69,7 @@ Image::Image(device::VulkanDevice* device,
       *depthImageView
   };
 
-  vk::FramebufferCreateInfo framebufferCreateInfo({}, renderPass, attachments.size(), attachments.data(), extent.width, extent.height, 1);
+  vk::FramebufferCreateInfo framebufferCreateInfo({}, renderPass, static_cast<uint32_t>(attachments.size()), attachments.data(), extent.width, extent.height, 1);
   framebuffer = owner->getDevice().createFramebufferUnique(framebufferCreateInfo);
 
   vk::CommandBufferAllocateInfo commandBufferAllocateInfo(commandPool, vk::CommandBufferLevel::ePrimary, 2);
@@ -108,7 +108,7 @@ Image::Image(device::VulkanDevice* device,
       {},
       {},
       {},
-      memoryBarriers.size(),
+      static_cast<uint32_t>(memoryBarriers.size()),
       memoryBarriers.data()
   );
 
@@ -207,7 +207,7 @@ void Image::setup(vk::Queue queue, vk::Semaphore imageAvailableSemaphore) {
   wait();
 
   std::array<vk::Fence, 2> fences = {*clearScreenFence, *imageCompleteFence};
-  owner->getDevice().resetFences(fences.size(), fences.data());
+  owner->getDevice().resetFences(static_cast<uint32_t>(fences.size()), fences.data());
 
   vk::SubmitInfo submitInfo(1, &imageAvailableSemaphore, &waitFlag, 1, &*clearScreenCommandBuffer, 0, &*clearScreenSemaphore);
   queue.submit(1, &submitInfo, *clearScreenFence);
@@ -220,7 +220,7 @@ void Image::present(vk::Queue queue, vk::SwapchainKHR swapchain) {
   for (uint32_t i = 0; i < activeSemaphoreCount; i++)
     flags[i] = vk::PipelineStageFlagBits::eColorAttachmentOutput;
 
-  vk::SubmitInfo submitInfo(activeSemaphoreCount, semaphores.data(), flags, 1, &*presentFormatCommandBuffer, 1, &*imageCompleteSemaphore);
+  vk::SubmitInfo submitInfo(static_cast<uint32_t>(activeSemaphoreCount), semaphores.data(), flags, 1, &*presentFormatCommandBuffer, 1, &*imageCompleteSemaphore);
 
   queue.submit(1, &submitInfo, *imageCompleteFence);
 

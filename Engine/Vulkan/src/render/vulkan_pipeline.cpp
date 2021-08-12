@@ -10,9 +10,9 @@ namespace engine::vulkan::render {
 VulkanRenderPipeline::VulkanRenderPipeline(vk::Device device, vk::RenderPass renderPass, VulkanProgram&& program) {
   vk::PipelineVertexInputStateCreateInfo vertexInputStateCreateInfo(
       {},
-      program.getInputBindings().size(),
+      static_cast<uint32_t>(program.getInputBindings().size()),
       program.getInputBindings().data(),
-      program.getInputAttributes().size(),
+      static_cast<uint32_t>(program.getInputAttributes().size()),
       program.getInputAttributes().data()
   );
 
@@ -45,7 +45,14 @@ VulkanRenderPipeline::VulkanRenderPipeline(vk::Device device, vk::RenderPass ren
 
   vk::PipelineMultisampleStateCreateInfo multisampleStateCreateInfo({}, vk::SampleCountFlagBits::e1, VK_FALSE);
 
-  vk::PipelineDepthStencilStateCreateInfo depthStencilCreateInfo({}, VK_FALSE);
+  vk::PipelineDepthStencilStateCreateInfo depthStencilCreateInfo(
+      {},
+      program.programConfig.vulkan.depthTest,
+      program.programConfig.vulkan.depthWrite,
+      vk::CompareOp::eLess,
+      VK_FALSE,
+      VK_FALSE
+  );
 
   vk::PipelineColorBlendAttachmentState attachmentState(
       VK_TRUE,
@@ -64,11 +71,11 @@ VulkanRenderPipeline::VulkanRenderPipeline(vk::Device device, vk::RenderPass ren
       vk::DynamicState::eScissor
   };
 
-  vk::PipelineDynamicStateCreateInfo dynamicStateCreateInfo({}, dynamicState.size(), dynamicState.data());
+  vk::PipelineDynamicStateCreateInfo dynamicStateCreateInfo({}, static_cast<uint32_t>(dynamicState.size()), dynamicState.data());
 
   vk::GraphicsPipelineCreateInfo pipelineCreateInfo(
       {},
-      program.getStages().size(),
+      static_cast<uint32_t>(program.getStages().size()),
       program.getStages().data(),
       &vertexInputStateCreateInfo,
       &inputAssemblyStateCreateInfo,
@@ -90,7 +97,7 @@ VulkanRenderPipeline::VulkanRenderPipeline(vk::Device device, vk::RenderPass ren
   m_DescriptorSetLayouts.shrink_to_fit();
 
   m_PoolSizes.emplace_back(vk::DescriptorType::eUniformBuffer, static_cast<uint32_t>(m_DescriptorSetLayouts.size()));
-  m_DescriptorPools.push_back(device.createDescriptorPoolUnique(vk::DescriptorPoolCreateInfo(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, 3, m_PoolSizes.size(), m_PoolSizes.data())));
+  m_DescriptorPools.push_back(device.createDescriptorPoolUnique(vk::DescriptorPoolCreateInfo(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, 3, static_cast<uint32_t>(m_PoolSizes.size()), m_PoolSizes.data())));
 }
 
 std::unique_ptr<UniformDescriptor> VulkanRenderPipeline::allocateDescriptorSet(uint32_t set) {
@@ -112,7 +119,7 @@ vk::UniqueDescriptorSet VulkanRenderPipeline::allocateDescriptorSetUnique(uint32
 
   auto& ref = m_DescriptorPools.emplace_back(m_Pipeline.getOwner().createDescriptorPoolUnique(vk::DescriptorPoolCreateInfo(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet,
                                                                                                                            3,
-                                                                                                                           m_PoolSizes.size(),
+                                                                                                                           static_cast<uint32_t>(m_PoolSizes.size()),
                                                                                                                            m_PoolSizes.data())));
   allocateInfo.descriptorPool = *ref;
 

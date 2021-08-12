@@ -142,7 +142,7 @@ void ElementButton::draw(render::command::IDrawableCommandBuffer& buffer) {
 }
 
 void ElementButton::onClick(input::MouseButton button, input::MouseButtonAction action, float x, float y) {
-  if (m_Callback != nullptr) std::invoke(m_Callback);
+  if (button == input::MouseButton::MOUSE_BUTTON_LEFT && m_Callback != nullptr) std::invoke(m_Callback);
 }
 
 bool ElementButton::isInside(float x, float y) {

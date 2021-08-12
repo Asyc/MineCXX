@@ -21,11 +21,19 @@ inline std::string getStringOptional(const Document& document, const char* key, 
   return {defaultValue};
 }
 
+template<typename Document>
+inline bool getOptionalBool(const Document& document, const char* key, bool defaultValue) {
+  if (document.HasMember(key)) {
+    return document[key].GetBool();
+  }
+
+  return defaultValue;
+}
+
 Program::Program(const File& pipelineConfiguration) {
   rapidjson::Document document;
   auto json = pipelineConfiguration.readFileText();
   document.Parse(json.c_str(), json.size());
-
   auto vulkan = document["vulkan"].GetObject();
   programConfig.vulkan.vertexPath = pipelineConfiguration.getParentPath() + '/' + getStringOptional(vulkan, "vertexPath", "vertex_shader.spv");
 
@@ -56,6 +64,8 @@ Program::Program(const File& pipelineConfiguration) {
                                                          });
   }
 
+  programConfig.vulkan.depthTest = getOptionalBool(vulkan, "depthTest", false);
+  programConfig.vulkan.depthWrite = getOptionalBool(vulkan, "depthWrite", false);
   MCE_LOG_DEBUG("Registered pipeline: {}, Config: Custom", pipelineConfiguration.getPath());
 }
 

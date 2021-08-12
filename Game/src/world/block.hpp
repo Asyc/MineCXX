@@ -32,14 +32,6 @@ class BlockRegistry {
   std::unordered_map<size_t, std::unique_ptr<Block>> m_Blocks;
 };
 
-class BlockRenderer {
- public:
-
-};
-class StandardBlockRenderer : public BlockRenderer {
-
-};
-
 class Block {
  public:
   friend class BlockRegistry;

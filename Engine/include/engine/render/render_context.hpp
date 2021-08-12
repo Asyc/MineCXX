@@ -13,6 +13,7 @@
 #include "engine/gui/font/font_renderer.hpp"
 #include "engine/gui/input.hpp"
 
+#include "camera.hpp"
 #include "pipeline.hpp"
 #include "swapchain.hpp"
 #include "viewport.hpp"
@@ -29,6 +30,7 @@ class RenderContext {
  public:
   using ResizeCallback = std::function<void(uint32_t, uint32_t)>;
   using MouseCallback = engine::gui::input::MouseButtonCallback;
+  using MousePositionCallback = engine::gui::input::MousePositionCallback;
 
   virtual ~RenderContext() = default;
 
@@ -55,6 +57,9 @@ class RenderContext {
 
   [[nodiscard]] virtual const ViewportGUI& getViewport() const = 0;
 
+  [[nodiscard]] virtual Camera& getCamera() = 0;
+  [[nodiscard]] virtual const Camera& getCamera() const = 0;
+
   [[nodiscard]] virtual gui::font::FontRenderer& getFontRenderer() = 0;
 
   [[nodiscard]] virtual Window& getWindow() = 0;
@@ -62,9 +67,11 @@ class RenderContext {
 
   virtual void addResizeCallback(ResizeCallback callback) = 0;
   virtual void addMouseCallback(MouseCallback callback) = 0;
+  virtual void addMousePositionCallback(MousePositionCallback callback) = 0;
 
   // Callback functions
   virtual void mouseButtonCallback(gui::input::MouseButton button, gui::input::MouseButtonAction action, double x, double y) = 0;
+  virtual void mousePositionCallback(double x, double y)  = 0;
   virtual void windowResizeCallback(uint32_t width, uint32_t height) = 0;
  protected:
   RenderContext() = default;

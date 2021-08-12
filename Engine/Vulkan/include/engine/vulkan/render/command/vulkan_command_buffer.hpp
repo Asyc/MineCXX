@@ -8,6 +8,10 @@
 #include "engine/vulkan/render/vulkan_pipeline.hpp"
 #include "engine/vulkan/render/swapchain/vulkan_swapchain.hpp"
 
+#ifdef WIN32
+#pragma warning(disable : 250)
+#endif
+
 namespace engine::vulkan::render::command {
 
 using namespace ::engine::render;
@@ -33,7 +37,7 @@ class VulkanDrawableCommandBuffer : public virtual IDrawableCommandBuffer, publi
   void draw(uint32_t instanceCount, uint32_t vertexCount) override;
   void drawIndexed(uint32_t instanceCount, uint32_t indexCount) override;
 
-  void pushConstants(PushConstantUsage usage, uint32_t offset, const void* data, uint32_t length) override;
+  void pushConstants(PushConstantUsage usage, uint32_t offset, const void* data, size_t length) override;
  private:
   const VulkanSwapchain* m_Handle;
 

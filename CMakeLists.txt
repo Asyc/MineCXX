@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.8.0)
 project(MinecraftCXX_Client)
 
 set(CMAKE_CXX_STANDARD 17)
+add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 
 # Adding All Subdirectory Libraries
 add_subdirectory(vendors/spirv-cross)

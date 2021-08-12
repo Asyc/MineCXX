@@ -51,8 +51,8 @@ Chunk::Chunk(int32_t x, int32_t y) : m_X(x), m_Y(y) {
   };
 
   std::array<uint32_t, 6 * 6> fullIndices{};
-  for (size_t i = 0; i < 6; i++) {
-    for (size_t j = 0; j < 6; j++) {
+  for (uint32_t i = 0; i < 6; i++) {
+    for (uint32_t j = 0; j < 6; j++) {
       fullIndices[(i * 6) + j] = indices[j] + (i * 4);
     }
   }
@@ -71,7 +71,7 @@ void Chunk::setBlock(int32_t x, int32_t y, int32_t z, Block* blockType) {
 
 }
 
-void Chunk::update() {
+void Chunk::update(float deltaTicks) {
 
 }
 
@@ -81,10 +81,11 @@ struct BlockData {
 };
 
 void Chunk::tick() {
-  auto worldBuffer = g_RenderContext->allocateUniformBuffer(sizeof(int32_t) + sizeof(BlockData) * 16 * 256 * 16);
+  if (m_UniformDescriptor != nullptr) return;
+  m_StorageBuffer = g_RenderContext->allocateStorageBuffer(sizeof(int32_t) + sizeof(BlockData) * 16 * 256 * 16);
 
   m_UniformDescriptor = m_Pipeline->allocateDescriptorSet(0);
-  m_UniformDescriptor->bind(0, *g_RenderContext->getViewport().getUniformBuffer());
+  m_UniformDescriptor->bind(0, *g_RenderContext->getCamera().getBuffer());
   m_UniformDescriptor->bind(1, *mc::BlockRegistry::getInstance().getBlockRegistryBuffer());
   m_UniformDescriptor->bind(3, *mc::BlockRegistry::getInstance().getAtlas());
 
@@ -97,13 +98,13 @@ void Chunk::tick() {
         if (block.blockType != nullptr) {
           size_t index = count++;
           BlockData data{glm::vec3(x, y, z), (int32_t) block.blockType->getId()};
-          worldBuffer->write(count * sizeof(BlockData), &data, sizeof(BlockData));
+          m_StorageBuffer->write(count * sizeof(BlockData), &data, sizeof(BlockData));
         }
       }
     }
   }
 
-  m_UniformDescriptor->bind(2, *worldBuffer);
+  m_UniformDescriptor->bind(2, *m_StorageBuffer);
   m_BlockCount = count;
 }
 
@@ -113,7 +114,7 @@ void Chunk::draw(engine::IDrawableCommandBuffer& commandBuffer) {
   commandBuffer.bindVertexBuffer(*m_BlockVbo);
   commandBuffer.bindIndexBuffer(*m_BlockIbo);
   commandBuffer.bindUniformDescriptor(*m_UniformDescriptor);
-  commandBuffer.drawIndexed(m_BlockCount, 6 * 6);
+  commandBuffer.drawIndexed(m_BlockCount, 36);
 }
 
 }

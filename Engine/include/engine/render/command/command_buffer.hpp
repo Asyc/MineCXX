@@ -31,7 +31,7 @@ class IDrawableCommandBuffer : public virtual ICommandBuffer {
   virtual void draw(uint32_t instanceCount, uint32_t vertexCount) = 0;
   virtual void drawIndexed(uint32_t instanceCount, uint32_t indexCount) = 0;
 
-  virtual void pushConstants(PushConstantUsage usage, uint32_t offset, const void* data, uint32_t length) = 0;
+  virtual void pushConstants(PushConstantUsage usage, uint32_t offset, const void* data, size_t length) = 0;
 };
 
 using PushConstantUsage = IDrawableCommandBuffer::PushConstantUsage;

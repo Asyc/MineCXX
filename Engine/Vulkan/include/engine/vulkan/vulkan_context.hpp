@@ -48,6 +48,9 @@ class VulkanRenderContext : public RenderContext {
   [[nodiscard]] device::VulkanDevice& getDevice() { return m_Device; }
 
   [[nodiscard]] const ViewportGUI& getViewport() const override { return m_GuiViewport; }
+
+  [[nodiscard]] Camera& getCamera() override { return m_Camera; }
+  [[nodiscard]] const Camera& getCamera() const override { return m_Camera; }
   [[nodiscard]] gui::font::FontRenderer& getFontRenderer() override { return m_FontRenderer; }
 
   [[nodiscard]] Window& getWindow() override { return *m_Window; }
@@ -55,8 +58,10 @@ class VulkanRenderContext : public RenderContext {
 
   void addResizeCallback(ResizeCallback callback) override;
   void addMouseCallback(MouseCallback callback) override;
+  void addMousePositionCallback(MousePositionCallback callback) override;
 
   void mouseButtonCallback(gui::input::MouseButton button, gui::input::MouseButtonAction action, double x, double y) override;
+  void mousePositionCallback(double x, double y) override;
   void windowResizeCallback(uint32_t width, uint32_t height) override;
  private:
   vk::UniqueInstance m_Instance;
@@ -77,8 +82,10 @@ class VulkanRenderContext : public RenderContext {
 
   std::vector<ResizeCallback> m_ResizeCallbacks;
   std::vector<MouseCallback> m_MouseCallbacks;
+  std::vector<MousePositionCallback> m_MousePositionCallbacks;
 
   ViewportGUI m_GuiViewport;
+  Camera m_Camera;
   gui::font::FontRenderer m_FontRenderer;
 
   static thread_local std::unordered_map<VulkanRenderContext*, command::VulkanCommandPool> s_ThreadCommandPoolMap;

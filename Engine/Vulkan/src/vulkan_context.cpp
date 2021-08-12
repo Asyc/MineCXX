@@ -97,7 +97,7 @@ vk::UniqueInstance createInstance() {
 
   vk::StructureChain<vk::InstanceCreateInfo, vk::ValidationFeaturesEXT, vk::DebugUtilsMessengerCreateInfoEXT> structureChain{
       instanceCreateInfo,
-      vk::ValidationFeaturesEXT(enabledValidationFeatures.size(), enabledValidationFeatures.data()),
+      vk::ValidationFeaturesEXT(static_cast<uint32_t>(enabledValidationFeatures.size()), enabledValidationFeatures.data()),
       vk::DebugUtilsMessengerCreateInfoEXT(createInfoExt),
   };
   vk::UniqueInstance instance = vk::createInstanceUnique(structureChain.get<vk::InstanceCreateInfo>());
@@ -143,6 +143,7 @@ VulkanRenderContext::VulkanRenderContext(Window& window, const Directory& resour
       m_Swapchain(modeHint, *m_Surface, m_PhysicalDevice, &m_Device, m_Device.getAllocator()),
       m_Pipelines(),
       m_GuiViewport(*this),
+      m_Camera(*this),
       m_FontRenderer(*this, File(resourceDirectory.getPath() + "font/glyph_sizes.bin"), Directory(resourceDirectory.getPath() + "/textures/font")) {
 
 #ifdef MCE_DBG
@@ -224,11 +225,22 @@ void VulkanRenderContext::addMouseCallback(RenderContext::MouseCallback callback
   m_MouseCallbacks.emplace_back(std::move(callback));
 }
 
+void VulkanRenderContext::addMousePositionCallback(RenderContext::MousePositionCallback callback) {
+  m_MousePositionCallbacks.emplace_back(std::move(callback));
+}
+
 void VulkanRenderContext::mouseButtonCallback(gui::input::MouseButton button, gui::input::MouseButtonAction action, double x, double y) {
   for (const auto& callback : m_MouseCallbacks) {
     std::invoke(callback, button, action);
   }
 }
+
+void VulkanRenderContext::mousePositionCallback(double x, double y) {
+  for (const auto& callback : m_MousePositionCallbacks) {
+    std::invoke(callback, x, y);
+  }
+}
+
 void VulkanRenderContext::windowResizeCallback(uint32_t width, uint32_t height) {
   m_Swapchain.onResize(width, height);
 

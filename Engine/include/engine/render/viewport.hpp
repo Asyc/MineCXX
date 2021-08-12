@@ -4,8 +4,7 @@
 #include <memory>
 #include <tuple>
 
-#include <glm/mat4x4.hpp>
-
+#include "engine/math.hpp"
 #include "engine/render/buffer/uniform_buffer.hpp"
 
 namespace engine::render {

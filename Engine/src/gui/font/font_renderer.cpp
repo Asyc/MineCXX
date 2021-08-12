@@ -81,7 +81,7 @@ FontRenderer::FontRenderer(render::RenderContext& context, const File& glyphSize
 }
 
 void FontRenderer::drawCached(render::command::IDrawableCommandBuffer& commandBuffer, const FontRenderer::String& string, float x, float y, const StringOptions& renderOptions) {
-  constexpr size_t MAX_CHARACTERS = 18;   // Due to total output components available in the geometry shader.
+  constexpr uint32_t MAX_CHARACTERS = 18;   // Due to total output components available in the geometry shader.
   if (renderOptions.shadow) {
     static StringOptions shadowOptions(56.0f / 255.0f, 56.0f / 255.0f, 56.0f / 255.0f, 1.0f, renderOptions.center);
     constexpr float positionOffsetX = 0.0040f;
@@ -133,13 +133,13 @@ void FontRenderer::drawCached(render::command::IDrawableCommandBuffer& commandBu
   commandBuffer.pushConstants(render::command::PushConstantUsage::VERTEX, 0, &data[0], sizeof(data));
   commandBuffer.pushConstants(render::command::PushConstantUsage::GEOMETRY, 8, &pushConstants, sizeof(pushConstants));
 
-  size_t drawCalls = std::ceil(string.size() / MAX_CHARACTERS);
+  uint32_t drawCalls = static_cast<uint32_t>(string.size()) / MAX_CHARACTERS + (string.size() % MAX_CHARACTERS > 0 ? 1 : 0);
   if (drawCalls == 0) drawCalls = 1;
 
   uint32_t stringIndex = 0;
 
-  for (size_t i = 0; i < drawCalls; i++) {
-    uint32_t characters = std::min(MAX_CHARACTERS, string.size() - (i * MAX_CHARACTERS));
+  for (uint32_t i = 0; i < drawCalls; i++) {
+    uint32_t characters = std::min(MAX_CHARACTERS, static_cast<uint32_t>(string.size()) - (i * MAX_CHARACTERS));
 
     commandBuffer.pushConstants(render::command::PushConstantUsage::GEOMETRY, 52, &stringIndex, sizeof(uint32_t));
     commandBuffer.draw(1, 1);
@@ -150,13 +150,13 @@ void FontRenderer::drawCached(render::command::IDrawableCommandBuffer& commandBu
 void FontRenderer::drawDynamic(render::command::IDrawableCommandBuffer& commandBuffer, const FontRenderer::StringView& string, float x, float y, const StringOptions& renderOptions) {
   if (renderOptions.shadow) {
     static StringOptions shadowOptions(15.0f / 255.0f, 15.0f / 255.0f, 15.0f / 255.0f, 1.0f, renderOptions.center);
-    constexpr float positionOffsetX = 0.006;
-    constexpr float positionOffsetY = 0.005;
+    constexpr float positionOffsetX = 0.006f;
+    constexpr float positionOffsetY = 0.005f;
 
     drawDynamic(commandBuffer, string, x + positionOffsetX, y - positionOffsetY, shadowOptions);
   }
 
-  constexpr size_t MAX_CHARACTERS = 18;   // Due to total output components available in the geometry shader.
+  constexpr uint32_t MAX_CHARACTERS = 18;   // Due to total output components available in the geometry shader.
 
   commandBuffer.bindPipeline(*m_DynamicPipeline);
   commandBuffer.bindUniformDescriptor(*m_UniformDescriptorSetDynamic);
@@ -178,15 +178,15 @@ void FontRenderer::drawDynamic(render::command::IDrawableCommandBuffer& commandB
   std::array<float, 2> data = {x, y};
   commandBuffer.pushConstants(render::command::PushConstantUsage::VERTEX, 0, data.data(), data.size() * sizeof(float));
 
-  size_t drawCalls = std::ceil(string.size() / MAX_CHARACTERS);
+  uint32_t drawCalls = static_cast<uint32_t>(string.size()) / MAX_CHARACTERS + (string.size() % MAX_CHARACTERS > 0 ? 1 : 0);
   if (drawCalls == 0) drawCalls = 1;
 
   std::array<uint32_t, MAX_CHARACTERS> pushConstantBuffer{};
 
   size_t stringIndex = 0;
 
-  for (size_t i = 0; i < drawCalls; i++) {
-    uint32_t characters = std::min(MAX_CHARACTERS, string.size() - (i * MAX_CHARACTERS));
+  for (uint32_t i = 0; i < drawCalls; i++) {
+    uint32_t characters = static_cast<uint32_t>(std::min(MAX_CHARACTERS, static_cast<uint32_t>(string.size()) - (i * MAX_CHARACTERS)));
     for (uint32_t j = 0; j < characters; j++) {
       pushConstantBuffer[j] = static_cast<uint16_t>(string[stringIndex++]);
     }

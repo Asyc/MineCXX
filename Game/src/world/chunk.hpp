@@ -18,7 +18,7 @@ class Chunk : public engine::WorldObject {
 
   Chunk(int32_t x, int32_t y);
 
-  void update() override;
+  void update(float deltaTicks) override;
   void tick() override;
   void draw(engine::IDrawableCommandBuffer& commandBuffer) override;
  public:
@@ -26,7 +26,7 @@ class Chunk : public engine::WorldObject {
  private:
   int32_t m_X, m_Y;
   std::array<std::array<std::array<BlockContainer, 16>, 256>, 16> m_BlockData;
-  size_t m_BlockCount;
+  uint32_t m_BlockCount;
 
   std::shared_ptr<engine::render::RenderPipeline> m_Pipeline;
   std::unique_ptr<engine::render::UniformDescriptor> m_UniformDescriptor;

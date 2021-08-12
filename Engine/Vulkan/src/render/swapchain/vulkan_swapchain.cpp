@@ -130,7 +130,7 @@ VulkanSwapchain::VulkanSwapchain(Swapchain::SwapchainMode modeHint,
       vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentWrite
   );
 
-  vk::RenderPassCreateInfo renderPassCreateInfo({}, attachments.size(), attachments.data(), 1, &subpassDescription, 1, &subpassDependency);
+  vk::RenderPassCreateInfo renderPassCreateInfo({}, static_cast<uint32_t>(attachments.size()), attachments.data(), 1, &subpassDescription, 1, &subpassDependency);
   m_RenderPass = device->getDevice().createRenderPassUnique(renderPassCreateInfo);
 
   vk::CommandPoolCreateInfo commandPoolCreateInfo(vk::CommandPoolCreateFlagBits::eResetCommandBuffer, device->getQueueManager().getGraphicsQueueFamily().index);
@@ -203,11 +203,11 @@ const std::set<Swapchain::SwapchainMode>& VulkanSwapchain::getSupportedSwapchain
 }
 
 uint32_t VulkanSwapchain::getCurrentFrameIndex() const {
-  return m_CurrentFlight;
+  return static_cast<uint32_t>(m_CurrentFlight);
 }
 
 uint32_t VulkanSwapchain::getFrameCount() const {
-  return m_RenderFlights.size();
+  return static_cast<uint32_t>(m_RenderFlights.size());
 }
 
 std::pair<uint32_t, uint32_t> VulkanSwapchain::getSize() const {
