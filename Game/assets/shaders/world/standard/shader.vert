@@ -48,6 +48,6 @@ void main() {
     vs_TexPos = interpolatedTextureUV;
 
     float interpolatedZ = map(translatedPosition.z, 0.0f, 8.0f * 16.0f, 0.0f, 1.0f);
-    gl_Position = viewport.projectionMatrix * viewport.viewMatrix * vec4(translatedPosition, 1.0f);
+    gl_Position = viewport.projectionMatrix * vec4(translatedPosition, 1.0f);
     gl_Position.z = interpolatedZ;
 }

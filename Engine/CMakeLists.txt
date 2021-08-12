@@ -43,7 +43,7 @@ set(SOURCES
         src/gui/scene.cpp
         src/gui/element.cpp
         src/render/viewport.cpp
-        src/image/packer.cpp src/render/camera.cpp)
+        src/image/packer.cpp src/render/camera.cpp src/nbt/nbt_type.cpp)
 
 add_library(libengine STATIC ${HEADERS} ${SOURCES})
 
